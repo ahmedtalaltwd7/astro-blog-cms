@@ -1,0 +1,274 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// We'll fetch posts client-side for pagination
+const limit = 6;
+const page = 1;
+const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
+---
+
+<Layout title="Blog Posts">
+  <div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Blog Posts
+        </h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+          A collection of blog posts created with the admin editor. Each post is
+          stored as a markdown file in <code
+            class="bg-gray-100 px-2 py-1 rounded">src/pages/blog/</code
+          >.
+        </p>
+        <a
+          href="/admin"
+          class="inline-flex items-center mt-6 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Create New Post
+        </a>
+      </div>
+
+      <!-- Container for posts (will be populated by JavaScript) -->
+      <div
+        id="posts-container"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      >
+        <!-- Loading indicator -->
+        <div id="loading" class="col-span-full text-center py-12">
+          <div
+            class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"
+          >
+          </div>
+          <p class="mt-4 text-gray-600">Loading posts...</p>
+        </div>
+        <!-- Posts will be inserted here -->
+      </div>
+
+      <!-- Empty state (hidden by default) -->
+      <div id="empty-state" class="hidden text-center py-16">
+        <svg
+          class="mx-auto h-16 w-16 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+        <h3 class="mt-4 text-xl font-medium text-gray-900">
+          No blog posts yet
+        </h3>
+        <p class="mt-2 text-gray-500 max-w-md mx-auto">
+          Get started by creating your first blog post using the admin editor.
+        </p>
+        <div class="mt-6">
+          <a
+            href="/admin"
+            class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Create First Post
+          </a>
+        </div>
+      </div>
+
+      <!-- Pagination controls -->
+      <div
+        id="pagination"
+        class="hidden mt-12 flex items-center justify-between"
+      >
+        <button
+          id="prev-btn"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Previous
+        </button>
+        <div class="text-sm text-gray-700">
+          Page <span id="current-page">1</span> of <span id="total-pages"
+            >1</span
+          >
+        </div>
+        <button
+          id="next-btn"
+          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // @ts-nocheck
+    (() => {
+      /** @type {HTMLElement | null} */
+      const postsContainer = document.getElementById("posts-container");
+      /** @type {HTMLElement | null} */
+      const loadingEl = document.getElementById("loading");
+      /** @type {HTMLElement | null} */
+      const emptyState = document.getElementById("empty-state");
+      /** @type {HTMLElement | null} */
+      const paginationEl = document.getElementById("pagination");
+      /** @type {HTMLButtonElement | null} */
+      const prevBtn = document.getElementById("prev-btn");
+      /** @type {HTMLButtonElement | null} */
+      const nextBtn = document.getElementById("next-btn");
+      /** @type {HTMLElement | null} */
+      const currentPageSpan = document.getElementById("current-page");
+      /** @type {HTMLElement | null} */
+      const totalPagesSpan = document.getElementById("total-pages");
+
+      // Type guard for null elements
+      if (
+        !postsContainer ||
+        !loadingEl ||
+        !emptyState ||
+        !paginationEl ||
+        !prevBtn ||
+        !nextBtn ||
+        !currentPageSpan ||
+        !totalPagesSpan
+      ) {
+        console.error("Required DOM elements not found");
+        return;
+      }
+
+      let currentPage = 1;
+      const limit = 6;
+      let totalPages = 1;
+
+      /**
+       * @typedef {Object} Post
+       * @property {string} slug
+       * @property {string} title
+       * @property {string} pubDate
+       * @property {string} [description]
+       * @property {string[]} [tags]
+       * @property {string} [image]
+       */
+
+      /**
+       * @param {Post} post
+       * @returns {string}
+       */
+      function renderPost(post) {
+        const imageUrl = post.image;
+        const imageHtml = imageUrl
+          ? `<img src="${imageUrl}" alt="${post.title}" class="w-full h-48 object-cover" />`
+          : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
+        return `
+          <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+            ${imageHtml}
+            <div class="p-6">
+              <div class="flex items-center text-sm text-gray-500 mb-3">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <time datetime="${post.pubDate}">${post.pubDate}</time>
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 mb-3">
+                <a href="/blog/${post.slug}" class="hover:text-blue-600">${post.title}</a>
+              </h2>
+              <p class="text-gray-600 mb-4">${post.description || "No description provided."}</p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                ${(post.tags || [])
+                  .map(
+                    (tag) => `
+                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">${tag}</span>
+                `,
+                  )
+                  .join("")}
+              </div>
+              <a href="/blog/${post.slug}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                Read more
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          </article>
+        `;
+      }
+
+      /**
+       * @param {number} page
+       */
+      async function loadPage(page) {
+        loadingEl.classList.remove("hidden");
+        postsContainer.innerHTML = "";
+        postsContainer.appendChild(loadingEl);
+        emptyState.classList.add("hidden");
+        paginationEl.classList.add("hidden");
+
+        try {
+          const response = await fetch(
+            `/api/list-posts?page=${page}&limit=${limit}`,
+          );
+          if (!response.ok) throw new Error("Failed to fetch posts");
+          const data = await response.json();
+
+          loadingEl.classList.add("hidden");
+          postsContainer.removeChild(loadingEl);
+
+          if (data.posts.length === 0) {
+            emptyState.classList.remove("hidden");
+            return;
+          }
+
+          // Render posts
+          postsContainer.innerHTML = data.posts.map(renderPost).join("");
+
+          // Update pagination
+          totalPages = data.pagination.totalPages;
+          currentPage = data.pagination.page;
+          currentPageSpan.textContent = currentPage.toString();
+          totalPagesSpan.textContent = totalPages.toString();
+
+          prevBtn.disabled = currentPage <= 1;
+          nextBtn.disabled = currentPage >= totalPages;
+
+          paginationEl.classList.remove("hidden");
+        } catch (error) {
+          console.error("Error loading posts:", error);
+          loadingEl.classList.add("hidden");
+          postsContainer.innerHTML =
+            '<p class="col-span-full text-center text-red-600">Failed to load posts. Please try again later.</p>';
+        }
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          loadPage(currentPage - 1);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+          loadPage(currentPage + 1);
+        }
+      });
+
+      // Initial load
+      loadPage(1);
+    })();
+  </script>
+</Layout>
