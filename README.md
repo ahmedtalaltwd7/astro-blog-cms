@@ -32,7 +32,7 @@ A modern content-driven blog built with Astro and Tailwind CSS, featuring a buil
 cd "astro-blog codex"
 npm install
 ```
-
+twd
 ### Development
 
 Start the development server:
