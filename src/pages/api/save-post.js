@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 export const prerender = false;
 
@@ -44,6 +45,8 @@ export async function OPTIONS({ request }) {
   });
 }
 
+const MAX_IMAGE_DIMENSION = 1920;
+
 // Helper to generate a safe filename for uploaded image
 function generateImageFilename(originalName) {
   const ext = path.extname(originalName).toLowerCase();
@@ -71,6 +74,95 @@ async function getImageDirs() {
   return dirs;
 }
 
+async function optimizeImageBuffer(buffer) {
+  try {
+    const image = sharp(buffer, { failOn: "none" }).rotate();
+    const metadata = await image.metadata();
+    const format = metadata.format;
+
+    let optimizedImage = image.resize({
+      width: MAX_IMAGE_DIMENSION,
+      height: MAX_IMAGE_DIMENSION,
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+
+    if (format === "jpeg" || format === "jpg") {
+      optimizedImage = optimizedImage.jpeg({
+        quality: 84,
+        mozjpeg: true,
+      });
+    } else if (format === "png") {
+      optimizedImage = optimizedImage.png({
+        compressionLevel: 9,
+        adaptiveFiltering: true,
+        effort: 10,
+      });
+    } else if (format === "webp") {
+      optimizedImage = optimizedImage.webp({
+        quality: 84,
+        effort: 5,
+      });
+    } else {
+      return {
+        buffer,
+        optimized: false,
+        originalSize: buffer.length,
+        savedSize: buffer.length,
+        format: format || "unknown",
+      };
+    }
+
+    const optimizedBuffer = await optimizedImage.toBuffer();
+    const isSmaller = optimizedBuffer.length < buffer.length;
+
+    return {
+      buffer: isSmaller ? optimizedBuffer : buffer,
+      optimized: isSmaller,
+      originalSize: buffer.length,
+      savedSize: isSmaller ? optimizedBuffer.length : buffer.length,
+      format,
+    };
+  } catch (error) {
+    console.error("Image optimization skipped:", error);
+    return {
+      buffer,
+      optimized: false,
+      originalSize: buffer.length,
+      savedSize: buffer.length,
+      format: "unknown",
+    };
+  }
+}
+
+async function saveUploadedImage(buffer, originalName, timestamp) {
+  const imageDirs = await getImageDirs();
+  const imageFilename = generateImageFilename(originalName);
+  const optimization = await optimizeImageBuffer(buffer);
+
+  for (const imageDir of imageDirs) {
+    await fs.mkdir(imageDir, { recursive: true });
+    await fs.writeFile(path.join(imageDir, imageFilename), optimization.buffer);
+  }
+
+  const imageUrl = `/blog-images/${imageFilename}`;
+  const savedKb = Math.round(optimization.savedSize / 1024);
+  const originalKb = Math.round(optimization.originalSize / 1024);
+  console.error(
+    `[${timestamp}] Image saved: ${imageUrl} (${savedKb}KB, was ${originalKb}KB, optimized: ${optimization.optimized})`,
+  );
+
+  return {
+    imageUrl,
+    imageOptimization: {
+      optimized: optimization.optimized,
+      originalSize: optimization.originalSize,
+      savedSize: optimization.savedSize,
+      format: optimization.format,
+    },
+  };
+}
+
 export async function POST({ request }) {
   try {
     const timestamp = new Date().toISOString();
@@ -87,7 +179,8 @@ export async function POST({ request }) {
     let filename,
       title,
       content,
-      imageUrl = "";
+      imageUrl = "",
+      imageOptimization = null;
 
     if (contentType.includes("multipart/form-data")) {
       // Handle multipart/form-data (file upload)
@@ -99,16 +192,15 @@ export async function POST({ request }) {
 
       // Process uploaded image if present
       if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-        const imageDirs = await getImageDirs();
-        const imageFilename = generateImageFilename(imageFile.name);
         const arrayBuffer = await imageFile.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
-        for (const imageDir of imageDirs) {
-          await fs.mkdir(imageDir, { recursive: true });
-          await fs.writeFile(path.join(imageDir, imageFilename), buffer);
-        }
-        imageUrl = `/blog-images/${imageFilename}`;
-        console.error(`[${timestamp}] Image saved: ${imageUrl}`);
+        const savedImage = await saveUploadedImage(
+          buffer,
+          imageFile.name,
+          timestamp,
+        );
+        imageUrl = savedImage.imageUrl;
+        imageOptimization = savedImage.imageOptimization;
       }
     } else {
       // Handle JSON (including base64-encoded image)
@@ -153,18 +245,13 @@ export async function POST({ request }) {
           if (matches) {
             const base64Data = matches[2];
             const buffer = Buffer.from(base64Data, "base64");
-
-            const imageDirs = await getImageDirs();
-            const imageFilename = generateImageFilename(data.imageFilename);
-            for (const imageDir of imageDirs) {
-              await fs.mkdir(imageDir, { recursive: true });
-              await fs.writeFile(path.join(imageDir, imageFilename), buffer);
-            }
-
-            imageUrl = `/blog-images/${imageFilename}`;
-            console.error(
-              `[${timestamp}] Image saved from base64: ${imageUrl}`,
+            const savedImage = await saveUploadedImage(
+              buffer,
+              data.imageFilename,
+              timestamp,
             );
+            imageUrl = savedImage.imageUrl;
+            imageOptimization = savedImage.imageOptimization;
           } else {
             console.error(`[${timestamp}] Invalid base64 image data format`);
           }
@@ -179,6 +266,7 @@ export async function POST({ request }) {
       filename,
       title,
       imageUrl,
+      imageOptimization,
       contentLength: content?.length,
     });
 
@@ -238,6 +326,7 @@ tags: ["blog", "astro"]`;
           message: `Post saved as ${filename}`,
           path: filePath,
           imageUrl,
+          imageOptimization,
         }),
         {
           status: 200,
