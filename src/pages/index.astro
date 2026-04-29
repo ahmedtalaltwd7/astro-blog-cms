@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 // Get latest blog posts for preview
 type MarkdownModule = {
@@ -19,17 +21,20 @@ const entries = Object.entries(postModules);
 const posts = await Promise.all(
   entries.map(async ([filePath, getModule]) => {
     const module = await getModule();
+    const filename = filePath.replace("../content/blog/", "");
+    const fileStats = await fs.stat(
+      path.join(process.cwd(), "src", "content", "blog", filename),
+    );
     // Extract slug from filename (e.g., "./blog/first-post.md" -> "first-post")
     const slug =
       module.frontmatter.slug ||
-      filePath
-        .replace("../content/blog/", "")
-        .replace(".md", "")
-        .replace(/\/$/, "");
-    return { ...module, slug };
+      filename.replace(".md", "").replace(/\/$/, "");
+    return { ...module, slug, updatedAtMs: fileStats.mtimeMs };
   }),
 );
-const latestPosts = posts.slice(0, 3);
+const latestPosts = posts
+  .sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  .slice(0, 3);
 ---
 
 <Layout title="Home - Astro Blog">

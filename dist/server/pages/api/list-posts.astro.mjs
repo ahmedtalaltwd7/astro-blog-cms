@@ -18,7 +18,7 @@ async function GET({
     const markdownFiles = files.filter(file => file.endsWith(".md"));
     const posts = await Promise.all(markdownFiles.map(async filename => {
       const filePath = path.join(blogDir, filename);
-      const content = await fs.readFile(filePath, "utf-8");
+      const [content, stats] = await Promise.all([fs.readFile(filePath, "utf-8"), fs.stat(filePath)]);
       // Extract frontmatter (simple parsing)
       const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
       let title = filename.replace(".md", "");
@@ -57,14 +57,16 @@ async function GET({
         author,
         tags,
         image,
+        updatedAt: stats.mtime.toISOString(),
+        updatedAtMs: stats.mtimeMs,
         contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
         slug: filename.replace(".md", "")
       };
     }));
     const filteredPosts = search ? posts.filter(post => post.title.toLowerCase().includes(search)) : posts;
 
-    // Sort by pubDate descending (newest first)
-    filteredPosts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    // Sort by latest file save/edit time descending (newest first).
+    filteredPosts.sort((a, b) => b.updatedAtMs - a.updatedAtMs);
     const total = filteredPosts.length;
     const paginatedPosts = filteredPosts.slice(offset, offset + limit);
     const totalPages = Math.ceil(total / limit);

@@ -40,7 +40,7 @@ const markdownContentClass = [
   "[&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold",
   "[&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold",
   "[&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold",
-  "[&_img]:my-6 [&_img]:rounded-lg",
+  "[&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg",
   "[&_li]:ml-5",
   "[&_ol]:mb-4 [&_ol]:list-decimal",
   "[&_p]:mb-4",
@@ -65,9 +65,26 @@ for (const [filePath, resolver] of Object.entries(postModules)) {
   }
 }
 
+const runtimeFilePath = path.join(
+  process.cwd(),
+  "src",
+  "content",
+  "blog",
+  `${safeSlug}.md`,
+);
+let shouldUseRuntimeMarkdown = false;
+
+try {
+  await fs.access(runtimeFilePath);
+  shouldUseRuntimeMarkdown = true;
+  Content = null;
+} catch {
+  // Fall back to compiled markdown when there is no editable runtime file.
+}
+
 // If we couldn't load the compiled markdown component (e.g. file added at runtime),
 // read and render the markdown file directly so posts show immediately without rebuild.
-if (!Content) {
+if (shouldUseRuntimeMarkdown || !Content) {
   const filePath = path.join(
     process.cwd(),
     "src",

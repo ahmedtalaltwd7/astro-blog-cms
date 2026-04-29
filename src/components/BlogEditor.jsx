@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from "preact/hooks";
 import { marked } from "marked";
+import MarkdownImageCanvas from "./MarkdownImageCanvas.jsx";
 
 marked.setOptions({
   breaks: true,
@@ -98,6 +99,191 @@ const makeDefaultFilename = (value) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 
+const escapeHtmlAttribute = (value) =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const escapeMarkdownAlt = (value) => String(value).replace(/]/g, "\\]");
+
+const normalizeImageWidth = (value) => {
+  const width = value.trim().toLowerCase();
+  if (!width) return "";
+  if (/^\d{1,4}$/.test(width)) return width;
+  if (/^\d{1,4}px$/.test(width)) return width.replace("px", "");
+  if (/^\d{1,3}%$/.test(width)) return width;
+  return null;
+};
+
+const normalizeRotation = (degrees) => {
+  const number = Number(degrees);
+  if (!Number.isFinite(number)) return 0;
+  return ((Math.round(number) % 360) + 360) % 360;
+};
+
+const getImageStyleValue = (style, property) => {
+  const match = style.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, "i"));
+  return match ? match[1].trim() : "";
+};
+
+const parseImageMarkup = (markup) => {
+  const text = markup.trim();
+  const markdownMatch = text.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+
+  if (markdownMatch) {
+    return {
+      url: markdownMatch[2],
+      alt: markdownMatch[1].replace(/\\]/g, "]"),
+      width: "",
+      rotation: 0,
+      offsetX: 0,
+      offsetY: 0,
+    };
+  }
+
+  if (!/^<img\b[^>]*>$/i.test(text)) {
+    return null;
+  }
+
+  const style = text.match(/\sstyle=["']([^"']*)["']/i)?.[1] || "";
+  const width =
+    text.match(/\swidth=["']([^"']+)["']/i)?.[1] ||
+    getImageStyleValue(style, "width");
+  const rotationMatch = style.match(/rotate\(\s*(-?\d+(?:\.\d+)?)deg\s*\)/i);
+  const offsetX = Number.parseInt(getImageStyleValue(style, "margin-left"), 10);
+  const offsetY = Number.parseInt(getImageStyleValue(style, "margin-top"), 10);
+
+  return {
+    url: text.match(/\ssrc=["']([^"']+)["']/i)?.[1] || "",
+    alt: text.match(/\salt=["']([^"']*)["']/i)?.[1] || "",
+    width: normalizeImageWidth(width || "") ?? "",
+    rotation: normalizeRotation(rotationMatch?.[1] || 0),
+    offsetX: Number.isFinite(offsetX) ? offsetX : 0,
+    offsetY: Number.isFinite(offsetY) ? offsetY : 0,
+  };
+};
+
+const findFirstImageInContent = (value) => {
+  let lineStart = 0;
+  const lines = value.split("\n");
+
+  for (const line of lines) {
+    const lineEnd = lineStart + line.length;
+    const trimmedLine = line.trim();
+    const image = parseImageMarkup(trimmedLine);
+
+    if (image?.url) {
+      const leadingWhitespace = line.indexOf(trimmedLine);
+      return {
+        range: {
+          lineStart: lineStart + Math.max(leadingWhitespace, 0),
+          lineEnd: lineStart + Math.max(leadingWhitespace, 0) + trimmedLine.length,
+        },
+        image,
+      };
+    }
+
+    const inlineMarkdownMatch = line.match(/!\[[^\]]*\]\([^)]+\)/);
+    if (inlineMarkdownMatch) {
+      return {
+        range: {
+          lineStart: lineStart + inlineMarkdownMatch.index,
+          lineEnd: lineStart + inlineMarkdownMatch.index + inlineMarkdownMatch[0].length,
+        },
+        image: parseImageMarkup(inlineMarkdownMatch[0]),
+      };
+    }
+
+    const inlineHtmlMatch = line.match(/<img\b[^>]*>/i);
+    if (inlineHtmlMatch) {
+      return {
+        range: {
+          lineStart: lineStart + inlineHtmlMatch.index,
+          lineEnd: lineStart + inlineHtmlMatch.index + inlineHtmlMatch[0].length,
+        },
+        image: parseImageMarkup(inlineHtmlMatch[0]),
+      };
+    }
+
+    lineStart = lineEnd + 1;
+  }
+
+  return null;
+};
+
+const createBlockInsertion = (value, start, end, text) => {
+  const before = value.slice(0, start);
+  const after = value.slice(end);
+  const prefix = before.trim()
+    ? before.endsWith("\n\n")
+      ? ""
+      : before.endsWith("\n")
+        ? "\n"
+        : "\n\n"
+    : "";
+  const suffix = after.trim()
+    ? after.startsWith("\n\n")
+      ? ""
+      : after.startsWith("\n")
+        ? "\n"
+        : "\n\n"
+    : "";
+
+  return {
+    insertion: `${prefix}${text}${suffix}`,
+    contentStart: start + prefix.length,
+  };
+};
+
+const buildImageMarkup = (
+  url,
+  alt,
+  displayWidth = "",
+  rotation = 0,
+  offsetX = 0,
+  offsetY = 0,
+) => {
+  const normalizedRotation = normalizeRotation(rotation);
+  const normalizedOffsetX = Math.max(0, Math.round(Number(offsetX) || 0));
+  const normalizedOffsetY = Math.max(0, Math.round(Number(offsetY) || 0));
+
+  if (
+    !displayWidth &&
+    normalizedRotation === 0 &&
+    normalizedOffsetX === 0 &&
+    normalizedOffsetY === 0
+  ) {
+    return `![${escapeMarkdownAlt(alt)}](${url})`;
+  }
+
+  const src = escapeHtmlAttribute(url);
+  const safeAlt = escapeHtmlAttribute(alt);
+  const styleParts = ["display: block", "height: auto", "max-width: 100%"];
+
+  if (displayWidth.endsWith("%")) {
+    styleParts.unshift(`width: ${displayWidth}`);
+  }
+
+  if (normalizedRotation !== 0) {
+    styleParts.push(`transform: rotate(${normalizedRotation}deg)`);
+    styleParts.push("transform-origin: center center");
+  }
+
+  if (normalizedOffsetX > 0) {
+    styleParts.push(`margin-left: ${normalizedOffsetX}px`);
+  }
+
+  if (normalizedOffsetY > 0) {
+    styleParts.push(`margin-top: ${normalizedOffsetY}px`);
+  }
+
+  const widthAttribute =
+    displayWidth && !displayWidth.endsWith("%") ? ` width="${displayWidth}"` : "";
+  return `<img src="${src}" alt="${safeAlt}"${widthAttribute} style="${styleParts.join("; ")};" />`;
+};
+
 export default function BlogEditor() {
   const [filename, setFilename] = useState("new-post.md");
   const [title, setTitle] = useState("My Amazing Blog Post");
@@ -116,7 +302,12 @@ export default function BlogEditor() {
   const [previewMode, setPreviewMode] = useState("split");
   const [selectedSnippet, setSelectedSnippet] = useState(snippets[0].label);
   const [cursorInfo, setCursorInfo] = useState({ line: 1, column: 1 });
+  const [isUploadingContentImage, setIsUploadingContentImage] = useState(false);
+  const [selectedCanvasImage, setSelectedCanvasImage] = useState(null);
   const textareaRef = useRef(null);
+  const contentImageInputRef = useRef(null);
+  const pendingImageSelectionRef = useRef(null);
+  const latestContentRef = useRef(content);
 
   const editorStats = useMemo(() => {
     const plainText = content
@@ -135,6 +326,56 @@ export default function BlogEditor() {
     () => marked.parse(content || ""),
     [content],
   );
+
+  const previewParts = useMemo(() => {
+    if (!selectedCanvasImage?.image?.url) {
+      return {
+        hasEditableImage: false,
+        beforeHtml: previewHtml,
+        afterHtml: "",
+      };
+    }
+
+    const before = content.slice(0, selectedCanvasImage.range.lineStart);
+    const after = content.slice(selectedCanvasImage.range.lineEnd);
+
+    return {
+      hasEditableImage: true,
+      beforeHtml: marked.parse(before || ""),
+      afterHtml: marked.parse(after || ""),
+    };
+  }, [content, previewHtml, selectedCanvasImage]);
+
+  useEffect(() => {
+    latestContentRef.current = content;
+  }, [content]);
+
+  useEffect(() => {
+    if (!content) {
+      setSelectedCanvasImage(null);
+      return;
+    }
+
+    if (selectedCanvasImage) {
+      const currentLine = content
+        .slice(
+          selectedCanvasImage.range.lineStart,
+          selectedCanvasImage.range.lineEnd,
+        )
+        .trim();
+      const currentImage = parseImageMarkup(currentLine);
+
+      if (currentImage?.url === selectedCanvasImage.image.url) {
+        setSelectedCanvasImage({
+          range: selectedCanvasImage.range,
+          image: currentImage,
+        });
+        return;
+      }
+    }
+
+    setSelectedCanvasImage(findFirstImageInContent(content));
+  }, [content]);
 
   // Check if a blog post with the given filename already exists
   const checkFilenameExists = async (filenameToCheck) => {
@@ -269,12 +510,13 @@ export default function BlogEditor() {
     }
     setIsSaving(true);
     setMessage("Saving...");
+    const contentToSave = latestContentRef.current;
 
     try {
       console.log("Saving post:", {
         filename,
         title,
-        content: content.substring(0, 50) + "...",
+        content: contentToSave.substring(0, 50) + "...",
         imageFile: imageFile ? imageFile.name : "none",
       });
 
@@ -298,7 +540,7 @@ export default function BlogEditor() {
         body: JSON.stringify({
           filename,
           title,
-          content,
+          content: contentToSave,
           image,
           imageBase64,
           imageFilename,
@@ -371,6 +613,18 @@ export default function BlogEditor() {
       line: lines.length,
       column: lines[lines.length - 1].length + 1,
     });
+
+    const range = getSelectedLineRange();
+    if (!range) {
+      setSelectedCanvasImage(findFirstImageInContent(content));
+      return;
+    }
+
+    const selectedText = content.slice(range.lineStart, range.lineEnd).trim();
+    const image = parseImageMarkup(selectedText);
+    setSelectedCanvasImage(
+      image?.url ? { range, image } : findFirstImageInContent(content),
+    );
   };
 
   const focusTextarea = (start, end = start) => {
@@ -394,6 +648,41 @@ export default function BlogEditor() {
       start + selectStartOffset,
       start + selectStartOffset + selectLength,
     );
+  };
+
+  const replaceSavedSelection = (text) => {
+    const range = pendingImageSelectionRef.current;
+    pendingImageSelectionRef.current = null;
+
+    if (!range) {
+      replaceSelection(text);
+      return;
+    }
+
+    const currentContent = latestContentRef.current;
+    const start = Math.min(range.start, currentContent.length);
+    const end = Math.min(range.end, currentContent.length);
+    const { insertion, contentStart } = createBlockInsertion(
+      currentContent,
+      start,
+      end,
+      text,
+    );
+
+    setContent(currentContent.slice(0, start) + insertion + currentContent.slice(end));
+    const image = parseImageMarkup(text);
+    setSelectedCanvasImage(
+      image?.url
+        ? {
+            range: {
+              lineStart: contentStart,
+              lineEnd: contentStart + text.length,
+            },
+            image,
+          }
+        : null,
+    );
+    focusTextarea(contentStart + text.length);
   };
 
   const applyWrap = (before, after = before, placeholder = "") => {
@@ -487,7 +776,114 @@ export default function BlogEditor() {
     if (alt === null) return;
     const url = prompt("Image URL", image || "/blog-images/");
     if (url === null) return;
-    replaceSelection(`![${alt}](${url})`);
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const imageText = buildImageMarkup(url, alt);
+    const { insertion, contentStart } = createBlockInsertion(
+      content,
+      ta.selectionStart,
+      ta.selectionEnd,
+      imageText,
+    );
+
+    replaceSelection(insertion);
+    setSelectedCanvasImage({
+      range: {
+        lineStart: contentStart,
+        lineEnd: contentStart + imageText.length,
+      },
+      image: parseImageMarkup(imageText),
+    });
+  };
+
+  const updateCanvasImageLine = (nextImage) => {
+    const selection = selectedCanvasImage;
+    if (!selection) return;
+    const currentContent = latestContentRef.current;
+
+    const replacement = buildImageMarkup(
+      nextImage.url,
+      nextImage.alt,
+      nextImage.width,
+      nextImage.rotation,
+      nextImage.offsetX,
+      nextImage.offsetY,
+    );
+    const nextRange = {
+      lineStart: selection.range.lineStart,
+      lineEnd: selection.range.lineStart + replacement.length,
+    };
+    const nextContent =
+      currentContent.slice(0, selection.range.lineStart) +
+      replacement +
+      currentContent.slice(selection.range.lineEnd);
+
+    latestContentRef.current = nextContent;
+    setContent(nextContent);
+    setSelectedCanvasImage({ range: nextRange, image: nextImage });
+  };
+
+  const openContentImagePicker = () => {
+    const ta = textareaRef.current;
+    if (ta) {
+      pendingImageSelectionRef.current = {
+        start: ta.selectionStart,
+        end: ta.selectionEnd,
+      };
+    }
+    contentImageInputRef.current?.click();
+  };
+
+  const handleContentImageUpload = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const defaultAlt = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+    const alt = prompt("Image alt text", defaultAlt);
+    if (alt === null) {
+      pendingImageSelectionRef.current = null;
+      return;
+    }
+
+    setIsUploadingContentImage(true);
+    setMessage("Uploading image...");
+
+    try {
+      const imageBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch("/api/upload-editor-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageBase64,
+          imageFilename: file.name,
+          alt,
+        }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to upload image");
+      }
+
+      replaceSavedSelection(buildImageMarkup(result.imageUrl, alt));
+      const savedKb = Math.round(result.imageOptimization.savedSize / 1024);
+      const originalKb = Math.round(result.imageOptimization.originalSize / 1024);
+      setMessage(
+        `Image uploaded and inserted (${savedKb}KB, was ${originalKb}KB).`,
+      );
+    } catch (error) {
+      pendingImageSelectionRef.current = null;
+      setMessage(`Image upload error: ${error.message}`);
+    } finally {
+      setIsUploadingContentImage(false);
+    }
   };
 
   const insertSnippet = () => {
@@ -690,6 +1086,14 @@ export default function BlogEditor() {
                       </div>
                     </div>
 
+                    <input
+                      ref={contentImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      class="hidden"
+                      onChange={handleContentImageUpload}
+                    />
+
                     <div class="flex flex-wrap gap-2">
                       <button
                         type="button"
@@ -794,6 +1198,15 @@ export default function BlogEditor() {
                       </button>
                       <button
                         type="button"
+                        title="Upload image into markdown"
+                        onClick={openContentImagePicker}
+                        disabled={isUploadingContentImage}
+                        class={`${toolbarButtonClass} disabled:cursor-not-allowed disabled:opacity-50`}
+                      >
+                        {isUploadingContentImage ? "Uploading" : "Upload Image"}
+                      </button>
+                      <button
+                        type="button"
                         title="Table"
                         onClick={() =>
                           insertAtCursor(
@@ -834,6 +1247,7 @@ export default function BlogEditor() {
                         Insert
                       </button>
                     </div>
+
                   </div>
 
                   <div
@@ -865,11 +1279,25 @@ export default function BlogEditor() {
                     {previewMode !== "write" && (
                       <div class="min-h-[520px] bg-white p-4">
                         <div
-                          class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                          class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
                           dangerouslySetInnerHTML={{
-                            __html: previewHtml,
+                            __html: previewParts.beforeHtml,
                           }}
                         />
+                        {previewParts.hasEditableImage && (
+                          <MarkdownImageCanvas
+                            selection={selectedCanvasImage}
+                            onChange={updateCanvasImageLine}
+                          />
+                        )}
+                        {previewParts.hasEditableImage && (
+                          <div
+                            class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                            dangerouslySetInnerHTML={{
+                              __html: previewParts.afterHtml,
+                            }}
+                          />
+                        )}
                       </div>
                     )}
                   </div>

@@ -17,6 +17,7 @@
     "@astrojs/node": "^9.5.5",
     "@astrojs/preact": "^4.0.0",
     "astro": "^5.17.3",
+    "fabric": "^7.3.1",
     "marked": "^17.0.5",
     "preact": "^10.29.0",
     "sharp": "^0.34.5"

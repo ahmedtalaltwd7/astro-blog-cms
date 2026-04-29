@@ -17,3 +17,15 @@
 [2m07:43:25[22m [32mwatching for file changes...[39m
 [2m07:43:50[22m [34m[200][39m /api/list-posts [2m11ms[22m
 [2m07:47:46[22m [34m[glob-loader][39m Reloaded data from [32mhp.md[39m
+[2m08:05:51[22m [34m[glob-loader][39m Reloaded data from [32mcc-vb.md[39m
+[2m08:14:40[22m [34m[200][39m [34mPOST[39m /api/upload-editor-image [2m206ms[22m
+[2m08:15:41[22m [34m[glob-loader][39m Reloaded data from [32mall.md[39m
+[2m08:19:14[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazidddng-blog-post.md[39m
+[2m08:20:43[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post.md[39m
+[2m08:20:43[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post.md[39m
+[33m[1m08:24:49[22m [WARN] [glob-loader][39m Duplicate id "all" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\all.md. Later items with the same id will overwrite earlier ones.
+[2m08:24:49[22m [34m[glob-loader][39m Reloaded data from [32mall.md[39m
+[2m08:41:45[22m [34m[glob-loader][39m Reloaded data from [32mlast.md[39m
+[2m09:02:34[22m [34m[glob-loader][39m Reloaded data from [32mvvv.md[39m
+[2m09:16:57[22m Configuration file updated. Restarting...
+[2m09:16:57[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
