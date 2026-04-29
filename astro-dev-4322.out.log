@@ -70,3 +70,18 @@
 [2m10:39:17[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post-ahmed.md[39m
 [33m[1m10:40:22[22m [WARN] [glob-loader][39m Duplicate id "new-zzpost" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-zzpost.md. Later items with the same id will overwrite earlier ones.
 [2m10:40:23[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
+[2m10:45:03[22m [34m[glob-loader][39m Reloaded data from [32mgggggggggg-gggggggg.md[39m
+[2m10:48:43[22m Configuration file updated. Restarting...
+[2m10:48:43[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m10:48:44[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m10:48:44[22m [34m[content][39m Syncing content
+[2m10:48:44[22m [34m[content][39m Synced content
+[2m10:48:44[22m [34m[types][39m Generated [2m567ms[22m
+[2m10:48:44[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m10:48:46[22m Configuration file updated. Restarting...
+[2m10:48:47[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m10:48:47[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m10:48:47[22m [34m[content][39m Syncing content
+[2m10:48:47[22m [34m[content][39m Synced content
+[2m10:48:47[22m [34m[types][39m Generated [2m417ms[22m
+[2m10:48:47[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed

@@ -27,7 +27,7 @@ Enjoy writing!
 
 # twd
 
-<img src="/markdown-images/2026-03-13T06-21-42-1-1777447161546-ctti29.jpg" alt="2026 03 13T06.21.42 1" width="461" style="display: block; height: auto; max-width: 100%; margin-top: 28px;" />
+
 
 
 
@@ -36,4 +36,3 @@ Enjoy writing!
 | Option A | Quick starts | Add details here |
 | Option B | Advanced use | Add details here |
 
-<img src="/markdown-images/5R1HNS0BSN9AZAPS5NT5PG2450-1777448414174-nd5jaq.jpg" alt="5R1HNS0BSN9AZAPS5NT5PG2450" width="321" style="display: block; height: auto; max-width: 100%; margin-left: 35px; margin-top: 200px;" />
