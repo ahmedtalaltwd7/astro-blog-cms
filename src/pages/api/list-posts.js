@@ -8,6 +8,7 @@ export async function GET({ request, url }) {
     const searchParams = new URL(url).searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "5");
+    const search = (searchParams.get("search") || "").trim().toLowerCase();
     const offset = (page - 1) * limit;
 
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
@@ -80,11 +81,15 @@ export async function GET({ request, url }) {
       }),
     );
 
-    // Sort by pubDate descending (newest first)
-    posts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    const filteredPosts = search
+      ? posts.filter((post) => post.title.toLowerCase().includes(search))
+      : posts;
 
-    const total = posts.length;
-    const paginatedPosts = posts.slice(offset, offset + limit);
+    // Sort by pubDate descending (newest first)
+    filteredPosts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+    const total = filteredPosts.length;
+    const paginatedPosts = filteredPosts.slice(offset, offset + limit);
     const totalPages = Math.ceil(total / limit);
 
     return new Response(

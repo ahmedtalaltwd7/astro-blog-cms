@@ -41,6 +41,37 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         </a>
       </div>
 
+      <div class="mb-8 max-w-xl mx-auto">
+        <label for="post-search" class="sr-only">Search blog posts by title</label>
+        <div class="relative">
+          <div
+            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"
+          >
+            <svg
+              class="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+              ></path>
+            </svg>
+          </div>
+          <input
+            id="post-search"
+            type="search"
+            placeholder="Search blog posts by title..."
+            class="block w-full rounded-md border border-gray-300 bg-white py-3 pl-12 pr-4 text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            autocomplete="off"
+          />
+        </div>
+      </div>
+
       <!-- Container for posts (will be populated by JavaScript) -->
       <div
         id="posts-container"
@@ -74,9 +105,9 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
           ></path>
         </svg>
         <h3 class="mt-4 text-xl font-medium text-gray-900">
-          No blog posts yet
+          <span id="empty-title">No blog posts yet</span>
         </h3>
-        <p class="mt-2 text-gray-500 max-w-md mx-auto">
+        <p id="empty-message" class="mt-2 text-gray-500 max-w-md mx-auto">
           Get started by creating your first blog post using the admin editor.
         </p>
         <div class="mt-6">
@@ -136,6 +167,12 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
       const currentPageSpan = document.getElementById("current-page");
       /** @type {HTMLElement | null} */
       const totalPagesSpan = document.getElementById("total-pages");
+      /** @type {HTMLInputElement | null} */
+      const searchInput = document.getElementById("post-search");
+      /** @type {HTMLElement | null} */
+      const emptyTitle = document.getElementById("empty-title");
+      /** @type {HTMLElement | null} */
+      const emptyMessage = document.getElementById("empty-message");
 
       // Type guard for null elements
       if (
@@ -146,7 +183,10 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         !prevBtn ||
         !nextBtn ||
         !currentPageSpan ||
-        !totalPagesSpan
+        !totalPagesSpan ||
+        !searchInput ||
+        !emptyTitle ||
+        !emptyMessage
       ) {
         console.error("Required DOM elements not found");
         return;
@@ -155,6 +195,8 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
       let currentPage = 1;
       const limit = 6;
       let totalPages = 1;
+      let searchTerm = "";
+      let searchTimeout;
 
       /**
        * @typedef {Object} Post
@@ -220,8 +262,17 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         paginationEl.classList.add("hidden");
 
         try {
+          const params = new URLSearchParams({
+            page: page.toString(),
+            limit: limit.toString(),
+          });
+
+          if (searchTerm) {
+            params.set("search", searchTerm);
+          }
+
           const response = await fetch(
-            `/api/list-posts?page=${page}&limit=${limit}`,
+            `/api/list-posts?${params.toString()}`,
           );
           if (!response.ok) throw new Error("Failed to fetch posts");
           const data = await response.json();
@@ -230,6 +281,12 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
           postsContainer.removeChild(loadingEl);
 
           if (data.posts.length === 0) {
+            emptyTitle.textContent = searchTerm
+              ? "No matching blog posts"
+              : "No blog posts yet";
+            emptyMessage.textContent = searchTerm
+              ? "Try searching for a different blog title."
+              : "Get started by creating your first blog post using the admin editor.";
             emptyState.classList.remove("hidden");
             return;
           }
@@ -265,6 +322,14 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         if (currentPage < totalPages) {
           loadPage(currentPage + 1);
         }
+      });
+
+      searchInput.addEventListener("input", () => {
+        window.clearTimeout(searchTimeout);
+        searchTimeout = window.setTimeout(() => {
+          searchTerm = searchInput.value.trim();
+          loadPage(1);
+        }, 250);
       });
 
       // Initial load

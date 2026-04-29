@@ -11,6 +11,7 @@ async function GET({
     const searchParams = new URL(url).searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "5");
+    const search = (searchParams.get("search") || "").trim().toLowerCase();
     const offset = (page - 1) * limit;
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
     const files = await fs.readdir(blogDir);
@@ -60,11 +61,12 @@ async function GET({
         slug: filename.replace(".md", "")
       };
     }));
+    const filteredPosts = search ? posts.filter(post => post.title.toLowerCase().includes(search)) : posts;
 
     // Sort by pubDate descending (newest first)
-    posts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-    const total = posts.length;
-    const paginatedPosts = posts.slice(offset, offset + limit);
+    filteredPosts.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+    const total = filteredPosts.length;
+    const paginatedPosts = filteredPosts.slice(offset, offset + limit);
     const totalPages = Math.ceil(total / limit);
     return new Response(JSON.stringify({
       posts: paginatedPosts,

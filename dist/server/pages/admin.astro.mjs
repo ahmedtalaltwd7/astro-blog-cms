@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_B7-W5bmm.mjs';
+import { $ as $$Layout } from '../chunks/Layout_Bx1JgsZQ.mjs';
 import { useState, useRef, useMemo, useEffect } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsx, jsxs } from 'preact/jsx-runtime';
