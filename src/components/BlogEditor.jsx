@@ -11,7 +11,7 @@ const INITIAL_CONTENT = `# My Amazing Blog Post
 
 Start writing your blog post here using **markdown** syntax.
 
-## Features
+## Features of this editor:
 
 - Easy to write
 - Supports code blocks
