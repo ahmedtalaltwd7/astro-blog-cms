@@ -29,3 +29,44 @@
 [2m09:02:34[22m [34m[glob-loader][39m Reloaded data from [32mvvv.md[39m
 [2m09:16:57[22m Configuration file updated. Restarting...
 [2m09:16:57[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m09:16:58[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m09:16:58[22m [34m[content][39m Syncing content
+[2m09:16:58[22m [34m[content][39m Astro config changed
+[2m09:16:58[22m [34m[content][39m Clearing content store
+[2m09:16:59[22m [34m[content][39m Synced content
+[2m09:16:59[22m [34m[types][39m Generated [2m1.28s[22m
+[2m09:16:59[22m [34m[vite][39m Re-optimizing dependencies because lockfile has changed
+[2m09:24:07[22m [34m[glob-loader][39m Reloaded data from [32mlast2.md[39m
+[2m09:26:34[22m [34m[glob-loader][39m Reloaded data from [32mbnhgyt.md[39m
+[33m[1m09:27:15[22m [WARN] [glob-loader][39m Duplicate id "bnhgyt" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\bnhgyt.md. Later items with the same id will overwrite earlier ones.
+[2m09:27:15[22m [34m[glob-loader][39m Reloaded data from [32mbnhgyt.md[39m
+[2m09:28:09[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[2m09:36:27[22m [34m[glob-loader][39m Reloaded data from [32mmy-amggazing-blog-post.md[39m
+[2m09:59:06[22m [34m[glob-loader][39m Reloaded data from [32mlast3.md[39m
+[33m[1m10:00:16[22m [WARN] [glob-loader][39m Duplicate id "123456789" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\123456789.md. Later items with the same id will overwrite earlier ones.
+[2m10:00:16[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[33m[1m10:01:00[22m [WARN] [glob-loader][39m Duplicate id "123456789" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\123456789.md. Later items with the same id will overwrite earlier ones.
+[2m10:01:01[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[33m[1m10:01:52[22m [WARN] [glob-loader][39m Duplicate id "123456789" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\123456789.md. Later items with the same id will overwrite earlier ones.
+[2m10:01:52[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[2m10:06:11[22m [34m[glob-loader][39m Reloaded data from [32mlll333.md[39m
+[2m10:12:15[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[33m[1m10:13:45[22m [WARN] [glob-loader][39m Duplicate id "123456789" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\123456789.md. Later items with the same id will overwrite earlier ones.
+[2m10:13:45[22m [34m[glob-loader][39m Reloaded data from [32m123456789.md[39m
+[2m10:16:19[22m [34m[glob-loader][39m Reloaded data from [32mnew-احمدpبossاحمدst.md[39m
+[2m10:20:47[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
+[33m[1m10:26:39[22m [WARN] [glob-loader][39m Duplicate id "new-zzpost" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-zzpost.md. Later items with the same id will overwrite earlier ones.
+[2m10:26:39[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
+[33m[1m10:27:31[22m [WARN] [glob-loader][39m Duplicate id "new-zzpost" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-zzpost.md. Later items with the same id will overwrite earlier ones.
+[2m10:27:31[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
+[33m[1m10:28:09[22m [WARN] [glob-loader][39m Duplicate id "new-zzpost" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-zzpost.md. Later items with the same id will overwrite earlier ones.
+[2m10:28:09[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
+[2m10:32:05[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post-ahmed.md[39m
+[33m[1m10:33:46[22m [WARN] [glob-loader][39m Duplicate id "my-amazing-blog-post-ahmed" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\my-amazing-blog-post-ahmed.md. Later items with the same id will overwrite earlier ones.
+[2m10:33:46[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post-ahmed.md[39m
+[2m10:36:05[22m [34m[glob-loader][39m Reloaded data from [32mvvvv.md[39m
+[2m10:37:28[22m [34m[glob-loader][39m Reloaded data from [32mvvvv.md[39m
+[33m[1m10:39:17[22m [WARN] [glob-loader][39m Duplicate id "my-amazing-blog-post-ahmed" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\my-amazing-blog-post-ahmed.md. Later items with the same id will overwrite earlier ones.
+[2m10:39:17[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-post-ahmed.md[39m
+[33m[1m10:40:22[22m [WARN] [glob-loader][39m Duplicate id "new-zzpost" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-zzpost.md. Later items with the same id will overwrite earlier ones.
+[2m10:40:23[22m [34m[glob-loader][39m Reloaded data from [32mnew-zzpost.md[39m
