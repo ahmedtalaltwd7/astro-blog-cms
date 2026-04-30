@@ -15,3 +15,8 @@
 [2m┃[22m Local    [36mhttp://127.0.0.1:4321/[39m
 
 [2m23:27:11[22m [32mwatching for file changes...[39m
+[2m23:27:35[22m [34m[200][39m /api/list-posts [2m19ms[22m
+[2m23:27:37[22m [34m[200][39m /tags/blog [2m438ms[22m
+[2m23:27:37[22m [34m[200][39m /admin [2m171ms[22m
+[2m23:33:04[22m [34m[glob-loader][39m Reloaded data from [32mnew-hash.md[39m
+[2m23:34:58[22m [34m[glob-loader][39m Reloaded data from [32mgghhbfsg-bdsf.md[39m
