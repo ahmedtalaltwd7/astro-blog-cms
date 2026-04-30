@@ -212,10 +212,43 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
        * @param {Post} post
        * @returns {string}
        */
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /**
+       * @param {string} tag
+       * @returns {string}
+       */
+      function renderTagLink(tag) {
+        const cleanTag = String(tag || "").replace(/^#+/, "").trim();
+        if (!cleanTag) return "";
+
+        return `
+          <a href="/tags/${encodeURIComponent(cleanTag)}" class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200">
+            #${escapeHtml(cleanTag)}
+          </a>
+        `;
+      }
+
+      /**
+       * @param {Post} post
+       * @returns {string}
+       */
       function renderPost(post) {
         const imageUrl = post.image;
+        const safeTitle = escapeHtml(post.title);
+        const safeDescription = escapeHtml(
+          post.description || "No description provided.",
+        );
+        const safePubDate = escapeHtml(post.pubDate);
         const imageHtml = imageUrl
-          ? `<img src="${imageUrl}" alt="${post.title}" class="w-full h-48 object-cover" />`
+          ? `<img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" class="w-full h-48 object-cover" />`
           : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
         return `
           <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
@@ -225,22 +258,18 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                 </svg>
-                <time datetime="${post.pubDate}">${post.pubDate}</time>
+                <time datetime="${safePubDate}">${safePubDate}</time>
               </div>
               <h2 class="text-xl font-bold text-gray-900 mb-3">
-                <a href="/blog/${post.slug}" class="hover:text-blue-600">${post.title}</a>
+                <a href="/blog/${encodeURIComponent(post.slug)}" class="hover:text-blue-600">${safeTitle}</a>
               </h2>
-              <p class="text-gray-600 mb-4">${post.description || "No description provided."}</p>
+              <p class="text-gray-600 mb-4">${safeDescription}</p>
               <div class="flex flex-wrap gap-2 mb-4">
                 ${(post.tags || [])
-                  .map(
-                    (tag) => `
-                  <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">${tag}</span>
-                `,
-                  )
+                  .map(renderTagLink)
                   .join("")}
               </div>
-              <a href="/blog/${post.slug}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+              <a href="/blog/${encodeURIComponent(post.slug)}" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
                 Read more
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />

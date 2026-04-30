@@ -31,6 +31,9 @@ function parseFrontmatter(content) {
           } else if (value.startsWith("'") && value.endsWith("'")) {
             value = value.slice(1, -1);
           }
+          if (value.startsWith("[") && value.endsWith("]")) {
+            value = value.slice(1, -1).split(",").map(item => item.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+          }
           frontmatter[key] = value;
         }
       }

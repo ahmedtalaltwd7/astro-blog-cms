@@ -3,12 +3,20 @@ import path from "node:path";
 
 export const prerender = false;
 
+function normalizeTag(value) {
+  return String(value || "")
+    .trim()
+    .replace(/^#+/, "")
+    .toLowerCase();
+}
+
 export async function GET({ request, url }) {
   try {
     const searchParams = new URL(url).searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "5");
     const search = (searchParams.get("search") || "").trim().toLowerCase();
+    const tag = normalizeTag(searchParams.get("tag"));
     const offset = (page - 1) * limit;
 
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
@@ -58,7 +66,8 @@ export async function GET({ request, url }) {
                 tags = tagsStr
                   .slice(1, -1)
                   .split(",")
-                  .map((t) => t.trim().replace(/^["']|["']$/g, ""));
+                  .map((t) => t.trim().replace(/^["']|["']$/g, ""))
+                  .filter(Boolean);
               }
             } else if (line.startsWith("image:")) {
               image = line
@@ -88,9 +97,16 @@ export async function GET({ request, url }) {
       }),
     );
 
-    const filteredPosts = search
-      ? posts.filter((post) => post.title.toLowerCase().includes(search))
-      : posts;
+    const filteredPosts = posts.filter((post) => {
+      const matchesSearch = search
+        ? post.title.toLowerCase().includes(search)
+        : true;
+      const matchesTag = tag
+        ? (post.tags || []).some((postTag) => normalizeTag(postTag) === tag)
+        : true;
+
+      return matchesSearch && matchesTag;
+    });
 
     // Sort by original creation time so editing a post keeps it in place.
     filteredPosts.sort((a, b) => b.createdAtMs - a.createdAtMs);

@@ -1,0 +1,188 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = false;
+
+const rawTag = String(Astro.params.tag || "").replace(/^#+/, "").trim();
+const tag = decodeURIComponent(rawTag);
+
+if (!tag) {
+  return Astro.redirect("/blog");
+}
+---
+
+<Layout title={`#${tag} Posts`}>
+  <div class="min-h-screen bg-gray-50 py-12">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div class="mb-10">
+        <a
+          href="/blog"
+          class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800"
+        >
+          <svg
+            class="mr-2 h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to all posts
+        </a>
+        <h1 class="mt-4 text-4xl font-bold text-gray-900 md:text-5xl">
+          #{tag}
+        </h1>
+        <p class="mt-3 text-lg text-gray-600">
+          Posts tagged with this hashtag.
+        </p>
+      </div>
+
+      <div
+        id="tag-posts"
+        class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+        data-tag={tag}
+      >
+        <div id="loading" class="col-span-full py-12 text-center">
+          <div
+            class="inline-block h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"
+          >
+          </div>
+          <p class="mt-4 text-gray-600">Loading posts...</p>
+        </div>
+      </div>
+
+      <div id="empty-state" class="hidden py-16 text-center">
+        <svg
+          class="mx-auto h-16 w-16 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+          ></path>
+        </svg>
+        <h2 class="mt-4 text-xl font-medium text-gray-900">
+          No posts found
+        </h2>
+        <p class="mx-auto mt-2 max-w-md text-gray-500">
+          There are no posts using this hashtag yet.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // @ts-nocheck
+    (() => {
+      const postsContainer = document.getElementById("tag-posts");
+      const loadingEl = document.getElementById("loading");
+      const emptyState = document.getElementById("empty-state");
+
+      if (!postsContainer || !loadingEl || !emptyState) {
+        return;
+      }
+
+      const tag = postsContainer.dataset.tag || "";
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function renderTagLink(value) {
+        const cleanTag = String(value || "").replace(/^#+/, "").trim();
+        if (!cleanTag) return "";
+
+        return `
+          <a href="/tags/${encodeURIComponent(cleanTag)}" class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full hover:bg-blue-200">
+            #${escapeHtml(cleanTag)}
+          </a>
+        `;
+      }
+
+      function renderPost(post) {
+        const safeTitle = escapeHtml(post.title);
+        const safeDescription = escapeHtml(
+          post.description || "No description provided.",
+        );
+        const safePubDate = escapeHtml(post.pubDate);
+        const imageHtml = post.image
+          ? `<img src="${escapeHtml(post.image)}" alt="${safeTitle}" class="h-48 w-full object-cover" />`
+          : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
+
+        return `
+          <article class="overflow-hidden rounded-xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl">
+            ${imageHtml}
+            <div class="p-6">
+              <div class="mb-3 flex items-center text-sm text-gray-500">
+                <svg class="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                <time datetime="${safePubDate}">${safePubDate}</time>
+              </div>
+              <h2 class="mb-3 text-xl font-bold text-gray-900">
+                <a href="/blog/${encodeURIComponent(post.slug)}" class="hover:text-blue-600">${safeTitle}</a>
+              </h2>
+              <p class="mb-4 text-gray-600">${safeDescription}</p>
+              <div class="mb-4 flex flex-wrap gap-2">
+                ${(post.tags || []).map(renderTagLink).join("")}
+              </div>
+              <a href="/blog/${encodeURIComponent(post.slug)}" class="inline-flex items-center font-medium text-blue-600 hover:text-blue-800">
+                Read more
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+          </article>
+        `;
+      }
+
+      async function loadTaggedPosts() {
+        try {
+          const params = new URLSearchParams({
+            tag,
+            page: "1",
+            limit: "1000",
+          });
+          const response = await fetch(`/api/list-posts?${params.toString()}`);
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch posts");
+          }
+
+          const data = await response.json();
+          loadingEl.classList.add("hidden");
+
+          if (!data.posts || data.posts.length === 0) {
+            postsContainer.innerHTML = "";
+            emptyState.classList.remove("hidden");
+            return;
+          }
+
+          postsContainer.innerHTML = data.posts.map(renderPost).join("");
+        } catch (error) {
+          console.error("Error loading tagged posts:", error);
+          postsContainer.innerHTML =
+            '<p class="col-span-full text-center text-red-600">Failed to load posts. Please try again later.</p>';
+        }
+      }
+
+      loadTaggedPosts();
+    })();
+  </script>
+</Layout>

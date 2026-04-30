@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, k as renderComponent, r as renderTemplate, h as createAstro, m as maybeRenderHead, g as addAttribute } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CMJswVVE.mjs';
+import { $ as $$Layout } from '../chunks/Layout_r9jRjh0A.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 export { renderers } from '../renderers.mjs';

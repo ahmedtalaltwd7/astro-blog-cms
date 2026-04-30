@@ -38,6 +38,16 @@ function getFrontmatterValue(content, key) {
   const line = frontmatterMatch[1].split("\n").find(frontmatterLine => frontmatterLine.startsWith(`${key}:`));
   return line ? line.replace(`${key}:`, "").trim() : "";
 }
+function normalizeTags(value) {
+  const input = Array.isArray(value) ? value.join(",") : String(value || "");
+  const seen = new Set();
+  return input.split(/[,\n]/).map(tag => tag.trim().replace(/^#+/, "").trim()).filter(Boolean).filter(tag => {
+    const key = tag.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 async function OPTIONS({
   request
 }) {
@@ -175,6 +185,7 @@ async function POST({
     let filename,
       title,
       content,
+      tags = ["blog", "astro"],
       imageUrl = "",
       imageOptimization = null;
     if (contentType.includes("multipart/form-data")) {
@@ -183,6 +194,9 @@ async function POST({
       filename = formData.get("filename");
       title = formData.get("title");
       content = formData.get("content");
+      if (formData.has("tags")) {
+        tags = normalizeTags(formData.get("tags"));
+      }
       const imageFile = formData.get("image");
 
       // Process uploaded image if present
@@ -221,6 +235,9 @@ async function POST({
       filename = data.filename;
       title = data.title;
       content = data.content;
+      if (Object.prototype.hasOwnProperty.call(data, "tags")) {
+        tags = normalizeTags(data.tags);
+      }
       imageUrl = data.image || "";
 
       // Handle base64-encoded image upload
@@ -246,6 +263,7 @@ async function POST({
     console.error(`[${timestamp}] Parsed data:`, {
       filename,
       title,
+      tags,
       imageUrl,
       imageOptimization,
       contentLength: content?.length
@@ -298,7 +316,7 @@ title: "${title.replace(/"/g, '\\"')}"
 pubDate: ${pubDate}
 description: "A blog post about ${title}"
 author: "Blog Author"
-tags: ["blog", "astro"]`;
+tags: [${tags.map(tag => JSON.stringify(tag)).join(", ")}]`;
     if (imageUrl && imageUrl.trim() !== "") {
       frontmatter += `\nimage: "${imageUrl.replace(/"/g, '\\"')}"`;
     }

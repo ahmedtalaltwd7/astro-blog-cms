@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CMJswVVE.mjs';
+import { $ as $$Layout } from '../chunks/Layout_r9jRjh0A.mjs';
 import { useRef, useState, useEffect, useMemo } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsxs, jsx } from 'preact/jsx-runtime';
@@ -249,6 +249,26 @@ const normalizeRotation = (degrees) => {
   return (Math.round(number) % 360 + 360) % 360;
 };
 const normalizeSearchText = (value) => String(value).normalize("NFKD").replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/g, "").replace(/\u0640/g, "").replace(/[إأآٱا]/g, "ا").replace(/[ؤ]/g, "و").replace(/[ئ]/g, "ي").replace(/[ىی]/g, "ي").replace(/[ة]/g, "ه").replace(/[ک]/g, "ك").toLowerCase();
+const normalizeHashtags = (value) => {
+  const input = Array.isArray(value) ? value.join(",") : String(value || "");
+  const seen = /* @__PURE__ */ new Set();
+  return input.split(/[,\n]/).map((tag) => tag.trim().replace(/^#+/, "").trim()).filter(Boolean).filter((tag) => {
+    const key = tag.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+const formatTagsInput = (value) => {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  const text = String(value || "").trim();
+  if (text.startsWith("[") && text.endsWith("]")) {
+    return normalizeHashtags(text.slice(1, -1).replace(/["']/g, "")).join(", ");
+  }
+  return normalizeHashtags(text).join(", ");
+};
 const getImageStyleValue = (style, property) => {
   const match = style.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, "i"));
   return match ? match[1].trim() : "";
@@ -363,6 +383,7 @@ const buildImageMarkup = (url, alt, displayWidth = "", rotation = 0, offsetX = 0
 function BlogEditor() {
   const [filename, setFilename] = useState("new-post.md");
   const [title, setTitle] = useState("My Amazing Blog Post");
+  const [tagsInput, setTagsInput] = useState("blog, astro");
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -515,6 +536,7 @@ function BlogEditor() {
         body
       } = data;
       setTitle(frontmatter.title || post.title);
+      setTagsInput(formatTagsInput(frontmatter.tags || post.tags || []));
       setImage(frontmatter.image || "");
       setContent(body.trim());
       setImageFile(null);
@@ -576,6 +598,7 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
       console.log("Saving post:", {
         filename,
         title,
+        tags: normalizeHashtags(tagsInput),
         content: contentToSave.substring(0, 50) + "...",
         imageFile: imageFile ? imageFile.name : "none"
       });
@@ -600,6 +623,7 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
         body: JSON.stringify({
           filename,
           title,
+          tags: normalizeHashtags(tagsInput),
           content: contentToSave,
           image,
           imageBase64,
@@ -621,6 +645,7 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
         setMessage(`Post saved successfully as ${filename}`);
         setFilename("");
         setTitle("");
+        setTagsInput("");
         setContent("");
         setImage("");
         setImageFile(null);
@@ -651,6 +676,7 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
   const handleClear = () => {
     setFilename("");
     setTitle("");
+    setTagsInput("");
     setContent("");
     setMessage("");
     setImage("");
@@ -981,6 +1007,29 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
                 }), filenameMessage && jsx("div", {
                   class: `mt-2 rounded border p-2 text-sm ${filenameExists ? "border-yellow-200 bg-yellow-50 text-yellow-800" : "border-blue-200 bg-blue-50 text-blue-800"}`,
                   children: filenameMessage
+                })]
+              }), jsxs("div", {
+                children: [jsx("label", {
+                  for: "tags",
+                  class: "mb-1 block text-sm font-medium text-gray-700",
+                  children: "Hashtags"
+                }), jsx("input", {
+                  type: "text",
+                  id: "tags",
+                  name: "tags",
+                  class: "w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500",
+                  placeholder: "#astro, #travel, #news",
+                  value: tagsInput,
+                  onInput: (e) => setTagsInput(e.currentTarget.value)
+                }), jsx("p", {
+                  class: "mt-1 text-sm text-gray-500",
+                  children: "Separate hashtags with commas. Readers can click each tag to see matching posts."
+                }), normalizeHashtags(tagsInput).length > 0 && jsx("div", {
+                  class: "mt-2 flex flex-wrap gap-2",
+                  children: normalizeHashtags(tagsInput).map((tag) => jsxs("span", {
+                    class: "inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800",
+                    children: ["#", tag]
+                  }, tag))
                 })]
               }), jsxs("div", {
                 children: [jsx("label", {

@@ -136,6 +136,35 @@ const normalizeSearchText = (value) =>
     .replace(/[ک]/g, "ك")
     .toLowerCase();
 
+const normalizeHashtags = (value) => {
+  const input = Array.isArray(value) ? value.join(",") : String(value || "");
+  const seen = new Set();
+
+  return input
+    .split(/[,\n]/)
+    .map((tag) => tag.trim().replace(/^#+/, "").trim())
+    .filter(Boolean)
+    .filter((tag) => {
+      const key = tag.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
+const formatTagsInput = (value) => {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  const text = String(value || "").trim();
+  if (text.startsWith("[") && text.endsWith("]")) {
+    return normalizeHashtags(text.slice(1, -1).replace(/["']/g, "")).join(", ");
+  }
+
+  return normalizeHashtags(text).join(", ");
+};
+
 const getImageStyleValue = (style, property) => {
   const match = style.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, "i"));
   return match ? match[1].trim() : "";
@@ -300,6 +329,7 @@ const buildImageMarkup = (
 export default function BlogEditor() {
   const [filename, setFilename] = useState("new-post.md");
   const [title, setTitle] = useState("My Amazing Blog Post");
+  const [tagsInput, setTagsInput] = useState("blog, astro");
   const [image, setImage] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -486,6 +516,7 @@ export default function BlogEditor() {
       const data = await response.json();
       const { frontmatter, body } = data;
       setTitle(frontmatter.title || post.title);
+      setTagsInput(formatTagsInput(frontmatter.tags || post.tags || []));
       setImage(frontmatter.image || "");
       setContent(body.trim());
       setImageFile(null);
@@ -547,6 +578,7 @@ export default function BlogEditor() {
       console.log("Saving post:", {
         filename,
         title,
+        tags: normalizeHashtags(tagsInput),
         content: contentToSave.substring(0, 50) + "...",
         imageFile: imageFile ? imageFile.name : "none",
       });
@@ -571,6 +603,7 @@ export default function BlogEditor() {
         body: JSON.stringify({
           filename,
           title,
+          tags: normalizeHashtags(tagsInput),
           content: contentToSave,
           image,
           imageBase64,
@@ -593,6 +626,7 @@ export default function BlogEditor() {
         setMessage(`Post saved successfully as ${filename}`);
         setFilename("");
         setTitle("");
+        setTagsInput("");
         setContent("");
         setImage("");
         setImageFile(null);
@@ -625,6 +659,7 @@ export default function BlogEditor() {
   const handleClear = () => {
     setFilename("");
     setTitle("");
+    setTagsInput("");
     setContent("");
     setMessage("");
     setImage("");
@@ -1056,6 +1091,40 @@ export default function BlogEditor() {
                       }`}
                     >
                       {filenameMessage}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    for="tags"
+                    class="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Hashtags
+                  </label>
+                  <input
+                    type="text"
+                    id="tags"
+                    name="tags"
+                    class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                    placeholder="#astro, #travel, #news"
+                    value={tagsInput}
+                    onInput={(e) => setTagsInput(e.currentTarget.value)}
+                  />
+                  <p class="mt-1 text-sm text-gray-500">
+                    Separate hashtags with commas. Readers can click each tag to
+                    see matching posts.
+                  </p>
+                  {normalizeHashtags(tagsInput).length > 0 && (
+                    <div class="mt-2 flex flex-wrap gap-2">
+                      {normalizeHashtags(tagsInput).map((tag) => (
+                        <span
+                          key={tag}
+                          class="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
                     </div>
                   )}
                 </div>

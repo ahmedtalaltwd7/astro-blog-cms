@@ -1,0 +1,17 @@
+
+> celestial-comet@0.0.1 dev
+> astro dev --host 127.0.0.1 --port 4321
+
+[2m23:27:10[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m23:27:10[22m [34m[types][39m Generated [2m1ms[22m
+[2m23:27:10[22m [34m[content][39m Syncing content
+[2m23:27:10[22m [34m[content][39m Astro config changed
+[2m23:27:10[22m [34m[content][39m Clearing content store
+[2m23:27:11[22m [34m[content][39m Synced content
+[2m23:27:11[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+
+[42m[1m astro [22m[49m [32mv5.18.1[39m [2mready in[22m 1223 [2mms[22m
+
+[2m┃[22m Local    [36mhttp://127.0.0.1:4321/[39m
+
+[2m23:27:11[22m [32mwatching for file changes...[39m
