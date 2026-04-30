@@ -29,11 +29,11 @@ const posts = await Promise.all(
     const slug =
       module.frontmatter.slug ||
       filename.replace(".md", "").replace(/\/$/, "");
-    return { ...module, slug, updatedAtMs: fileStats.mtimeMs };
+    return { ...module, slug, createdAtMs: fileStats.birthtimeMs };
   }),
 );
 const latestPosts = posts
-  .sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  .sort((a, b) => b.createdAtMs - a.createdAtMs)
   .slice(0, 3);
 ---
 
