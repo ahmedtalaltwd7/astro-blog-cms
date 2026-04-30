@@ -1,7 +1,7 @@
 ---
-title: "last ggggggggggggggg"
+title: "last pre"
 pubDate: 2026-04-29
-description: "A blog post about last ggggggggggggggg"
+description: "A blog post about last pre"
 author: "Blog Author"
 tags: ["blog", "astro"]
 image: "/blog-images/WhatsApp-Image-2026-03-19-at-6-11-28-AM--1--1777448703317-i5pmun.jpeg"
@@ -20,6 +20,8 @@ Start writing your blog post here using **markdown** syntax.
 ```javascript
 console.log("Hello, world!");
 ```
+
+<img src="/markdown-images/7ZYA760Z6WCV99SCFX6KAZ8AH0-1777573122044-wzug44.jpg" alt="7ZYA760Z6WCV99SCFX6KAZ8AH0" width="324" style="display: block; height: auto; max-width: 100%; margin-left: 21px;" />
 
 Enjoy writing!
 

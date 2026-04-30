@@ -3,34 +3,50 @@ import Layout from "../layouts/Layout.astro";
 import fs from "node:fs/promises";
 import path from "node:path";
 
-// Get latest blog posts for preview
-type MarkdownModule = {
-  frontmatter: {
-    title: string;
-    description?: string;
-    pubDate: string;
-    tags?: string[];
-    slug?: string;
-    image?: string;
-  };
-  default: any; // Content component
-};
+export const prerender = false;
 
-const postModules = import.meta.glob<MarkdownModule>("../content/blog/*.md");
-const entries = Object.entries(postModules);
+function parseFrontmatter(content: string) {
+  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  const frontmatter: Record<string, string> = {};
+
+  if (!frontmatterMatch) return frontmatter;
+
+  for (const line of frontmatterMatch[1].split("\n")) {
+    const match = line.match(/^(\w+):\s*(.*)$/);
+    if (!match) continue;
+
+    const [, key, rawValue] = match;
+    frontmatter[key] = rawValue.trim().replace(/^["']|["']$/g, "");
+  }
+
+  return frontmatter;
+}
+
+const blogDir = path.join(process.cwd(), "src", "content", "blog");
+const files = await fs.readdir(blogDir);
 const posts = await Promise.all(
-  entries.map(async ([filePath, getModule]) => {
-    const module = await getModule();
-    const filename = filePath.replace("../content/blog/", "");
-    const fileStats = await fs.stat(
-      path.join(process.cwd(), "src", "content", "blog", filename),
-    );
-    // Extract slug from filename (e.g., "./blog/first-post.md" -> "first-post")
-    const slug =
-      module.frontmatter.slug ||
-      filename.replace(".md", "").replace(/\/$/, "");
-    return { ...module, slug, createdAtMs: fileStats.birthtimeMs };
-  }),
+  files
+    .filter((filename) => filename.endsWith(".md"))
+    .map(async (filename) => {
+      const filePath = path.join(blogDir, filename);
+      const [content, fileStats] = await Promise.all([
+        fs.readFile(filePath, "utf-8"),
+        fs.stat(filePath),
+      ]);
+      const frontmatter = parseFrontmatter(content);
+      const slug = frontmatter.slug || filename.replace(".md", "");
+
+      return {
+        slug,
+        createdAtMs: fileStats.birthtimeMs,
+        frontmatter: {
+          title: frontmatter.title || filename.replace(".md", ""),
+          description: frontmatter.description,
+          pubDate: frontmatter.pubDate,
+          image: frontmatter.image,
+        },
+      };
+    }),
 );
 const latestPosts = posts
   .sort((a, b) => b.createdAtMs - a.createdAtMs)

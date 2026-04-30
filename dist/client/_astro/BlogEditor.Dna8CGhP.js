@@ -60,7 +60,7 @@ Please report this to https://github.com/markedjs/marked.`,n){let s="<p>An error
 
 Start writing your blog post here using **markdown** syntax.
 
-## Features
+## Features of this editor:
 
 - Easy to write
 - Supports code blocks

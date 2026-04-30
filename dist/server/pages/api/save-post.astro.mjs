@@ -32,6 +32,12 @@ function stripFrontmatter(content) {
   }
   return content;
 }
+function getFrontmatterValue(content, key) {
+  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  if (!frontmatterMatch) return "";
+  const line = frontmatterMatch[1].split("\n").find(frontmatterLine => frontmatterLine.startsWith(`${key}:`));
+  return line ? line.replace(`${key}:`, "").trim() : "";
+}
 async function OPTIONS({
   request
 }) {
@@ -270,10 +276,26 @@ async function POST({
     // Strip any existing frontmatter from content
     const strippedContent = stripFrontmatter(content);
 
+    // Determine the blog directory path (store posts in content, not pages)
+    const blogDir = path.join(process.cwd(), "src", "content", "blog");
+
+    // Ensure the directory exists
+    await fs.mkdir(blogDir, {
+      recursive: true
+    });
+    const filePath = path.join(blogDir, filename);
+    let pubDate = new Date().toISOString().split("T")[0];
+    try {
+      const existingContent = await fs.readFile(filePath, "utf8");
+      pubDate = getFrontmatterValue(existingContent, "pubDate") || pubDate;
+    } catch {
+      // New post: use today's date.
+    }
+
     // Create frontmatter
     let frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
-pubDate: ${new Date().toISOString().split("T")[0]}
+pubDate: ${pubDate}
 description: "A blog post about ${title}"
 author: "Blog Author"
 tags: ["blog", "astro"]`;
@@ -283,16 +305,7 @@ tags: ["blog", "astro"]`;
     frontmatter += `\n---\n\n`;
     const fullContent = frontmatter + strippedContent;
 
-    // Determine the blog directory path (store posts in content, not pages)
-    const blogDir = path.join(process.cwd(), "src", "content", "blog");
-
-    // Ensure the directory exists
-    await fs.mkdir(blogDir, {
-      recursive: true
-    });
-
     // Write the file
-    const filePath = path.join(blogDir, filename);
     await fs.writeFile(filePath, fullContent, "utf8");
     return addCorsHeaders(new Response(JSON.stringify({
       success: true,

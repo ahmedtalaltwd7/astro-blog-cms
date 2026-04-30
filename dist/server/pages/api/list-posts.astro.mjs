@@ -57,6 +57,8 @@ async function GET({
         author,
         tags,
         image,
+        createdAt: stats.birthtime.toISOString(),
+        createdAtMs: stats.birthtimeMs,
         updatedAt: stats.mtime.toISOString(),
         updatedAtMs: stats.mtimeMs,
         contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
@@ -65,8 +67,8 @@ async function GET({
     }));
     const filteredPosts = search ? posts.filter(post => post.title.toLowerCase().includes(search)) : posts;
 
-    // Sort by latest file save/edit time descending (newest first).
-    filteredPosts.sort((a, b) => b.updatedAtMs - a.updatedAtMs);
+    // Sort by original creation time so editing a post keeps it in place.
+    filteredPosts.sort((a, b) => b.createdAtMs - a.createdAtMs);
     const total = filteredPosts.length;
     const paginatedPosts = filteredPosts.slice(offset, offset + limit);
     const totalPages = Math.ceil(total / limit);

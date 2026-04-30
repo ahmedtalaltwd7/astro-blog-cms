@@ -1,10 +1,10 @@
 ---
-title: "order updated"
+title: "xxrrtt"
 pubDate: 2026-04-30
-description: "A blog post about order updated"
+description: "A blog post about xxrrtt"
 author: "Blog Author"
 tags: ["blog", "astro"]
-image: "/blog-images/644959858-2322908208197843-8511933590462816804-n-1777572914422-doc72s.jpg"
+image: "/blog-images/Ahmed-Talal-Mohsen-Mohammed-upscayl-4x-realesrgan-x4plus-1777573167402-qnbzz8.png"
 ---
 
 # My Amazing Blog Post
@@ -13,11 +13,7 @@ Start writing your blog post here using **markdown** syntax.
 
 ## Features of this editor:
 
-
-```javascript
 - Easy to write
-
-```
 - Supports code blocks
 - Rendered beautifully by Astro
 
@@ -25,7 +21,4 @@ Start writing your blog post here using **markdown** syntax.
 console.log("Hello, world!");
 ```
 
-
-```javascript
 Enjoy writing!
-```
