@@ -11,7 +11,11 @@ image: "/blog-images/2026-03-13T01-37-38-1-1777447247376-c9vgiz.jpg"
 
 Start writing your blog post here using **markdown** syntax.
 
+
+```javascript
 ## Features
+
+```
 
 - Easy to write
 - Supports code blocks
@@ -35,4 +39,3 @@ Enjoy writing!
 | --- | --- | --- |
 | Option A | Quick starts | Add details here |
 | Option B | Advanced use | Add details here |
-

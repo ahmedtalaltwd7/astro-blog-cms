@@ -123,6 +123,19 @@ const normalizeRotation = (degrees) => {
   return ((Math.round(number) % 360) + 360) % 360;
 };
 
+const normalizeSearchText = (value) =>
+  String(value)
+    .normalize("NFKD")
+    .replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/g, "")
+    .replace(/\u0640/g, "")
+    .replace(/[إأآٱا]/g, "ا")
+    .replace(/[ؤ]/g, "و")
+    .replace(/[ئ]/g, "ي")
+    .replace(/[ىی]/g, "ي")
+    .replace(/[ة]/g, "ه")
+    .replace(/[ک]/g, "ك")
+    .toLowerCase();
+
 const getImageStyleValue = (style, property) => {
   const match = style.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, "i"));
   return match ? match[1].trim() : "";
@@ -296,6 +309,7 @@ export default function BlogEditor() {
   const [filenameExists, setFilenameExists] = useState(false);
   const [filenameMessage, setFilenameMessage] = useState("");
   const [existingPosts, setExistingPosts] = useState([]);
+  const [existingPostSearch, setExistingPostSearch] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [originalFilename, setOriginalFilename] = useState("");
@@ -321,6 +335,23 @@ export default function BlogEditor() {
 
     return { words, characters, lines, readingMinutes };
   }, [content]);
+
+  const filteredExistingPosts = useMemo(() => {
+    const query = normalizeSearchText(existingPostSearch.trim());
+    if (!query) return existingPosts;
+
+    return existingPosts.filter((post) =>
+      [
+        post.filename,
+        post.title,
+        post.description,
+        post.pubDate,
+        ...(post.tags || []),
+      ]
+        .filter(Boolean)
+        .some((value) => normalizeSearchText(value).includes(query)),
+    );
+  }, [existingPostSearch, existingPosts]);
 
   const previewHtml = useMemo(
     () => marked.parse(content || ""),
@@ -424,7 +455,7 @@ export default function BlogEditor() {
   const fetchExistingPosts = async () => {
     setLoadingPosts(true);
     try {
-      const response = await fetch("/api/list-posts");
+      const response = await fetch("/api/list-posts?limit=1000");
       if (response.ok) {
         const data = await response.json();
         setExistingPosts(data.posts || []);
@@ -1371,6 +1402,40 @@ export default function BlogEditor() {
                   </button>
                 </div>
 
+                <div class="mb-4">
+                  <label for="existing-post-search" class="sr-only">
+                    Search existing blog posts
+                  </label>
+                  <div class="relative">
+                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <svg
+                        class="h-4 w-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                        ></path>
+                      </svg>
+                    </div>
+                    <input
+                      id="existing-post-search"
+                      type="search"
+                      value={existingPostSearch}
+                      onInput={(event) =>
+                        setExistingPostSearch(event.currentTarget.value)
+                      }
+                      placeholder="Search posts..."
+                      class="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
                 {loadingPosts ? (
                   <div class="py-8 text-center">
                     <div class="inline-block h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
@@ -1383,9 +1448,15 @@ export default function BlogEditor() {
                       editor.
                     </p>
                   </div>
+                ) : filteredExistingPosts.length === 0 ? (
+                  <div class="rounded-md border-2 border-dashed border-gray-300 p-6 text-center">
+                    <p class="text-sm text-gray-500">
+                      No posts match "{existingPostSearch.trim()}".
+                    </p>
+                  </div>
                 ) : (
                   <div class="max-h-[650px] space-y-3 overflow-y-auto pr-2">
-                    {existingPosts.map((post) => (
+                    {filteredExistingPosts.map((post) => (
                       <div
                         key={post.filename}
                         class="rounded-md border border-gray-200 bg-white p-4 hover:bg-gray-50"

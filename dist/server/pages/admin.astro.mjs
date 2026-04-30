@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_BZ4lL8PF.mjs';
+import { $ as $$Layout } from '../chunks/Layout_CMJswVVE.mjs';
 import { useRef, useState, useEffect, useMemo } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsxs, jsx } from 'preact/jsx-runtime';
@@ -248,6 +248,7 @@ const normalizeRotation = (degrees) => {
   if (!Number.isFinite(number)) return 0;
   return (Math.round(number) % 360 + 360) % 360;
 };
+const normalizeSearchText = (value) => String(value).normalize("NFKD").replace(/[\u0610-\u061a\u064b-\u065f\u0670\u06d6-\u06ed]/g, "").replace(/\u0640/g, "").replace(/[إأآٱا]/g, "ا").replace(/[ؤ]/g, "و").replace(/[ئ]/g, "ي").replace(/[ىی]/g, "ي").replace(/[ة]/g, "ه").replace(/[ک]/g, "ك").toLowerCase();
 const getImageStyleValue = (style, property) => {
   const match = style.match(new RegExp(`${property}\\s*:\\s*([^;]+)`, "i"));
   return match ? match[1].trim() : "";
@@ -371,6 +372,7 @@ function BlogEditor() {
   const [filenameExists, setFilenameExists] = useState(false);
   const [filenameMessage, setFilenameMessage] = useState("");
   const [existingPosts, setExistingPosts] = useState([]);
+  const [existingPostSearch, setExistingPostSearch] = useState("");
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [originalFilename, setOriginalFilename] = useState("");
@@ -399,6 +401,11 @@ function BlogEditor() {
       readingMinutes
     };
   }, [content]);
+  const filteredExistingPosts = useMemo(() => {
+    const query = normalizeSearchText(existingPostSearch.trim());
+    if (!query) return existingPosts;
+    return existingPosts.filter((post) => [post.filename, post.title, post.description, post.pubDate, ...post.tags || []].filter(Boolean).some((value) => normalizeSearchText(value).includes(query)));
+  }, [existingPostSearch, existingPosts]);
   const previewHtml = useMemo(() => marked.parse(content || ""), [content]);
   const previewParts = useMemo(() => {
     if (!selectedCanvasImage?.image?.url) {
@@ -477,7 +484,7 @@ function BlogEditor() {
   const fetchExistingPosts = async () => {
     setLoadingPosts(true);
     try {
-      const response = await fetch("/api/list-posts");
+      const response = await fetch("/api/list-posts?limit=1000");
       if (response.ok) {
         const data = await response.json();
         setExistingPosts(data.posts || []);
@@ -1230,6 +1237,38 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
                   class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                   children: "Refresh"
                 })]
+              }), jsxs("div", {
+                class: "mb-4",
+                children: [jsx("label", {
+                  for: "existing-post-search",
+                  class: "sr-only",
+                  children: "Search existing blog posts"
+                }), jsxs("div", {
+                  class: "relative",
+                  children: [jsx("div", {
+                    class: "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3",
+                    children: jsx("svg", {
+                      class: "h-4 w-4 text-gray-400",
+                      fill: "none",
+                      stroke: "currentColor",
+                      viewBox: "0 0 24 24",
+                      xmlns: "http://www.w3.org/2000/svg",
+                      children: jsx("path", {
+                        "stroke-linecap": "round",
+                        "stroke-linejoin": "round",
+                        "stroke-width": "2",
+                        d: "M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"
+                      })
+                    })
+                  }), jsx("input", {
+                    id: "existing-post-search",
+                    type: "search",
+                    value: existingPostSearch,
+                    onInput: (event) => setExistingPostSearch(event.currentTarget.value),
+                    placeholder: "Search posts...",
+                    class: "block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  })]
+                })]
               }), loadingPosts ? jsxs("div", {
                 class: "py-8 text-center",
                 children: [jsx("div", {
@@ -1244,9 +1283,15 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
                   class: "text-sm text-gray-500",
                   children: "No blog posts yet. Create your first post using the editor."
                 })
+              }) : filteredExistingPosts.length === 0 ? jsx("div", {
+                class: "rounded-md border-2 border-dashed border-gray-300 p-6 text-center",
+                children: jsxs("p", {
+                  class: "text-sm text-gray-500",
+                  children: ['No posts match "', existingPostSearch.trim(), '".']
+                })
               }) : jsx("div", {
                 class: "max-h-[650px] space-y-3 overflow-y-auto pr-2",
-                children: existingPosts.map((post) => jsx("div", {
+                children: filteredExistingPosts.map((post) => jsx("div", {
                   class: "rounded-md border border-gray-200 bg-white p-4 hover:bg-gray-50",
                   children: jsxs("div", {
                     class: "flex items-start justify-between gap-4",
