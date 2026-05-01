@@ -1,7 +1,7 @@
 /* empty css                                 */
-import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_z5fA6ZdE.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_CPVj0fOm.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CTphBD5E.mjs';
+import { $ as $$Layout } from '../chunks/Layout_BNJUcxz5.mjs';
 import { useRef, useState, useEffect, useMemo } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsxs, jsx } from 'preact/jsx-runtime';
@@ -1425,9 +1425,11 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
 }
 
 const $$Admin = createComponent(($$result, $$props, $$slots) => {
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Blog Editor" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="bg-blue-50 border-b border-blue-100"> <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8"> <a href="/admin/hero" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Blog Editor" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="bg-blue-50 border-b border-blue-100"> <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8"> <div class="flex flex-wrap gap-3"> <a href="/admin/hero" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
 Control Home Hero Section
-</a> </div> </div> ${renderComponent($$result2, "BlogEditor", BlogEditor, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/BlogEditor.jsx", "client:component-export": "default" })} ` })}`;
+</a> <a href="/admin/site" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
+Edit Header and Footer
+</a> </div> </div> </div> ${renderComponent($$result2, "BlogEditor", BlogEditor, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/BlogEditor.jsx", "client:component-export": "default" })} ` })}`;
 }, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin.astro", void 0);
 
 const $$file = "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin.astro";

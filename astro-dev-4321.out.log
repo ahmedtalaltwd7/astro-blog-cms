@@ -156,3 +156,51 @@
 [2m03:05:29[22m [33m[404][39m [33mHEAD[39m /404 [2m1ms[22m
 [2m03:06:09[22m [34m[watch][39m src/content/blog/my-amazing-bloffffffg-post.md
 [2m03:06:09[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-bloffffffg-post.md[39m
+[2m03:09:12[22m [34m[watch][39m src/content/blog/new-post.md
+[2m03:09:12[22m [34m[watch][39m src/content/blog/new-post.md
+[33m[1m03:09:12[22m [WARN] [glob-loader][39m Duplicate id "new-post" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\new-post.md. Later items with the same id will overwrite earlier ones.
+[2m03:09:12[22m [34m[glob-loader][39m Reloaded data from [32mnew-post.md[39m
+[2m03:22:38[22m [34m[200][39m /admin [2m86ms[22m
+[2m03:22:39[22m [34m[200][39m /api/list-posts [2m4ms[22m
+[2m03:22:40[22m [34m[200][39m [34mHEAD[39m /blog/new-post [2m35ms[22m
+[2m03:25:27[22m [34m[watch][39m src/content/blog/my-amaz-ssding-blog-post.md
+[2m03:25:27[22m [34m[glob-loader][39m Reloaded data from [32mmy-amaz-ssding-blog-post.md[39m
+[2m04:14:37[22m [34m[watch][39m src/content/blog/my-amazing-blxsog-post.md
+[2m04:14:37[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blxsog-post.md[39m
+[2m04:30:28[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:30:28[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:30:43[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:30:43[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:31:05[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:31:05[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:31:35[22m [34m[watch][39m /src/styles/global.css
+[2m04:33:29[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:33:29[22m [34m[watch][39m src/layouts/Layout.astro
+[2m04:33:45[22m Configuration file updated. Restarting...
+[2m04:33:45[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:45[22m [34m[content][39m Syncing content
+[2m04:33:45[22m [34m[content][39m Astro config changed
+[2m04:33:45[22m [34m[content][39m Clearing content store
+[2m04:33:46[22m [34m[content][39m Synced content
+[2m04:33:46[22m [34m[types][39m Generated [2m934ms[22m
+[2m04:33:47[22m Configuration file updated. Restarting...
+[2m04:33:47[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:47[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:47[22m [34m[content][39m Syncing content
+[2m04:33:47[22m [34m[content][39m Synced content
+[2m04:33:47[22m [34m[types][39m Generated [2m348ms[22m
+[2m04:33:47[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:49[22m Configuration file updated. Restarting...
+[2m04:33:49[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:49[22m [34m[content][39m Syncing content
+[2m04:33:49[22m [34m[content][39m Astro config changed
+[2m04:33:49[22m [34m[content][39m Clearing content store
+[2m04:33:50[22m [34m[content][39m Synced content
+[2m04:33:50[22m [34m[types][39m Generated [2m689ms[22m
+[2m04:33:53[22m Configuration file updated. Restarting...
+[2m04:33:53[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:53[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:53[22m [34m[content][39m Syncing content
+[2m04:33:53[22m [34m[content][39m Synced content
+[2m04:33:53[22m [34m[types][39m Generated [2m338ms[22m
+[2m04:33:53[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed

@@ -1,7 +1,7 @@
 /* empty css                                 */
-import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, l as renderScript } from '../chunks/astro/server_z5fA6ZdE.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, l as renderScript } from '../chunks/astro/server_CPVj0fOm.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CTphBD5E.mjs';
+import { $ as $$Layout } from '../chunks/Layout_BNJUcxz5.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
@@ -16,12 +16,9 @@ Create New Post
 Get started by creating your first blog post using the admin editor.
 </p> <div class="mt-6"> <a href="/admin" class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
 Create First Post
-</a> </div> </div> <!-- Pagination controls --> <div id="pagination" class="hidden mt-12 flex items-center justify-between"> <button id="prev-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-Previous
-</button> <div class="text-sm text-gray-700">
-Page <span id="current-page">1</span> of <span id="total-pages">1</span> </div> <button id="next-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-Next
-</button> </div> </div> </div> ${renderScript($$result2, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/blog/index.astro?astro&type=script&index=0&lang.ts")} ` })}`;
+</a> </div> </div> <!-- Load more control --> <div id="load-more-wrapper" class="hidden mt-12 text-center"> <button id="load-more-btn" class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+Load More
+</button> <p id="load-more-status" class="mt-3 text-sm text-gray-500"></p> </div> </div> </div> ${renderScript($$result2, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/blog/index.astro?astro&type=script&index=0&lang.ts")} ` })}`;
 }, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/blog/index.astro", void 0);
 
 const $$file = "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/blog/index.astro";

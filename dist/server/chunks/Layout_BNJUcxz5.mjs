@@ -1,0 +1,34 @@
+import { e as createComponent, r as renderTemplate, g as addAttribute, n as renderSlot, o as renderHead, h as createAstro } from './astro/server_CPVj0fOm.mjs';
+import 'piccolore';
+import 'clsx';
+/* empty css                         */
+import { r as readSiteConfig } from './site-config_B7wu2ICA.mjs';
+
+var __freeze = Object.freeze;
+var __defProp = Object.defineProperty;
+var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(cooked.slice()) }));
+var _a;
+const $$Astro = createAstro();
+const $$Layout = createComponent(async ($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$Layout;
+  const { title = "Astro Blog", description } = Astro2.props;
+  const siteConfig = await readSiteConfig();
+  const headerStyle = [
+    `--site-header-bg: ${siteConfig.headerBackgroundColor};`,
+    `--site-header-text: ${siteConfig.headerTextColor};`,
+    `--site-header-link: ${siteConfig.headerLinkColor};`,
+    `--site-header-link-hover: ${siteConfig.headerLinkHoverColor};`,
+    `--site-header-border: ${siteConfig.headerBorderColor};`
+  ].join(" ");
+  const footerStyle = [
+    `--site-footer-bg: ${siteConfig.footerBackgroundColor};`,
+    `--site-footer-text: ${siteConfig.footerTextColor};`,
+    `--site-footer-border: ${siteConfig.footerBorderColor};`,
+    `--site-footer-link: ${siteConfig.footerLinkColor};`
+  ].join(" ");
+  const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} rounded-md px-3 py-2 font-medium`;
+  return renderTemplate(_a || (_a = __template(['<html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" href="/favicon.ico"><meta name="generator"', ">", '<script>\n			(() => {\n				const storageKey = "astro-blog-theme";\n				let storedTheme = null;\n\n				try {\n					storedTheme = localStorage.getItem(storageKey);\n				} catch {\n					storedTheme = null;\n				}\n\n				const theme = storedTheme === "dark" ? "dark" : "light";\n				document.documentElement.classList.toggle("dark", theme === "dark");\n				document.documentElement.dataset.theme = theme;\n			})();\n		<\/script><title>', "</title>", '</head> <body class="bg-gray-50"> <!-- Navigation --> <nav class="site-header sticky top-0 z-50 shadow-md"', '> <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"> <div class="site-header-inner grid min-h-16 grid-cols-[auto_1fr_auto] items-center gap-4 py-3 transition-all duration-300"> <div class="flex items-center justify-start"> <a href="/" class="flex items-center space-x-2"> ', ' <span class="text-xl font-bold">', '</span> </a> </div> <div class="flex items-center justify-center gap-2"> ', ' </div> <div class="flex items-center justify-end space-x-3"> <button type="button" data-theme-toggle class="theme-toggle inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Switch to dark theme" aria-pressed="false"> <svg class="theme-toggle-moon h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path> </svg> <svg class="theme-toggle-sun h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36-.7-.7M6.34 6.34l-.7-.7m12.02 0-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path> </svg> <span data-theme-toggle-label>Dark</span> </button> <a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">\nAdmin Editor\n</a> </div> </div> </div> </nav> ', ' <!-- Footer --> <footer class="site-footer mt-16 border-t"', '> <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8"> <div class="text-center"> ', ' <div class="mb-4 flex flex-wrap justify-center gap-4 text-sm font-medium"> ', " </div> <p>", '</p> <p class="mt-2 text-sm opacity-80">', '</p> </div> </div> </footer> <script>\n			(() => {\n				const storageKey = "astro-blog-theme";\n				const root = document.documentElement;\n				const toggles = document.querySelectorAll("[data-theme-toggle]");\n\n				function getTheme() {\n					return root.classList.contains("dark") ? "dark" : "light";\n				}\n\n				function setTheme(theme) {\n					const nextTheme = theme === "dark" ? "dark" : "light";\n					root.classList.toggle("dark", nextTheme === "dark");\n					root.dataset.theme = nextTheme;\n\n					try {\n						localStorage.setItem(storageKey, nextTheme);\n					} catch {\n						// Theme still changes for this visit if storage is unavailable.\n					}\n\n					toggles.forEach((toggle) => {\n						const label = toggle.querySelector("[data-theme-toggle-label]");\n						const isDark = nextTheme === "dark";\n						toggle.setAttribute("aria-pressed", String(isDark));\n						toggle.setAttribute(\n							"aria-label",\n							isDark ? "Switch to light theme" : "Switch to dark theme",\n						);\n\n						if (label) {\n							label.textContent = isDark ? "Light" : "Dark";\n						}\n					});\n				}\n\n				toggles.forEach((toggle) => {\n					toggle.addEventListener("click", () => {\n						setTheme(getTheme() === "dark" ? "light" : "dark");\n					});\n				});\n\n				setTheme(getTheme());\n\n				const header = document.querySelector(".site-header");\n				function updateHeader() {\n					header?.classList.toggle("is-scrolled", window.scrollY > 12);\n				}\n\n				updateHeader();\n				window.addEventListener("scroll", updateHeader, { passive: true });\n			})();\n		<\/script> </body> </html>'])), addAttribute(Astro2.generator, "content"), description && renderTemplate`<meta name="description"${addAttribute(description, "content")}>`, title, renderHead(), addAttribute(headerStyle, "style"), siteConfig.logoUrl && renderTemplate`<img${addAttribute(siteConfig.logoUrl, "src")} alt="Logo" class="h-8 w-8 object-contain">`, siteConfig.brandName, siteConfig.navLinks.map((link) => renderTemplate`<a${addAttribute(link.href, "href")}${addAttribute(headerLinkClass, "class")}>${link.label}</a>`), renderSlot($$result, $$slots["default"]), addAttribute(footerStyle, "style"), siteConfig.footerShowLogo && siteConfig.logoUrl && renderTemplate`<img${addAttribute(siteConfig.logoUrl, "src")} alt="" class="mx-auto mb-3 h-8 w-8 object-contain">`, siteConfig.navLinks.map((link) => renderTemplate`<a${addAttribute(link.href, "href")} class="site-footer-link">${link.label}</a>`), siteConfig.footerText, siteConfig.footerSubtext);
+}, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/layouts/Layout.astro", void 0);
+
+export { $$Layout as $ };

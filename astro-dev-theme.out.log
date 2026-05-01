@@ -1,0 +1,50 @@
+
+> celestial-comet@0.0.1 dev
+> astro dev --host 127.0.0.1 --port 4322
+
+[2m04:32:31[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:32:31[22m [34m[types][39m Generated [2m1ms[22m
+[2m04:32:31[22m [34m[content][39m Syncing content
+[2m04:32:31[22m [34m[content][39m Astro config changed
+[2m04:32:31[22m [34m[content][39m Clearing content store
+[2m04:32:31[22m [34m[content][39m Synced content
+[2m04:32:31[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+
+[42m[1m astro [22m[49m [32mv5.18.1[39m [2mready in[22m 1389 [2mms[22m
+
+[2m┃[22m Local    [36mhttp://127.0.0.1:4322/[39m
+
+[2m04:32:31[22m [32mwatching for file changes...[39m
+[2m04:32:50[22m [34m[200][39m / [2m368ms[22m
+[2m04:32:50[22m [34m[200][39m / [2m372ms[22m
+[2m04:33:36[22m [34m[200][39m / [2m74ms[22m
+[2m04:33:45[22m Configuration file updated. Restarting...
+[2m04:33:45[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:45[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:45[22m [34m[content][39m Syncing content
+[2m04:33:45[22m [34m[content][39m Synced content
+[2m04:33:45[22m [34m[types][39m Generated [2m378ms[22m
+[2m04:33:45[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:47[22m Configuration file updated. Restarting...
+[2m04:33:47[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:47[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:47[22m [34m[content][39m Syncing content
+[2m04:33:47[22m [34m[content][39m Astro config changed
+[2m04:33:47[22m [34m[content][39m Clearing content store
+[2m04:33:48[22m [34m[content][39m Synced content
+[2m04:33:48[22m [34m[types][39m Generated [2m636ms[22m
+[2m04:33:49[22m Configuration file updated. Restarting...
+[2m04:33:49[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:49[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:49[22m [34m[content][39m Syncing content
+[2m04:33:49[22m [34m[content][39m Synced content
+[2m04:33:49[22m [34m[types][39m Generated [2m354ms[22m
+[2m04:33:49[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:53[22m Configuration file updated. Restarting...
+[2m04:33:53[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m04:33:53[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m04:33:53[22m [34m[content][39m Syncing content
+[2m04:33:53[22m [34m[content][39m Astro config changed
+[2m04:33:53[22m [34m[content][39m Clearing content store
+[2m04:33:53[22m [34m[content][39m Synced content
+[2m04:33:53[22m [34m[types][39m Generated [2m596ms[22m

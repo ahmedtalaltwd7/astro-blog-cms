@@ -1,10 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-// We'll fetch posts client-side for pagination
+// We'll fetch posts client-side and append more on demand.
 const limit = 6;
-const page = 1;
-const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
 ---
 
 <Layout title="Blog Posts">
@@ -120,30 +118,18 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         </div>
       </div>
 
-      <!-- Pagination controls -->
+      <!-- Load more control -->
       <div
-        id="pagination"
-        class="hidden mt-12 flex items-center justify-between"
+        id="load-more-wrapper"
+        class="hidden mt-12 text-center"
       >
         <button
-          id="prev-btn"
-          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled
+          id="load-more-btn"
+          class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Previous
+          Load More
         </button>
-        <div class="text-sm text-gray-700">
-          Page <span id="current-page">1</span> of <span id="total-pages"
-            >1</span
-          >
-        </div>
-        <button
-          id="next-btn"
-          class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled
-        >
-          Next
-        </button>
+        <p id="load-more-status" class="mt-3 text-sm text-gray-500"></p>
       </div>
     </div>
   </div>
@@ -158,15 +144,11 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
       /** @type {HTMLElement | null} */
       const emptyState = document.getElementById("empty-state");
       /** @type {HTMLElement | null} */
-      const paginationEl = document.getElementById("pagination");
+      const loadMoreWrapper = document.getElementById("load-more-wrapper");
       /** @type {HTMLButtonElement | null} */
-      const prevBtn = document.getElementById("prev-btn");
-      /** @type {HTMLButtonElement | null} */
-      const nextBtn = document.getElementById("next-btn");
+      const loadMoreBtn = document.getElementById("load-more-btn");
       /** @type {HTMLElement | null} */
-      const currentPageSpan = document.getElementById("current-page");
-      /** @type {HTMLElement | null} */
-      const totalPagesSpan = document.getElementById("total-pages");
+      const loadMoreStatus = document.getElementById("load-more-status");
       /** @type {HTMLInputElement | null} */
       const searchInput = document.getElementById("post-search");
       /** @type {HTMLElement | null} */
@@ -179,11 +161,9 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         !postsContainer ||
         !loadingEl ||
         !emptyState ||
-        !paginationEl ||
-        !prevBtn ||
-        !nextBtn ||
-        !currentPageSpan ||
-        !totalPagesSpan ||
+        !loadMoreWrapper ||
+        !loadMoreBtn ||
+        !loadMoreStatus ||
         !searchInput ||
         !emptyTitle ||
         !emptyMessage
@@ -192,11 +172,55 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         return;
       }
 
-      let currentPage = 1;
+      let currentPage = 0;
       const limit = 6;
       let totalPages = 1;
+      let totalPosts = 0;
       let searchTerm = "";
+      let isLoading = false;
       let searchTimeout;
+      const listStateKey = "astro-blog-post-list-state";
+
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+
+      function readListState() {
+        try {
+          const savedState = JSON.parse(
+            sessionStorage.getItem(listStateKey) || "null",
+          );
+
+          if (!savedState || typeof savedState !== "object") {
+            return null;
+          }
+
+          return {
+            currentPage: Math.max(0, Number(savedState.currentPage) || 0),
+            scrollY: Math.max(0, Number(savedState.scrollY) || 0),
+            searchTerm: String(savedState.searchTerm || ""),
+            pendingRestore: Boolean(savedState.pendingRestore),
+          };
+        } catch {
+          return null;
+        }
+      }
+
+      function saveListState(scrollY = window.scrollY, pendingRestore = false) {
+        try {
+          sessionStorage.setItem(
+            listStateKey,
+            JSON.stringify({
+              currentPage,
+              scrollY,
+              searchTerm,
+              pendingRestore,
+            }),
+          );
+        } catch {
+          // Browsing still works if session storage is unavailable.
+        }
+      }
 
       /**
        * @typedef {Object} Post
@@ -284,17 +308,32 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
       /**
        * @param {number} page
        */
-      async function loadPage(page) {
-        loadingEl.classList.remove("hidden");
-        postsContainer.innerHTML = "";
-        postsContainer.appendChild(loadingEl);
+      async function loadPage(
+        page,
+        append = false,
+        requestLimit = limit,
+        displayedPage = page,
+      ) {
+        if (isLoading) return;
+
+        isLoading = true;
         emptyState.classList.add("hidden");
-        paginationEl.classList.add("hidden");
+        loadMoreWrapper.classList.add("hidden");
+
+        if (append) {
+          loadMoreBtn.disabled = true;
+          loadMoreBtn.textContent = "Loading...";
+          loadMoreStatus.textContent = "Loading more posts...";
+        } else {
+          loadingEl.classList.remove("hidden");
+          postsContainer.innerHTML = "";
+          postsContainer.appendChild(loadingEl);
+        }
 
         try {
           const params = new URLSearchParams({
             page: page.toString(),
-            limit: limit.toString(),
+            limit: requestLimit.toString(),
           });
 
           if (searchTerm) {
@@ -308,9 +347,14 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
           const data = await response.json();
 
           loadingEl.classList.add("hidden");
-          postsContainer.removeChild(loadingEl);
+          if (loadingEl.parentElement === postsContainer) {
+            postsContainer.removeChild(loadingEl);
+          }
 
-          if (data.posts.length === 0) {
+          if (!append && data.posts.length === 0) {
+            currentPage = 0;
+            totalPages = 1;
+            totalPosts = 0;
             emptyTitle.textContent = searchTerm
               ? "No matching blog posts"
               : "No blog posts yet";
@@ -318,39 +362,61 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
               ? "Try searching for a different blog title."
               : "Get started by creating your first blog post using the admin editor.";
             emptyState.classList.remove("hidden");
+            saveListState();
             return;
           }
 
-          // Render posts
-          postsContainer.innerHTML = data.posts.map(renderPost).join("");
+          const postsHtml = data.posts.map(renderPost).join("");
+          if (append) {
+            postsContainer.insertAdjacentHTML("beforeend", postsHtml);
+          } else {
+            postsContainer.innerHTML = postsHtml;
+          }
 
-          // Update pagination
-          totalPages = data.pagination.totalPages;
-          currentPage = data.pagination.page;
-          currentPageSpan.textContent = currentPage.toString();
-          totalPagesSpan.textContent = totalPages.toString();
+          totalPages = Math.max(1, Math.ceil(data.pagination.total / limit));
+          totalPosts = data.pagination.total;
+          currentPage = Math.min(displayedPage, totalPages);
 
-          prevBtn.disabled = currentPage <= 1;
-          nextBtn.disabled = currentPage >= totalPages;
+          const renderedCount = Math.min(currentPage * limit, totalPosts);
+          loadMoreStatus.textContent = `Showing ${renderedCount} of ${totalPosts} posts.`;
 
-          paginationEl.classList.remove("hidden");
+          if (currentPage < totalPages) {
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.textContent = "Load More";
+            loadMoreWrapper.classList.remove("hidden");
+          }
+          saveListState();
         } catch (error) {
           console.error("Error loading posts:", error);
           loadingEl.classList.add("hidden");
-          postsContainer.innerHTML =
-            '<p class="col-span-full text-center text-red-600">Failed to load posts. Please try again later.</p>';
+          if (append) {
+            loadMoreBtn.disabled = false;
+            loadMoreBtn.textContent = "Load More";
+            loadMoreStatus.textContent =
+              "Failed to load more posts. Please try again.";
+            loadMoreWrapper.classList.remove("hidden");
+          } else {
+            postsContainer.innerHTML =
+              '<p class="col-span-full text-center text-red-600">Failed to load posts. Please try again later.</p>';
+          }
+        } finally {
+          isLoading = false;
         }
       }
 
-      prevBtn.addEventListener("click", () => {
-        if (currentPage > 1) {
-          loadPage(currentPage - 1);
+      loadMoreBtn.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+          loadPage(currentPage + 1, true);
         }
       });
 
-      nextBtn.addEventListener("click", () => {
-        if (currentPage < totalPages) {
-          loadPage(currentPage + 1);
+      postsContainer.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (!link) return;
+
+        const url = new URL(link.href, window.location.origin);
+        if (url.origin === window.location.origin && url.pathname.startsWith("/blog/")) {
+          saveListState(window.scrollY, true);
         }
       });
 
@@ -362,8 +428,37 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
         }, 250);
       });
 
-      // Initial load
-      loadPage(1);
+      window.addEventListener("pagehide", () => {
+        const savedState = readListState();
+        saveListState(window.scrollY, Boolean(savedState?.pendingRestore));
+      });
+
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) {
+          saveListState(window.scrollY, false);
+        }
+      });
+
+      async function loadInitialPosts() {
+        const savedState = readListState();
+        if (savedState?.pendingRestore) {
+          const pagesToRestore = Math.max(1, savedState.currentPage || 1);
+          searchTerm = savedState.searchTerm;
+          searchInput.value = searchTerm;
+
+          await loadPage(1, false, pagesToRestore * limit, pagesToRestore);
+
+          requestAnimationFrame(() => {
+            window.scrollTo(0, savedState.scrollY);
+            saveListState(savedState.scrollY, false);
+          });
+          return;
+        }
+
+        await loadPage(1);
+      }
+
+      loadInitialPosts();
     })();
   </script>
 </Layout>
