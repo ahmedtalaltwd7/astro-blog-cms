@@ -73,14 +73,38 @@ export async function OPTIONS({ request }) {
 }
 
 const MAX_IMAGE_DIMENSION = 1920;
+const THUMB_WIDTH = 640;
+const THUMB_HEIGHT = 360;
+const WEBP_OPTIONS = {
+  quality: 75,
+  lossless: false,
+  nearLossless: false,
+  effort: 6,
+  smartSubsample: true,
+};
+
+function getFullTimeStamp() {
+  const now = new Date();
+  const pad = (value, size = 2) => String(value).padStart(size, "0");
+
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+    pad(now.getHours()),
+    pad(now.getMinutes()),
+    pad(now.getSeconds()),
+    pad(now.getMilliseconds(), 3),
+  ].join("");
+}
+
+function getRandomSuffix() {
+  return Math.random().toString(36).slice(2, 7).padEnd(5, "0");
+}
 
 // Helper to generate a safe filename for uploaded image
-function generateImageFilename(originalName) {
-  const ext = path.extname(originalName).toLowerCase();
-  const base = path.basename(originalName, ext).replace(/[^a-zA-Z0-9]/g, "-");
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `${base}-${timestamp}-${random}${ext}`;
+function generateImageFilename() {
+  return `${getFullTimeStamp()}-${getRandomSuffix()}.webp`;
 }
 
 // Helper to get all directories where images should be saved.
@@ -101,54 +125,47 @@ async function getImageDirs() {
   return dirs;
 }
 
+async function getThumbDirs() {
+  const cwd = process.cwd();
+  const publicDir = path.join(cwd, "public", "blog-thumbs");
+  const distClientDir = path.join(cwd, "dist", "client", "blog-thumbs");
+  const dirs = [publicDir];
+
+  try {
+    await fs.access(path.join(cwd, "dist", "client"));
+    dirs.push(distClientDir);
+  } catch {
+    // dist/client doesn't exist yet - dev mode, skip it
+  }
+
+  return dirs;
+}
+
+function generateThumbFilename(imageFilename) {
+  return imageFilename.replace(/\.webp$/i, "-thumb.webp");
+}
+
 async function optimizeImageBuffer(buffer) {
   try {
     const image = sharp(buffer, { failOn: "none" }).rotate();
     const metadata = await image.metadata();
-    const format = metadata.format;
-
-    let optimizedImage = image.resize({
-      width: MAX_IMAGE_DIMENSION,
-      height: MAX_IMAGE_DIMENSION,
-      fit: "inside",
-      withoutEnlargement: true,
-    });
-
-    if (format === "jpeg" || format === "jpg") {
-      optimizedImage = optimizedImage.jpeg({
-        quality: 84,
-        mozjpeg: true,
-      });
-    } else if (format === "png") {
-      optimizedImage = optimizedImage.png({
-        compressionLevel: 9,
-        adaptiveFiltering: true,
-        effort: 10,
-      });
-    } else if (format === "webp") {
-      optimizedImage = optimizedImage.webp({
-        quality: 84,
-        effort: 5,
-      });
-    } else {
-      return {
-        buffer,
-        optimized: false,
-        originalSize: buffer.length,
-        savedSize: buffer.length,
-        format: format || "unknown",
-      };
-    }
-
-    const optimizedBuffer = await optimizedImage.toBuffer();
-    const isSmaller = optimizedBuffer.length < buffer.length;
+    const optimizedBuffer = await image
+      .resize({
+        width: MAX_IMAGE_DIMENSION,
+        height: MAX_IMAGE_DIMENSION,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp(WEBP_OPTIONS)
+      .toBuffer();
 
     return {
-      buffer: isSmaller ? optimizedBuffer : buffer,
-      optimized: isSmaller,
+      buffer: optimizedBuffer,
+      optimized: optimizedBuffer.length < buffer.length,
       originalSize: buffer.length,
-      savedSize: isSmaller ? optimizedBuffer.length : buffer.length,
-      format,
+      savedSize: optimizedBuffer.length,
+      format: "webp",
+      inputFormat: metadata.format || "unknown",
     };
   } catch (error) {
     console.error("Image optimization skipped:", error);
@@ -158,34 +175,61 @@ async function optimizeImageBuffer(buffer) {
       originalSize: buffer.length,
       savedSize: buffer.length,
       format: "unknown",
+      inputFormat: "unknown",
     };
   }
 }
 
+async function createThumbnailBuffer(buffer) {
+  return sharp(buffer, { failOn: "none" })
+    .rotate()
+    .resize({
+      width: THUMB_WIDTH,
+      height: THUMB_HEIGHT,
+      fit: "cover",
+      position: "centre",
+    })
+    .webp(WEBP_OPTIONS)
+    .toBuffer();
+}
+
 async function saveUploadedImage(buffer, originalName, timestamp) {
   const imageDirs = await getImageDirs();
-  const imageFilename = generateImageFilename(originalName);
+  const thumbDirs = await getThumbDirs();
+  const imageFilename = generateImageFilename();
+  const thumbFilename = generateThumbFilename(imageFilename);
   const optimization = await optimizeImageBuffer(buffer);
+  const thumbBuffer = await createThumbnailBuffer(buffer);
 
   for (const imageDir of imageDirs) {
     await fs.mkdir(imageDir, { recursive: true });
     await fs.writeFile(path.join(imageDir, imageFilename), optimization.buffer);
   }
 
+  for (const thumbDir of thumbDirs) {
+    await fs.mkdir(thumbDir, { recursive: true });
+    await fs.writeFile(path.join(thumbDir, thumbFilename), thumbBuffer);
+  }
+
   const imageUrl = `/blog-images/${imageFilename}`;
+  const thumbnailUrl = `/blog-thumbs/${thumbFilename}`;
   const savedKb = Math.round(optimization.savedSize / 1024);
   const originalKb = Math.round(optimization.originalSize / 1024);
+  const thumbKb = Math.round(thumbBuffer.length / 1024);
   console.error(
-    `[${timestamp}] Image saved: ${imageUrl} (${savedKb}KB, was ${originalKb}KB, optimized: ${optimization.optimized})`,
+    `[${timestamp}] Image saved: ${imageUrl} (${savedKb}KB, was ${originalKb}KB, optimized: ${optimization.optimized}); thumbnail: ${thumbnailUrl} (${thumbKb}KB)`,
   );
 
   return {
     imageUrl,
+    thumbnailUrl,
     imageOptimization: {
       optimized: optimization.optimized,
       originalSize: optimization.originalSize,
       savedSize: optimization.savedSize,
       format: optimization.format,
+      inputFormat: optimization.inputFormat,
+      thumbnailSize: thumbBuffer.length,
     },
   };
 }
@@ -208,6 +252,7 @@ export async function POST({ request }) {
       content,
       tags = ["blog", "astro"],
       imageUrl = "",
+      thumbnailUrl = "",
       imageOptimization = null;
 
     if (contentType.includes("multipart/form-data")) {
@@ -231,6 +276,7 @@ export async function POST({ request }) {
           timestamp,
         );
         imageUrl = savedImage.imageUrl;
+        thumbnailUrl = savedImage.thumbnailUrl;
         imageOptimization = savedImage.imageOptimization;
       }
     } else {
@@ -270,6 +316,7 @@ export async function POST({ request }) {
         tags = normalizeTags(data.tags);
       }
       imageUrl = data.image || "";
+      thumbnailUrl = data.thumbnail || "";
 
       // Handle base64-encoded image upload
       if (data.imageBase64 && data.imageFilename) {
@@ -285,6 +332,7 @@ export async function POST({ request }) {
               timestamp,
             );
             imageUrl = savedImage.imageUrl;
+            thumbnailUrl = savedImage.thumbnailUrl;
             imageOptimization = savedImage.imageOptimization;
           } else {
             console.error(`[${timestamp}] Invalid base64 image data format`);
@@ -301,6 +349,7 @@ export async function POST({ request }) {
       title,
       tags,
       imageUrl,
+      thumbnailUrl,
       imageOptimization,
       contentLength: content?.length,
     });
@@ -341,6 +390,10 @@ export async function POST({ request }) {
     try {
       const existingContent = await fs.readFile(filePath, "utf8");
       pubDate = getFrontmatterValue(existingContent, "pubDate") || pubDate;
+      thumbnailUrl =
+        imageUrl && !thumbnailUrl
+          ? getFrontmatterValue(existingContent, "thumbnail")
+          : thumbnailUrl;
     } catch {
       // New post: use today's date.
     }
@@ -354,6 +407,9 @@ author: "Blog Author"
 tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
     if (imageUrl && imageUrl.trim() !== "") {
       frontmatter += `\nimage: "${imageUrl.replace(/"/g, '\\"')}"`;
+    }
+    if (imageUrl && thumbnailUrl && thumbnailUrl.trim() !== "") {
+      frontmatter += `\nthumbnail: "${thumbnailUrl.replace(/"/g, '\\"')}"`;
     }
     frontmatter += `\n---\n\n`;
 
@@ -369,6 +425,7 @@ tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
           message: `Post saved as ${filename}`,
           path: filePath,
           imageUrl,
+          thumbnailUrl,
           imageOptimization,
         }),
         {

@@ -17,6 +17,19 @@ const parseWidth = (width, fallbackWidth) => {
   return Number.parseInt(width, 10) || fallbackWidth;
 };
 
+const loadImageElement = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+
+    if (!url.startsWith("/")) {
+      image.crossOrigin = "anonymous";
+    }
+
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = url;
+  });
+
 export default function MarkdownImageCanvas({ selection, onChange }) {
   const canvasElementRef = useRef(null);
   const fabricCanvasRef = useRef(null);
@@ -25,7 +38,9 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
   const selectionRef = useRef(selection);
   const onChangeRef = useRef(onChange);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const image = selection?.image;
 
   useEffect(() => {
     selectionRef.current = selection;
@@ -91,6 +106,7 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
     canvas.clear();
     canvas.backgroundColor = "#f9fafb";
     fabricImageRef.current = null;
+    setImageLoaded(false);
     setLoadError("");
 
     if (!image?.url) {
@@ -100,10 +116,11 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
 
     let cancelled = false;
 
-    FabricImage.fromURL(image.url, { crossOrigin: "anonymous" })
-      .then((fabricImage) => {
+    loadImageElement(image.url)
+      .then((imageElement) => {
         if (cancelled) return;
 
+        const fabricImage = new FabricImage(imageElement);
         const naturalWidth = fabricImage.width || 320;
         const naturalHeight = fabricImage.height || 180;
         const fallbackWidth = Math.min(naturalWidth, Math.round(CANVAS_WIDTH * 0.72));
@@ -134,6 +151,10 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
           cornerStyle: "circle",
           lockScalingFlip: true,
           lockUniScaling: true,
+          selectable: true,
+          evented: true,
+          hasControls: true,
+          hasBorders: true,
           transparentCorners: false,
         });
 
@@ -148,6 +169,7 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
         canvas.setActiveObject(fabricImage);
         canvas.requestRenderAll();
         fabricImageRef.current = fabricImage;
+        setImageLoaded(true);
       })
       .catch(() => {
         if (!cancelled) {
@@ -162,9 +184,22 @@ export default function MarkdownImageCanvas({ selection, onChange }) {
 
   return (
     <div class="my-6">
-      <div class="overflow-auto rounded-lg border border-gray-200 bg-gray-50">
+      <div
+        class={
+          loadError
+            ? "hidden"
+            : "overflow-auto rounded-lg border border-gray-200 bg-gray-50"
+        }
+      >
         <canvas ref={canvasElementRef} />
       </div>
+      {image?.url && loadError && (
+        <img
+          src={image.url}
+          alt={image.alt || ""}
+          class="h-auto max-w-full rounded-lg border border-gray-200"
+        />
+      )}
       {loadError && (
         <p class="mt-2 text-sm text-red-600">
           {loadError}

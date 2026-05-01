@@ -7,6 +7,13 @@ export const prerender = false;
 
 const IMAGE_DIR_NAME = "markdown-images";
 const MAX_UPLOAD_BYTES = 12 * 1024 * 1024;
+const WEBP_OPTIONS = {
+  quality: 75,
+  lossless: false,
+  nearLossless: false,
+  effort: 6,
+  smartSubsample: true,
+};
 
 function addCorsHeaders(response) {
   response.headers.set("Access-Control-Allow-Origin", "*");
@@ -15,18 +22,27 @@ function addCorsHeaders(response) {
   return response;
 }
 
-function generateImageFilename(originalName, format) {
-  const ext = format
-    ? `.${format === "jpeg" ? "jpg" : format}`
-    : path.extname(originalName).toLowerCase();
-  const base = path
-    .basename(originalName, path.extname(originalName))
-    .replace(/[^a-zA-Z0-9]/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60) || "image";
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `${base}-${timestamp}-${random}${ext}`;
+function getFullTimeStamp() {
+  const now = new Date();
+  const pad = (value, size = 2) => String(value).padStart(size, "0");
+
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate()),
+    pad(now.getHours()),
+    pad(now.getMinutes()),
+    pad(now.getSeconds()),
+    pad(now.getMilliseconds(), 3),
+  ].join("");
+}
+
+function getRandomSuffix() {
+  return Math.random().toString(36).slice(2, 7).padEnd(5, "0");
+}
+
+function generateImageFilename() {
+  return `${getFullTimeStamp()}-${getRandomSuffix()}.webp`;
 }
 
 async function getImageDirs() {
@@ -73,53 +89,15 @@ async function findProjectRoot(startDir) {
 async function optimizeImageBuffer(buffer) {
   const image = sharp(buffer, { failOn: "none" }).rotate();
   const metadata = await image.metadata();
-  const format = metadata.format;
-
-  if (format === "jpeg" || format === "jpg") {
-    const optimizedBuffer = await image
-      .jpeg({ quality: 82, mozjpeg: true })
-      .toBuffer();
-    return {
-      buffer: optimizedBuffer.length < buffer.length ? optimizedBuffer : buffer,
-      format: "jpeg",
-      optimized: optimizedBuffer.length < buffer.length,
-      originalSize: buffer.length,
-      savedSize: Math.min(optimizedBuffer.length, buffer.length),
-    };
-  }
-
-  if (format === "png") {
-    const optimizedBuffer = await image
-      .png({ compressionLevel: 9, adaptiveFiltering: true, effort: 10 })
-      .toBuffer();
-    return {
-      buffer: optimizedBuffer.length < buffer.length ? optimizedBuffer : buffer,
-      format,
-      optimized: optimizedBuffer.length < buffer.length,
-      originalSize: buffer.length,
-      savedSize: Math.min(optimizedBuffer.length, buffer.length),
-    };
-  }
-
-  if (format === "webp") {
-    const optimizedBuffer = await image
-      .webp({ quality: 82, effort: 5 })
-      .toBuffer();
-    return {
-      buffer: optimizedBuffer.length < buffer.length ? optimizedBuffer : buffer,
-      format,
-      optimized: optimizedBuffer.length < buffer.length,
-      originalSize: buffer.length,
-      savedSize: Math.min(optimizedBuffer.length, buffer.length),
-    };
-  }
+  const optimizedBuffer = await image.webp(WEBP_OPTIONS).toBuffer();
 
   return {
-    buffer,
-    format: format || "unknown",
-    optimized: false,
+    buffer: optimizedBuffer,
+    format: "webp",
+    inputFormat: metadata.format || "unknown",
+    optimized: optimizedBuffer.length < buffer.length,
     originalSize: buffer.length,
-    savedSize: buffer.length,
+    savedSize: optimizedBuffer.length,
   };
 }
 
@@ -199,7 +177,7 @@ export async function POST({ request }) {
     }
 
     const optimized = await optimizeImageBuffer(buffer);
-    const imageFilename = generateImageFilename(imageName, optimized.format);
+    const imageFilename = generateImageFilename();
     const imageDirs = await getImageDirs();
 
     for (const imageDir of imageDirs) {
@@ -220,6 +198,7 @@ export async function POST({ request }) {
             originalSize: optimized.originalSize,
             savedSize: optimized.savedSize,
             format: optimized.format,
+            inputFormat: optimized.inputFormat,
           },
         }),
         {

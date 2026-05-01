@@ -147,9 +147,17 @@ if (shouldUseRuntimeMarkdown || !Content) {
     return Astro.redirect("/404");
   }
 }
+
+const pageTitle = frontmatter.title || "Blog Post";
+const postTags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [];
+const postHashtags = postTags
+  .map((tag: string) => String(tag).trim().replace(/^#+/, ""))
+  .filter(Boolean)
+  .map((tag: string) => `#${tag}`);
+const metaDescription = [pageTitle, ...postHashtags].join(" ");
 ---
 
-<Layout title={frontmatter.title || `Blog Post`}>
+<Layout title={pageTitle} description={metaDescription}>
   <div class="min-h-screen bg-gray-50 py-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <article class="bg-white shadow-lg rounded-xl overflow-hidden">

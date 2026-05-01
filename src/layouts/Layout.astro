@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+
+const { title = "Astro Blog", description } = Astro.props;
 ---
 
 <!doctype html>
@@ -10,7 +12,8 @@ import "../styles/global.css";
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>{Astro.props.title || "Astro Blog"}</title>
+		{description && <meta name="description" content={description} />}
+		<title>{title}</title>
 	</head>
 	<body class="bg-gray-50">
 		<!-- Navigation -->
@@ -26,6 +29,7 @@ import "../styles/global.css";
 					<div class="flex items-center space-x-4">
 						<a href="/" class="text-gray-700 hover:text-blue-600 font-medium">Home</a>
 						<a href="/blog" class="text-gray-700 hover:text-blue-600 font-medium">Blog</a>
+						<a href="/admin/hero" class="text-gray-700 hover:text-blue-600 font-medium">Hero</a>
 						<a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
 							Admin Editor
 						</a>

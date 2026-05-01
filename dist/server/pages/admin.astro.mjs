@@ -1,7 +1,7 @@
 /* empty css                                 */
-import { e as createComponent, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_z5fA6ZdE.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_r9jRjh0A.mjs';
+import { $ as $$Layout } from '../chunks/Layout_CTphBD5E.mjs';
 import { useRef, useState, useEffect, useMemo } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsxs, jsx } from 'preact/jsx-runtime';
@@ -21,6 +21,15 @@ const parseWidth = (width, fallbackWidth) => {
   }
   return Number.parseInt(width, 10) || fallbackWidth;
 };
+const loadImageElement = (url) => new Promise((resolve, reject) => {
+  const image = new Image();
+  if (!url.startsWith("/")) {
+    image.crossOrigin = "anonymous";
+  }
+  image.onload = () => resolve(image);
+  image.onerror = reject;
+  image.src = url;
+});
 function MarkdownImageCanvas({
   selection,
   onChange
@@ -32,7 +41,9 @@ function MarkdownImageCanvas({
   const selectionRef = useRef(selection);
   const onChangeRef = useRef(onChange);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const image = selection?.image;
   useEffect(() => {
     selectionRef.current = selection;
   }, [selection]);
@@ -88,33 +99,33 @@ function MarkdownImageCanvas({
   useEffect(() => {
     const canvas = fabricCanvasRef.current;
     const FabricImage = fabricRef.current?.FabricImage;
-    const image = selection?.image;
+    const image2 = selection?.image;
     if (!canvas || !FabricImage) return;
     canvas.clear();
     canvas.backgroundColor = "#f9fafb";
     fabricImageRef.current = null;
+    setImageLoaded(false);
     setLoadError("");
-    if (!image?.url) {
+    if (!image2?.url) {
       canvas.requestRenderAll();
       return;
     }
     let cancelled = false;
-    FabricImage.fromURL(image.url, {
-      crossOrigin: "anonymous"
-    }).then((fabricImage) => {
+    loadImageElement(image2.url).then((imageElement) => {
       if (cancelled) return;
+      const fabricImage = new FabricImage(imageElement);
       const naturalWidth = fabricImage.width || 320;
       const naturalHeight = fabricImage.height || 180;
       const fallbackWidth = Math.min(naturalWidth, Math.round(CANVAS_WIDTH * 0.72));
-      const displayWidth = Math.min(parseWidth(image.width, fallbackWidth), CANVAS_WIDTH);
+      const displayWidth = Math.min(parseWidth(image2.width, fallbackWidth), CANVAS_WIDTH);
       const scale = displayWidth / naturalWidth;
       const displayHeight = naturalHeight * scale;
-      const left = Number(image.offsetX) > 0 ? Number(image.offsetX) : Math.max(16, Math.round((CANVAS_WIDTH - displayWidth) / 2));
-      const top = Number(image.offsetY) > 0 ? Number(image.offsetY) : Math.max(16, Math.round((CANVAS_HEIGHT - displayHeight) / 2));
+      const left = Number(image2.offsetX) > 0 ? Number(image2.offsetX) : Math.max(16, Math.round((CANVAS_WIDTH - displayWidth) / 2));
+      const top = Number(image2.offsetY) > 0 ? Number(image2.offsetY) : Math.max(16, Math.round((CANVAS_HEIGHT - displayHeight) / 2));
       fabricImage.set({
         left,
         top,
-        angle: normalizeRotation$1(image.rotation),
+        angle: normalizeRotation$1(image2.rotation),
         scaleX: scale,
         scaleY: scale,
         borderColor: "#2563eb",
@@ -123,6 +134,10 @@ function MarkdownImageCanvas({
         cornerStyle: "circle",
         lockScalingFlip: true,
         lockUniScaling: true,
+        selectable: true,
+        evented: true,
+        hasControls: true,
+        hasBorders: true,
         transparentCorners: false
       });
       fabricImage.setControlsVisibility({
@@ -135,6 +150,7 @@ function MarkdownImageCanvas({
       canvas.setActiveObject(fabricImage);
       canvas.requestRenderAll();
       fabricImageRef.current = fabricImage;
+      setImageLoaded(true);
     }).catch(() => {
       if (!cancelled) {
         setLoadError("Image could not be loaded into the canvas.");
@@ -147,10 +163,14 @@ function MarkdownImageCanvas({
   return jsxs("div", {
     class: "my-6",
     children: [jsx("div", {
-      class: "overflow-auto rounded-lg border border-gray-200 bg-gray-50",
+      class: loadError ? "hidden" : "overflow-auto rounded-lg border border-gray-200 bg-gray-50",
       children: jsx("canvas", {
         ref: canvasElementRef
       })
+    }), image?.url && loadError && jsx("img", {
+      src: image.url,
+      alt: image.alt || "",
+      class: "h-auto max-w-full rounded-lg border border-gray-200"
     }), loadError && jsx("p", {
       class: "mt-2 text-sm text-red-600",
       children: loadError
@@ -1405,7 +1425,9 @@ tags: [${post.tags.map((t) => `"${t}"`).join(", ")}]
 }
 
 const $$Admin = createComponent(($$result, $$props, $$slots) => {
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Blog Editor" }, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "BlogEditor", BlogEditor, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/BlogEditor.jsx", "client:component-export": "default" })} ` })}`;
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Blog Editor" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="bg-blue-50 border-b border-blue-100"> <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8"> <a href="/admin/hero" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
+Control Home Hero Section
+</a> </div> </div> ${renderComponent($$result2, "BlogEditor", BlogEditor, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/BlogEditor.jsx", "client:component-export": "default" })} ` })}`;
 }, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin.astro", void 0);
 
 const $$file = "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin.astro";

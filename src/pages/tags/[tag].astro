@@ -120,8 +120,9 @@ if (!tag) {
           post.description || "No description provided.",
         );
         const safePubDate = escapeHtml(post.pubDate);
-        const imageHtml = post.image
-          ? `<img src="${escapeHtml(post.image)}" alt="${safeTitle}" class="h-48 w-full object-cover" />`
+        const imageUrl = post.thumbnail || post.image;
+        const imageHtml = imageUrl
+          ? `<img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" class="h-48 w-full object-cover" />`
           : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
 
         return `

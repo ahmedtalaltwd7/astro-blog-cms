@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { readHeroConfig } from "../lib/hero-config.js";
 
 export const prerender = false;
 
@@ -44,6 +45,7 @@ const posts = await Promise.all(
           description: frontmatter.description,
           pubDate: frontmatter.pubDate,
           image: frontmatter.image,
+          thumbnail: frontmatter.thumbnail,
         },
       };
     }),
@@ -51,25 +53,56 @@ const posts = await Promise.all(
 const latestPosts = posts
   .sort((a, b) => b.createdAtMs - a.createdAtMs)
   .slice(0, 3);
+
+const heroConfig = await readHeroConfig();
+
+function hexToRgbString(hex: string) {
+  const value = Number.parseInt(hex.replace("#", ""), 16);
+  return `${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}`;
+}
+
+function escapeCssUrl(url: string) {
+  return String(url).replace(/["\\]/g, "\\$&");
+}
+
+function getHeroStyle(config: typeof heroConfig) {
+  const textColor = `color: ${config.textColor};`;
+
+  if (config.backgroundType === "solid") {
+    return `background: ${config.backgroundColor}; ${textColor}`;
+  }
+
+  if (config.backgroundType === "image" && config.imageUrl) {
+    const overlayRgb = hexToRgbString(config.overlayColor);
+    const overlayAlpha = Number(config.overlayOpacity) / 100;
+    return [
+      `background-image: linear-gradient(rgba(${overlayRgb}, ${overlayAlpha}), rgba(${overlayRgb}, ${overlayAlpha})), url("${escapeCssUrl(config.imageUrl)}");`,
+      "background-size: cover;",
+      "background-position: center;",
+      textColor,
+    ].join(" ");
+  }
+
+  return `background: linear-gradient(90deg, ${config.gradientFrom}, ${config.gradientTo}); ${textColor}`;
+}
+
+const heroStyle = getHeroStyle(heroConfig);
 ---
 
-<Layout title="Home - Astro Blog">
+<Layout title={heroConfig.pageTitle} description={heroConfig.metaDescription}>
   <div class="min-h-screen">
     <!-- Hero Section -->
-    <section
-      class="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20"
-    >
+    <section class="py-20" style={heroStyle}>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-5xl md:text-6xl font-bold mb-6">
-          Create Dynamic Blog Pages with Astro
+          {heroConfig.title}
         </h1>
         <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
-          A fully-featured blog system with a control panel editor, Tailwind CSS
-          styling, and dynamic markdown pages.
+          {heroConfig.subtitle}
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="/admin"
+            href={heroConfig.primaryButtonHref}
             class="inline-flex items-center justify-center px-8 py-3 border border-transparent text-lg font-medium rounded-md text-blue-700 bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
           >
             <svg
@@ -85,11 +118,11 @@ const latestPosts = posts
                 stroke-width="2"
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
             </svg>
-            Go to Editor
+            {heroConfig.primaryButtonText}
           </a>
           <a
-            href="/blog"
-            class="inline-flex items-center justify-center px-8 py-3 border border-white text-lg font-medium rounded-md text-white hover:bg-white hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+            href={heroConfig.secondaryButtonHref}
+            class="inline-flex items-center justify-center px-8 py-3 border border-current text-lg font-medium rounded-md hover:bg-white hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
           >
             <svg
               class="w-5 h-5 mr-2"
@@ -105,7 +138,7 @@ const latestPosts = posts
                 d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
               ></path>
             </svg>
-            View Blog
+            {heroConfig.secondaryButtonText}
           </a>
         </div>
       </div>
@@ -227,9 +260,9 @@ const latestPosts = posts
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               {latestPosts.map((post) => (
                 <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                  {post.frontmatter.image ? (
+                  {post.frontmatter.thumbnail || post.frontmatter.image ? (
                     <img
-                      src={post.frontmatter.image}
+                      src={post.frontmatter.thumbnail || post.frontmatter.image}
                       alt={post.frontmatter.title}
                       class="w-full h-48 object-cover"
                     />

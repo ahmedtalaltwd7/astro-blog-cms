@@ -31,6 +31,7 @@ async function GET({
       let author = "";
       let tags = [];
       let image = "";
+      let thumbnail = "";
       if (frontmatterMatch) {
         const frontmatter = frontmatterMatch[1];
         const lines = frontmatter.split("\n");
@@ -50,6 +51,8 @@ async function GET({
             }
           } else if (line.startsWith("image:")) {
             image = line.replace("image:", "").trim().replace(/^["']|["']$/g, "");
+          } else if (line.startsWith("thumbnail:")) {
+            thumbnail = line.replace("thumbnail:", "").trim().replace(/^["']|["']$/g, "");
           }
         }
       }
@@ -61,6 +64,7 @@ async function GET({
         author,
         tags,
         image,
+        thumbnail,
         createdAt: stats.birthtime.toISOString(),
         createdAtMs: stats.birthtimeMs,
         updatedAt: stats.mtime.toISOString(),

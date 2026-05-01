@@ -206,6 +206,7 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
        * @property {string} [description]
        * @property {string[]} [tags]
        * @property {string} [image]
+       * @property {string} [thumbnail]
        */
 
       /**
@@ -241,7 +242,7 @@ const apiUrl = `/api/list-posts?page=${page}&limit=${limit}`;
        * @returns {string}
        */
       function renderPost(post) {
-        const imageUrl = post.image;
+        const imageUrl = post.thumbnail || post.image;
         const safeTitle = escapeHtml(post.title);
         const safeDescription = escapeHtml(
           post.description || "No description provided.",

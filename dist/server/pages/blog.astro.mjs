@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, l as renderScript } from '../chunks/astro/server_z5fA6ZdE.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_r9jRjh0A.mjs';
+import { $ as $$Layout } from '../chunks/Layout_CTphBD5E.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {

@@ -20,3 +20,139 @@
 [2m23:27:37[22m [34m[200][39m /admin [2m171ms[22m
 [2m23:33:04[22m [34m[glob-loader][39m Reloaded data from [32mnew-hash.md[39m
 [2m23:34:58[22m [34m[glob-loader][39m Reloaded data from [32mgghhbfsg-bdsf.md[39m
+[2m23:37:26[22m [34m[glob-loader][39m Reloaded data from [32mcxvf-ddsd.md[39m
+[2m00:01:05[22m [34m[200][39m /api/list-posts [2m6ms[22m
+[2m00:01:06[22m [34m[200][39m [34mHEAD[39m /blog/new-post [2m515ms[22m
+[2m00:18:28[22m [34m[glob-loader][39m Reloaded data from [32mnew-ahmed.md[39m
+[2m00:19:48[22m [34m[glob-loader][39m Reloaded data from [32marabic-now.md[39m
+[2m00:27:20[22m [34m[200][39m /admin [2m77ms[22m
+[2m00:27:28[22m [34m[200][39m / [2m13ms[22m
+[2m00:27:29[22m [34m[200][39m /admin [2m11ms[22m
+[2m00:35:55[22m [34m[200][39m /blog [2m8ms[22m
+[2m00:35:56[22m [34m[200][39m /api/list-posts [2m11ms[22m
+[2m00:35:57[22m [34m[200][39m /blog/arabic-now [2m44ms[22m
+[2m00:36:45[22m [34m[200][39m /blog/arabic-now [2m9ms[22m
+[2m00:36:48[22m [33m[404][39m /robots.txt [2m1ms[22m
+[2m00:36:51[22m [34m[200][39m /blog/arabic-now [2m13ms[22m
+[2m01:26:30[22m [34m[watch][39m src/layouts/Layout.astro
+[2m01:26:30[22m [34m[watch][39m src/layouts/Layout.astro
+[2m01:26:39[22m [34m[watch][39m src/pages/blog/[slug].astro
+[2m01:26:39[22m [34m[watch][39m src/pages/blog/[slug].astro
+[2m01:29:49[22m [34m[watch][39m src/content/blog/the-man-is-hero.md
+[2m01:29:49[22m [34m[glob-loader][39m Reloaded data from [32mthe-man-is-hero.md[39m
+[33m[1m01:30:44[22m [WARN] [glob-loader][39m Duplicate id "the-man-is-hero" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\the-man-is-hero.md. Later items with the same id will overwrite earlier ones.
+[2m01:30:44[22m [34m[glob-loader][39m Reloaded data from [32mthe-man-is-hero.md[39m
+[2m01:43:28[22m [34m[watch][39m src/layouts/Layout.astro
+[2m01:43:28[22m [34m[watch][39m src/layouts/Layout.astro
+[2m01:43:35[22m [34m[watch][39m src/pages/admin.astro
+[2m01:43:35[22m [34m[watch][39m src/pages/admin.astro
+[2m01:43:58[22m [34m[watch][39m src/pages/index.astro
+[2m01:43:58[22m [34m[watch][39m src/pages/index.astro
+[2m01:44:34[22m [34m[200][39m /api/hero-settings [2m54ms[22m
+[2m01:44:34[22m [34m[200][39m /admin/hero [2m230ms[22m
+[2m01:44:53[22m [34m[200][39m [34mPOST[39m /api/hero-settings [2m6ms[22m
+[2m01:49:49[22m [34m[200][39m /admin/hero [2m5ms[22m
+[2m01:49:50[22m [34m[200][39m / [2m74ms[22m
+[2m01:49:51[22m [34m[200][39m /api/hero-settings [2m1ms[22m
+[2m01:49:56[22m [34m[watch][39m src/lib/hero-config.js
+[2m01:49:56[22m [34m[watch][39m src/lib/hero-config.js
+[2m01:49:57[22m [34m[200][39m /admin/hero [2m87ms[22m
+[2m01:49:57[22m [34m[200][39m / [2m86ms[22m
+[2m01:49:58[22m [34m[200][39m /api/hero-settings [2m1ms[22m
+[2m01:50:07[22m [34m[watch][39m /src/components/HeroAdmin.jsx, /node_modules/@astrojs/tailwind/base.css, /src/styles/global.css
+[2m01:50:07[22m [34m[watch][39m src/components/HeroAdmin.jsx
+[2m01:50:08[22m [34m[200][39m /api/hero-settings [2m1ms[22m
+[2m01:50:11[22m [34m[watch][39m src/pages/index.astro
+[2m01:50:11[22m [34m[watch][39m src/pages/index.astro
+[2m01:50:11[22m [34m[200][39m /admin/hero [2m54ms[22m
+[2m01:50:11[22m [34m[200][39m / [2m204ms[22m
+[2m01:50:12[22m [34m[200][39m /api/hero-settings [2m1ms[22m
+[2m01:50:36[22m [34m[200][39m /api/hero-settings [2m1ms[22m
+[2m01:50:36[22m [34m[200][39m / [2m6ms[22m
+[2m01:53:15[22m [34m[200][39m /admin/hero [2m4ms[22m
+[2m01:53:16[22m [34m[200][39m / [2m15ms[22m
+[2m01:53:16[22m [34m[200][39m /api/hero-settings [2m2ms[22m
+[2m01:53:36[22m [34m[200][39m / [2m11ms[22m
+[2m01:53:41[22m [33m[404][39m /_astro/client.Bh4aqnF6.js [2m1ms[22m
+[2m01:53:41[22m [33m[404][39m /_astro/hooks.module.DolKhjTk.js [2m1ms[22m
+[2m02:06:19[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:06:19[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:12:52[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:12:52[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:13:00[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:13:00[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:18:31[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:18:31[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:18:50[22m [34m[watch][39m src/pages/api/upload-editor-image.js
+[2m02:18:50[22m [34m[watch][39m src/pages/api/upload-editor-image.js
+[2m02:21:53[22m [34m[200][39m /blog [2m98ms[22m
+[2m02:21:53[22m [34m[200][39m /admin/hero [2m102ms[22m
+[2m02:21:53[22m [34m[200][39m /admin [2m111ms[22m
+[2m02:21:53[22m [34m[200][39m /admin [2m7ms[22m
+[2m02:21:53[22m [34m[200][39m / [2m186ms[22m
+[2m02:21:53[22m [34m[200][39m /api/list-posts [2m12ms[22m
+[2m02:21:54[22m [34m[200][39m /api/hero-settings [2m2ms[22m
+[2m02:22:03[22m [34m[200][39m /admin [2m6ms[22m
+[2m02:22:56[22m [34m[watch][39m src/content/blog/compressd.md
+[2m02:22:56[22m [34m[glob-loader][39m Reloaded data from [32mcompressd.md[39m
+[2m02:22:56[22m [34m[glob-loader][39m Reloaded data from [32mcompressd.md[39m
+[2m02:29:04[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:29:04[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:29:13[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:29:13[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:29:19[22m [34m[watch][39m src/pages/api/list-posts.js
+[2m02:29:19[22m [34m[watch][39m src/pages/api/list-posts.js
+[2m02:29:23[22m [34m[watch][39m src/pages/index.astro
+[2m02:29:23[22m [34m[watch][39m src/pages/index.astro
+[2m02:29:36[22m [34m[watch][39m src/pages/blog/index.astro
+[2m02:29:36[22m [34m[watch][39m src/pages/blog/index.astro
+[2m02:29:42[22m [34m[watch][39m src/pages/tags/[tag].astro
+[2m02:30:02[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:30:02[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:31:51[22m [34m[watch][39m src/content/blog/thumb.md
+[2m02:31:51[22m [34m[glob-loader][39m Reloaded data from [32mthumb.md[39m
+[2m02:31:51[22m [34m[glob-loader][39m Reloaded data from [32mthumb.md[39m
+[2m02:37:00[22m [34m[watch][39m src/content/blog/my-amarrrrzing-blog-post.md
+[2m02:37:00[22m [34m[glob-loader][39m Reloaded data from [32mmy-amarrrrzing-blog-post.md[39m
+[2m02:37:00[22m [34m[glob-loader][39m Reloaded data from [32mmy-amarrrrzing-blog-post.md[39m
+[33m[1m02:40:17[22m [WARN] [glob-loader][39m Duplicate id "my-amarrrrzing-blog-post" found in C:\Users\Ahmed Talal\Desktop\astro-blog\src\content\blog\my-amarrrrzing-blog-post.md. Later items with the same id will overwrite earlier ones.
+[2m02:40:17[22m [34m[glob-loader][39m Reloaded data from [32mmy-amarrrrzing-blog-post.md[39m
+[2m02:42:47[22m [34m[watch][39m src/content/blog/my-amazing-blog-pvvvost.md
+[2m02:42:47[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blog-pvvvost.md[39m
+[2m02:47:20[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:47:20[22m [34m[watch][39m src/pages/api/hero-settings.js
+[2m02:47:30[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:47:30[22m [34m[watch][39m src/pages/api/save-post.js
+[2m02:47:43[22m [34m[watch][39m src/pages/api/upload-editor-image.js
+[2m02:47:43[22m [34m[watch][39m src/pages/api/upload-editor-image.js
+[2m02:51:49[22m [34m[watch][39m src/content/blog/my-amazing-blodfffg-post.md
+[2m02:51:49[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blodfffg-post.md[39m
+[2m02:51:49[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-blodfffg-post.md[39m
+[2m02:55:21[22m [34m[watch][39m src/content/blog/my-amarrrrzing-blog-post.md
+[2m02:56:41[22m [34m[watch][39m src/content/blog/compressd.md
+[2m02:59:54[22m [34m[200][39m /blog/my-amazing-blodfffg-post [2m151ms[22m
+[2m03:00:19[22m [34m[watch][39m /src/components/MarkdownImageCanvas.jsx, /node_modules/@astrojs/tailwind/base.css, /src/styles/global.css
+[2m03:00:19[22m [34m[watch][39m src/components/MarkdownImageCanvas.jsx
+[2m03:00:25[22m [34m[watch][39m /src/components/MarkdownImageCanvas.jsx, /node_modules/@astrojs/tailwind/base.css, /src/styles/global.css
+[2m03:00:25[22m [34m[watch][39m src/components/MarkdownImageCanvas.jsx
+[2m03:00:48[22m [34m[200][39m [34mPOST[39m /api/upload-editor-image [2m23ms[22m
+[2m03:05:13[22m [34m[200][39m /blog [2m93ms[22m
+[2m03:05:13[22m [34m[200][39m /admin [2m98ms[22m
+[2m03:05:13[22m [34m[200][39m /admin [2m7ms[22m
+[2m03:05:13[22m [34m[200][39m / [2m183ms[22m
+[2m03:05:13[22m [34m[200][39m /api/list-posts [2m27ms[22m
+[2m03:05:14[22m [34m[watch][39m /src/components/MarkdownImageCanvas.jsx, /node_modules/@astrojs/tailwind/base.css, /src/styles/global.css
+[2m03:05:14[22m [34m[watch][39m src/components/MarkdownImageCanvas.jsx
+[2m03:05:14[22m [34m[200][39m /api/list-posts [2m11ms[22m
+[2m03:05:14[22m [34m[200][39m /api/list-posts [2m10ms[22m
+[2m03:05:15[22m [34m[200][39m [34mHEAD[39m /blog/new-post [2m91ms[22m
+[2m03:05:15[22m [34m[200][39m [34mHEAD[39m /blog/new-post [2m104ms[22m
+[2m03:05:20[22m [34m[200][39m / [2m13ms[22m
+[2m03:05:21[22m [34m[200][39m /admin [2m6ms[22m
+[2m03:05:21[22m [34m[200][39m /api/list-posts [2m4ms[22m
+[2m03:05:22[22m [34m[200][39m [34mHEAD[39m /blog/new-post [2m7ms[22m
+[2m03:05:26[22m [34m[200][39m [34mHEAD[39m /blog/my-amazing-bloffffg-post [2m6ms[22m
+[2m03:05:29[22m [33m[302][39m [33mHEAD[39m /blog/my-amazing-bloffffffg-post [2m8ms[22m
+[2m03:05:29[22m [33m[404][39m [33mHEAD[39m /404 [2m1ms[22m
+[2m03:06:09[22m [34m[watch][39m src/content/blog/my-amazing-bloffffffg-post.md
+[2m03:06:09[22m [34m[glob-loader][39m Reloaded data from [32mmy-amazing-bloffffffg-post.md[39m
