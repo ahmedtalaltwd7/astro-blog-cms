@@ -204,3 +204,7 @@
 [2m04:33:53[22m [34m[content][39m Synced content
 [2m04:33:53[22m [34m[types][39m Generated [2m338ms[22m
 [2m04:33:53[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m05:26:14[22m [34m[200][39m /admin/site [2m393ms[22m
+[2m05:26:14[22m [34m[200][39m /admin [2m303ms[22m
+[2m05:26:14[22m [34m[200][39m / [2m430ms[22m
+[2m05:26:39[22m [34m[200][39m /admin/site [2m5ms[22m

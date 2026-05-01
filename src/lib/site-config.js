@@ -11,6 +11,7 @@ export const DEFAULT_SITE_CONFIG = {
   ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
+  headerBrandTextColor: "#111827",
   headerLinkColor: "#374151",
   headerLinkHoverColor: "#2563eb",
   headerBorderColor: "#e5e7eb",
@@ -73,6 +74,10 @@ export function normalizeSiteConfig(value = {}) {
     headerTextColor: normalizeHexColor(
       config.headerTextColor,
       DEFAULT_SITE_CONFIG.headerTextColor,
+    ),
+    headerBrandTextColor: normalizeHexColor(
+      config.headerBrandTextColor ?? config.headerTextColor,
+      DEFAULT_SITE_CONFIG.headerBrandTextColor,
     ),
     headerLinkColor: normalizeHexColor(
       config.headerLinkColor,

@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = {
   ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
+  headerBrandTextColor: "#111827",
   headerLinkColor: "#374151",
   headerLinkHoverColor: "#2563eb",
   headerBorderColor: "#e5e7eb",
@@ -127,6 +128,13 @@ export default function SiteChromeAdmin() {
       color: config.footerTextColor,
     }),
     [config],
+  );
+
+  const brandPreviewStyle = useMemo(
+    () => ({
+      color: config.headerBrandTextColor,
+    }),
+    [config.headerBrandTextColor],
   );
 
   useEffect(() => {
@@ -292,9 +300,15 @@ export default function SiteChromeAdmin() {
               <h2 class="text-lg font-semibold text-gray-900">Brand</h2>
               <div class="mt-5 grid gap-5">
                 <TextField
-                  label="Brand Name"
+                  label="Brand Name Text"
                   name="brandName"
                   value={config.brandName}
+                  onChange={updateField}
+                />
+                <ColorField
+                  label="Brand Name Color"
+                  name="headerBrandTextColor"
+                  value={config.headerBrandTextColor}
                   onChange={updateField}
                 />
                 <label class="block">
@@ -333,7 +347,7 @@ export default function SiteChromeAdmin() {
                   onChange={updateField}
                 />
                 <ColorField
-                  label="Brand Text"
+                  label="Header Text"
                   name="headerTextColor"
                   value={config.headerTextColor}
                   onChange={updateField}
@@ -522,7 +536,7 @@ export default function SiteChromeAdmin() {
                           class="h-8 w-8 rounded object-contain"
                         />
                       )}
-                      <span class="font-bold">{config.brandName}</span>
+                      <span class="font-bold" style={brandPreviewStyle}>{config.brandName}</span>
                     </div>
                     <div class="flex justify-center gap-2">
                       {config.navLinks.map((link, index) => (

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import sharp from 'sharp';
-import { r as readSiteConfig, w as writeSiteConfig, n as normalizeSiteConfig } from '../../chunks/site-config_B7wu2ICA.mjs';
+import { r as readSiteConfig, w as writeSiteConfig, n as normalizeSiteConfig } from '../../chunks/site-config_D0k7QM2S.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const prerender = false;

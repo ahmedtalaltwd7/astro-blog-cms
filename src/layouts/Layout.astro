@@ -7,6 +7,7 @@ const siteConfig = await readSiteConfig();
 const headerStyle = [
 	`--site-header-bg: ${siteConfig.headerBackgroundColor};`,
 	`--site-header-text: ${siteConfig.headerTextColor};`,
+	`--site-brand-text: ${siteConfig.headerBrandTextColor};`,
 	`--site-header-link: ${siteConfig.headerLinkColor};`,
 	`--site-header-link-hover: ${siteConfig.headerLinkHoverColor};`,
 	`--site-header-border: ${siteConfig.headerBorderColor};`,
@@ -51,19 +52,19 @@ const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} 
 		<!-- Navigation -->
 		<nav class="site-header sticky top-0 z-50 shadow-md" style={headerStyle}>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div class="site-header-inner grid min-h-16 grid-cols-[auto_1fr_auto] items-center gap-4 py-3 transition-all duration-300">
+				<div class="site-header-inner grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 transition-all duration-300 md:grid-cols-[auto_1fr_auto]">
 					<div class="flex items-center justify-start">
-						<a href="/" class="flex items-center space-x-2">
+						<a href="/" class="flex min-w-0 items-center space-x-2">
 							{siteConfig.logoUrl && <img src={siteConfig.logoUrl} alt="Logo" class="h-8 w-8 object-contain" />}
-							<span class="text-xl font-bold">{siteConfig.brandName}</span>
+							<span class="truncate text-xl font-bold" style="color: var(--site-brand-text);">{siteConfig.brandName}</span>
 						</a>
 					</div>
-					<div class="flex items-center justify-center gap-2">
+					<div class="hidden items-center justify-center gap-2 md:flex">
 						{siteConfig.navLinks.map((link) => (
 							<a href={link.href} class={headerLinkClass}>{link.label}</a>
 						))}
 					</div>
-					<div class="flex items-center justify-end space-x-3">
+					<div class="hidden items-center justify-end space-x-3 md:flex">
 						<button
 							type="button"
 							data-theme-toggle
@@ -102,6 +103,88 @@ const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} 
 							<span data-theme-toggle-label>Dark</span>
 						</button>
 						<a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
+							Admin Editor
+						</a>
+					</div>
+					<button
+						type="button"
+						data-mobile-menu-toggle
+						class="inline-flex h-11 w-11 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 md:hidden"
+						aria-controls="mobile-site-menu"
+						aria-expanded="false"
+						aria-label="Open navigation menu"
+					>
+						<svg
+							class="h-5 w-5"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true"
+						>
+							<path
+								data-mobile-menu-icon-open
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M4 6h16M4 12h16M4 18h16"
+							></path>
+							<path
+								data-mobile-menu-icon-close
+								class="hidden"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M6 18 18 6M6 6l12 12"
+							></path>
+						</svg>
+					</button>
+				</div>
+				<div id="mobile-site-menu" data-mobile-menu class="hidden border-t py-3 text-center md:hidden" style={`border-color: ${siteConfig.headerBorderColor};`}>
+					<div class="flex flex-col items-center gap-2">
+						{siteConfig.navLinks.map((link) => (
+							<a href={link.href} class={`${headerLinkClass} block w-full max-w-xs px-3 py-2 text-center`}>{link.label}</a>
+						))}
+					</div>
+					<div class="mx-auto mt-3 grid max-w-xs gap-2 border-t pt-3" style={`border-color: ${siteConfig.headerBorderColor};`}>
+						<button
+							type="button"
+							data-theme-toggle
+							class="theme-toggle inline-flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+							aria-label="Switch to dark theme"
+							aria-pressed="false"
+						>
+							<svg
+								class="theme-toggle-moon h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+								></path>
+							</svg>
+							<svg
+								class="theme-toggle-sun h-4 w-4"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36-.7-.7M6.34 6.34l-.7-.7m12.02 0-.7.7M6.34 17.66l-.7.7M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+								></path>
+							</svg>
+							<span data-theme-toggle-label>Dark</span>
+						</button>
+						<a href="/admin" class="rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700">
 							Admin Editor
 						</a>
 					</div>
@@ -171,6 +254,44 @@ const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} 
 				});
 
 				setTheme(getTheme());
+
+				const mobileMenu = document.querySelector("[data-mobile-menu]");
+				const mobileMenuToggle = document.querySelector("[data-mobile-menu-toggle]");
+				const mobileOpenIcon = document.querySelector("[data-mobile-menu-icon-open]");
+				const mobileCloseIcon = document.querySelector("[data-mobile-menu-icon-close]");
+
+				function setMobileMenu(open) {
+					if (!mobileMenu || !mobileMenuToggle) return;
+
+					mobileMenu.classList.toggle("hidden", !open);
+					mobileMenuToggle.setAttribute("aria-expanded", String(open));
+					mobileMenuToggle.setAttribute(
+						"aria-label",
+						open ? "Close navigation menu" : "Open navigation menu",
+					);
+					mobileOpenIcon?.classList.toggle("hidden", open);
+					mobileCloseIcon?.classList.toggle("hidden", !open);
+				}
+
+				mobileMenuToggle?.addEventListener("click", () => {
+					setMobileMenu(mobileMenu?.classList.contains("hidden"));
+				});
+
+				mobileMenu?.querySelectorAll("a").forEach((link) => {
+					link.addEventListener("click", () => setMobileMenu(false));
+				});
+
+				window.addEventListener("resize", () => {
+					if (window.matchMedia("(min-width: 768px)").matches) {
+						setMobileMenu(false);
+					}
+				});
+
+				window.addEventListener("keydown", (event) => {
+					if (event.key === "Escape") {
+						setMobileMenu(false);
+					}
+				});
 
 				const header = document.querySelector(".site-header");
 				function updateHeader() {

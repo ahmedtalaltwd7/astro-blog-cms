@@ -1,7 +1,7 @@
 /* empty css                                    */
 import { e as createComponent, k as renderComponent, r as renderTemplate } from '../../chunks/astro/server_CPVj0fOm.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_BNJUcxz5.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_Cu0GZ52K.mjs';
 import { useState, useMemo, useEffect } from 'preact/hooks';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 export { renderers } from '../../renderers.mjs';
@@ -21,6 +21,7 @@ const DEFAULT_CONFIG = {
   }],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
+  headerBrandTextColor: "#111827",
   headerLinkColor: "#374151",
   headerLinkHoverColor: "#2563eb",
   headerBorderColor: "#e5e7eb",
@@ -130,6 +131,9 @@ function SiteChromeAdmin() {
     borderColor: config.footerBorderColor,
     color: config.footerTextColor
   }), [config]);
+  const brandPreviewStyle = useMemo(() => ({
+    color: config.headerBrandTextColor
+  }), [config.headerBrandTextColor]);
   useEffect(() => {
     let mounted = true;
     async function loadSettings() {
@@ -305,9 +309,14 @@ function SiteChromeAdmin() {
             }), jsxs("div", {
               class: "mt-5 grid gap-5",
               children: [jsx(TextField, {
-                label: "Brand Name",
+                label: "Brand Name Text",
                 name: "brandName",
                 value: config.brandName,
+                onChange: updateField
+              }), jsx(ColorField, {
+                label: "Brand Name Color",
+                name: "headerBrandTextColor",
+                value: config.headerBrandTextColor,
                 onChange: updateField
               }), jsxs("label", {
                 class: "block",
@@ -343,7 +352,7 @@ function SiteChromeAdmin() {
                 value: config.headerBackgroundColor,
                 onChange: updateField
               }), jsx(ColorField, {
-                label: "Brand Text",
+                label: "Header Text",
                 name: "headerTextColor",
                 value: config.headerTextColor,
                 onChange: updateField
@@ -526,6 +535,7 @@ function SiteChromeAdmin() {
                       class: "h-8 w-8 rounded object-contain"
                     }), jsx("span", {
                       class: "font-bold",
+                      style: brandPreviewStyle,
                       children: config.brandName
                     })]
                   }), jsx("div", {
