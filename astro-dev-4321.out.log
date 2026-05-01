@@ -208,3 +208,127 @@
 [2m05:26:14[22m [34m[200][39m /admin [2m303ms[22m
 [2m05:26:14[22m [34m[200][39m / [2m430ms[22m
 [2m05:26:39[22m [34m[200][39m /admin/site [2m5ms[22m
+[2m05:38:18[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:38:18[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:40:39[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:40:39[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:42:01[22m [34m[200][39m /admin [2m97ms[22m
+[2m05:42:01[22m [34m[200][39m / [2m113ms[22m
+[2m05:42:15[22m [34m[200][39m /admin/site [2m3ms[22m
+[2m05:42:18[22m [34m[200][39m /admin/site [2m3ms[22m
+[2m05:42:19[22m [34m[200][39m /admin/site [2m3ms[22m
+[2m05:42:20[22m [34m[200][39m /admin/site [2m3ms[22m
+[2m05:42:20[22m [34m[200][39m /admin/site [2m3ms[22m
+[2m05:42:21[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:42:21[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:42:22[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:42:22[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:42:23[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:42:23[22m [34m[200][39m /admin/site [2m2ms[22m
+[2m05:45:13[22m [34m[watch][39m src/lib/site-config.js
+[2m05:45:13[22m [34m[watch][39m src/lib/site-config.js
+[2m05:45:17[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:45:17[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:45:25[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m05:45:25[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:24:49[22m [34m[200][39m /admin/hero [2m109ms[22m
+[2m07:24:54[22m [34m[200][39m /admin/hero [2m2ms[22m
+[2m07:25:10[22m [34m[200][39m /admin/hero [2m3ms[22m
+[2m07:25:12[22m [34m[200][39m /admin/hero [2m2ms[22m
+[2m07:25:12[22m [33m[404][39m /_astro/client.Bh4aqnF6.js [2m1ms[22m
+[2m07:25:12[22m [33m[404][39m /_astro/hooks.module.DolKhjTk.js [2m1ms[22m
+[2m07:25:12[22m [33m[404][39m /_astro/preact.module.BytUPcf3.js [2m1ms[22m
+[2m07:25:13[22m [33m[404][39m /_astro/HeroAdmin.BnthnVu8.js [2m1ms[22m
+[2m07:25:13[22m [33m[404][39m /_astro/client.Bh4aqnF6.js [2m1ms[22m
+[2m07:25:13[22m [33m[404][39m /_astro/jsxRuntime.module.wmpUa1Ri.js [2m1ms[22m
+[2m07:25:13[22m [33m[404][39m /_astro/preact.module.BytUPcf3.js [2m1ms[22m
+[2m07:25:14[22m [34m[200][39m /admin/hero [2m4ms[22m
+[2m07:25:15[22m [33m[404][39m /_astro/HeroAdmin.BnthnVu8.js [2m1ms[22m
+[2m07:25:15[22m [33m[404][39m /_astro/client.Bh4aqnF6.js [2m0ms[22m
+[2m07:25:15[22m [33m[404][39m /_astro/jsxRuntime.module.wmpUa1Ri.js [2m1ms[22m
+[2m07:31:00[22m [34m[watch][39m src/pages/index.astro
+[2m07:31:00[22m [34m[watch][39m src/pages/index.astro
+[2m07:31:14[22m [34m[watch][39m src/pages/admin.astro
+[2m07:31:14[22m [34m[watch][39m src/pages/admin.astro
+[2m07:31:21[22m [34m[watch][39m src/pages/admin/hero.astro
+[2m07:31:21[22m [34m[watch][39m src/pages/admin/hero.astro
+[2m07:31:27[22m [34m[watch][39m src/components/HeroAdmin.jsx
+[2m07:31:27[22m [34m[watch][39m src/components/HeroAdmin.jsx
+[2m07:31:32[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:31:32[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:38:58[22m [34m[watch][39m src/pages/index.astro
+[2m07:38:58[22m [34m[watch][39m src/pages/index.astro
+[2m07:53:11[22m [34m[watch][39m src/pages/index.astro
+[2m07:53:11[22m [34m[watch][39m src/pages/index.astro
+[2m07:57:29[22m [34m[200][39m /admin/home-sections [2m124ms[22m
+[2m07:57:29[22m [34m[200][39m / [2m151ms[22m
+[2m07:57:53[22m [34m[200][39m / [2m7ms[22m
+[2m08:08:55[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:08:55[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:09:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:13:53[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:13:53[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:14:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:16:30[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:16:30[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:16:40[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:16:40[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:23:13[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:23:13[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:05[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:05[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:10[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:10[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:36[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:36[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:57[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:29:57[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:30:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:30:43[22m [34m[watch][39m src/pages/index.astro
+[2m08:32:18[22m [34m[200][39m /blog [2m133ms[22m
+[2m08:32:18[22m [34m[200][39m / [2m374ms[22m
+[2m08:32:18[22m [34m[200][39m / [2m31ms[22m
+[2m08:32:18[22m [34m[200][39m /api/list-posts [2m60ms[22m
+[2m08:32:25[22m [34m[200][39m / [2m23ms[22m
+[2m08:38:14[22m [34m[200][39m / [2m131ms[22m
+[2m08:38:31[22m [34m[watch][39m src/lib/home-sections.js
+[2m08:38:31[22m [34m[watch][39m src/lib/home-sections.js
+[2m08:38:32[22m [34m[200][39m / [2m300ms[22m
+[2m08:38:32[22m [34m[200][39m / [2m33ms[22m
+[2m08:38:32[22m [34m[200][39m / [2m22ms[22m
+[2m08:38:38[22m [34m[watch][39m src/pages/api/home-sections.js
+[2m08:38:38[22m [34m[watch][39m src/pages/api/home-sections.js
+[2m08:38:50[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:38:50[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:05[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:05[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:16[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:16[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:25[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:25[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:33[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:33[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:49[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:49[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:55[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:39:55[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:40:04[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:40:04[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:40:14[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:40:14[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:41:04[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:41:04[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:41:10[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:41:11[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:41:53[22m [34m[watch][39m src/pages/index.astro
+[2m08:42:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:45:36[22m [34m[watch][39m src/lib/home-sections.js
+[2m08:45:36[22m [34m[watch][39m src/lib/home-sections.js
+[2m08:45:42[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:45:42[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:45:57[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:45:57[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:46:06[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:46:06[22m [34m[watch][39m src/components/HomeSectionsAdmin.jsx
+[2m08:46:12[22m [34m[watch][39m src/pages/index.astro
+[2m08:46:27[22m [34m[watch][39m src/pages/index.astro

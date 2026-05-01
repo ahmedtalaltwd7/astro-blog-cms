@@ -1,0 +1,102 @@
+[
+  {
+    "id": "3416f3cf-ad15-4226-acb3-041dd8b99ae7",
+    "title": "New Home Section",
+    "body": "Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.Add your section content here.",
+    "imageUrl": "/home-section-assets/20260501080344109-3oj9u.webp",
+    "imageAlt": "New Home Section",
+    "style": "wavy",
+    "backgroundColor": "#0c1a2c",
+    "backgroundColorTo": "#d1d1d1",
+    "waveColor": "#ffffff",
+    "wavePosition": "bottom",
+    "textColor": "#c6d7fb",
+    "bodyTextColor": "#e5f0ff",
+    "autoSlide": false,
+    "sliderOrientation": "vertical",
+    "sliderImages": []
+  },
+  {
+    "id": "0e773454-f077-4806-a256-06ff8d4c194b",
+    "title": "New Home Section",
+    "body": "Add your section content here.",
+    "imageUrl": "/home-section-assets/20260501075948667-xvviy.webp",
+    "imageAlt": "ggggggggg",
+    "style": "imageZoom",
+    "backgroundColor": "#ffffff",
+    "backgroundColorTo": "#dbeafe",
+    "waveColor": "#ffffff",
+    "wavePosition": "top",
+    "textColor": "#111827",
+    "bodyTextColor": "#101823",
+    "autoSlide": false,
+    "sliderOrientation": "vertical",
+    "sliderImages": []
+  },
+  {
+    "id": "f617ac17-7975-4ca9-837c-d64d390205df",
+    "title": "Vertical Image Slider",
+    "body": "Add images, links, and auto-slide behavior for this homepage slider.",
+    "imageUrl": "",
+    "imageAlt": "Vertical Image Slider",
+    "style": "verticalSlider",
+    "backgroundColor": "#eff6ff",
+    "backgroundColorTo": "#dbeafe",
+    "waveColor": "#ffffff",
+    "wavePosition": "top",
+    "textColor": "#111827",
+    "bodyTextColor": "#4b5563",
+    "autoSlide": true,
+    "sliderOrientation": "horizontal",
+    "sliderImages": [
+      {
+        "id": "45fd42d9-f41d-4386-86d1-fce78b69c8df",
+        "imageUrl": "/home-section-assets/20260501084301289-dk3cv.webp",
+        "imageAlt": "Slide 1",
+        "href": "/blog"
+      },
+      {
+        "id": "6a522142-8aa7-4371-baa6-f17307e483af",
+        "imageUrl": "/home-section-assets/20260501084301372-x5fio.webp",
+        "imageAlt": "Slide 2",
+        "href": ""
+      },
+      {
+        "id": "25f176d7-ba2f-4192-afc3-37b28c71754b",
+        "imageUrl": "/home-section-assets/20260501084301194-mhul5.webp",
+        "imageAlt": "Slide 3",
+        "href": ""
+      }
+    ]
+  },
+  {
+    "id": "9e945906-7839-4d36-b2bd-fd1286e9573d",
+    "title": "Vertical Image Slider",
+    "body": "Add images, links, and auto-slide behavior for this homepage slider.",
+    "imageUrl": "",
+    "imageAlt": "Vertical Image Slider",
+    "style": "verticalSlider",
+    "backgroundColor": "#eff6ff",
+    "backgroundColorTo": "#dbeafe",
+    "waveColor": "#ffffff",
+    "wavePosition": "top",
+    "textColor": "#111827",
+    "bodyTextColor": "#4b5563",
+    "autoSlide": true,
+    "sliderOrientation": "vertical",
+    "sliderImages": [
+      {
+        "id": "db13e514-2391-4f51-8f34-c6662003c75b",
+        "imageUrl": "/home-section-assets/20260501085010167-pxiwn.webp",
+        "imageAlt": "Slide 1",
+        "href": "/blog"
+      },
+      {
+        "id": "6b4078e1-bf28-4703-a21a-19c78da73d49",
+        "imageUrl": "/home-section-assets/20260501085010475-sjosj.webp",
+        "imageAlt": "Slide 2",
+        "href": ""
+      }
+    ]
+  }
+]

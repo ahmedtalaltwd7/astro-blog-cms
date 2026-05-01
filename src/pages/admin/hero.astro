@@ -6,12 +6,20 @@ import HeroAdmin from "../../components/HeroAdmin.jsx";
 <Layout title="Admin Panel - Hero Section">
   <div class="bg-blue-50 border-b border-blue-100">
     <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-      <a
-        href="/admin/site"
-        class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100"
-      >
-        Edit Header and Footer
-      </a>
+      <div class="flex flex-wrap gap-3">
+        <a
+          href="/admin/site"
+          class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100"
+        >
+          Edit Header and Footer
+        </a>
+        <a
+          href="/admin/home-sections"
+          class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100"
+        >
+          Edit Home Sections
+        </a>
+      </div>
     </div>
   </div>
   <HeroAdmin client:load />

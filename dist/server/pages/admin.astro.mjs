@@ -1,7 +1,7 @@
 /* empty css                                 */
-import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_CPVj0fOm.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_RHxhWfPN.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_Cu0GZ52K.mjs';
+import { $ as $$Layout } from '../chunks/Layout_zSSWPtV9.mjs';
 import { useRef, useState, useEffect, useMemo } from 'preact/hooks';
 import { marked } from 'marked';
 import { jsxs, jsx } from 'preact/jsx-runtime';
@@ -1429,6 +1429,8 @@ const $$Admin = createComponent(($$result, $$props, $$slots) => {
 Control Home Hero Section
 </a> <a href="/admin/site" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
 Edit Header and Footer
+</a> <a href="/admin/home-sections" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
+Edit Home Sections
 </a> </div> </div> </div> ${renderComponent($$result2, "BlogEditor", BlogEditor, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/BlogEditor.jsx", "client:component-export": "default" })} ` })}`;
 }, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin.astro", void 0);
 

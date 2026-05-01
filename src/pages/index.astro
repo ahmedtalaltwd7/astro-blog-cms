@@ -3,6 +3,8 @@ import Layout from "../layouts/Layout.astro";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { readHeroConfig } from "../lib/hero-config.js";
+import { readHomeSections } from "../lib/home-sections.js";
+import { readHowItWorks } from "../lib/how-it-works.js";
 
 export const prerender = false;
 
@@ -55,6 +57,8 @@ const latestPosts = posts
   .slice(0, 3);
 
 const heroConfig = await readHeroConfig();
+const homeSections = await readHomeSections();
+const howItWorks = await readHowItWorks();
 
 function hexToRgbString(hex: string) {
   const value = Number.parseInt(hex.replace("#", ""), 16);
@@ -87,6 +91,68 @@ function getHeroStyle(config: typeof heroConfig) {
 }
 
 const heroStyle = getHeroStyle(heroConfig);
+
+function getHomeSectionClass(style: string) {
+  if (style === "wavy") {
+    return "home-managed-section home-section-wavy";
+  }
+
+  if (style === "imageZoom") {
+    return "home-managed-section home-section-image-zoom";
+  }
+
+  if (style === "verticalSlider") {
+    return "home-managed-section home-section-vertical-slider";
+  }
+
+  return "home-managed-section home-section-normal";
+}
+
+function getWavePositionClass(position: string) {
+  return position === "bottom" ? "home-section-wave-bottom" : "home-section-wave-top";
+}
+
+function getHomeSectionStyle(section: (typeof homeSections)[number]) {
+  return [
+    `--home-section-bg: ${section.backgroundColor};`,
+    `--home-section-bg-to: ${section.backgroundColorTo};`,
+    `--home-section-wave: ${section.waveColor};`,
+    `--home-section-heading: ${section.textColor};`,
+    `--home-section-body: ${section.bodyTextColor};`,
+  ].join(" ");
+}
+
+const howItWorksIcons: Record<string, string> = {
+  edit: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
+  file: "M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2",
+  check: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+  star: "M11.48 3.499a.562.562 0 011.04 0l2.13 5.18a.563.563 0 00.475.345l5.59.43c.527.04.74.697.338 1.04l-4.262 3.652a.563.563 0 00-.182.557l1.302 5.46a.562.562 0 01-.84.61l-4.793-2.927a.563.563 0 00-.586 0L6.9 20.773a.562.562 0 01-.84-.61l1.302-5.46a.563.563 0 00-.182-.557l-4.262-3.651a.562.562 0 01.338-1.041l5.59-.43a.563.563 0 00.475-.345l2.13-5.18z",
+  image: "M3 16.5l4.5-4.5 3 3 4.5-6 6 7.5M4.5 19.5h15A1.5 1.5 0 0021 18V6a1.5 1.5 0 00-1.5-1.5h-15A1.5 1.5 0 003 6v12a1.5 1.5 0 001.5 1.5z",
+  rocket: "M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96A14.98 14.98 0 019.63 8.41m0 0a6 6 0 00-7.38 5.84h4.8m2.58-5.84a6 6 0 017.38 5.84m-7.38-5.84L3 21l12.59-6.63",
+};
+
+function getHowItWorksIconPath(iconKey: string) {
+  return howItWorksIcons[iconKey] || howItWorksIcons.edit;
+}
+
+function getHowItWorksCardStyle(card: (typeof howItWorks.cards)[number]) {
+  const styles = [
+    `background-color: ${card.cardBackgroundColor};`,
+    `color: ${card.bodyTextColor};`,
+  ];
+
+  if (card.backgroundImageUrl && card.cardStyle !== "imageZoom") {
+    const overlayRgb = hexToRgbString(card.overlayColor);
+    const overlayAlpha = Number(card.overlayOpacity) / 100;
+    styles.push(
+      `background-image: linear-gradient(rgba(${overlayRgb}, ${overlayAlpha}), rgba(${overlayRgb}, ${overlayAlpha})), url("${escapeCssUrl(card.backgroundImageUrl)}");`,
+      "background-size: cover;",
+      "background-position: center;",
+    );
+  }
+
+  return styles.join(" ");
+}
 ---
 
 <Layout title={heroConfig.pageTitle} description={heroConfig.metaDescription}>
@@ -144,88 +210,166 @@ const heroStyle = getHeroStyle(heroConfig);
       </div>
     </section>
 
+    {
+      homeSections.length > 0 && (
+        <div class="home-managed-sections">
+          {homeSections.map((section) => (
+            <section
+              class={`${getHomeSectionClass(section.style)} ${section.style === "wavy" ? getWavePositionClass(section.wavePosition) : ""}`}
+              style={getHomeSectionStyle(section)}
+            >
+              {section.style === "wavy" && section.wavePosition !== "bottom" && (
+                <div class="home-wave-divider home-wave-divider-top" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 1440 150"
+                    preserveAspectRatio="none"
+                    focusable="false"
+                  >
+                    <path
+                      d="M0,66 C160,18 302,16 455,54 C626,97 777,111 940,67 C1110,20 1288,26 1440,72 L1440,0 L0,0 Z"
+                    />
+                  </svg>
+                </div>
+              )}
+              <div class="home-managed-inner">
+                {section.style === "verticalSlider" ? (
+                  <div class="home-vertical-slider-layout">
+                    <div class="home-section-copy home-vertical-slider-copy">
+                      <h2>{section.title}</h2>
+                      {section.body && <p>{section.body}</p>}
+                    </div>
+                    <div
+                      class={`home-vertical-slider ${section.sliderOrientation === "horizontal" ? "home-horizontal-slider" : ""}`}
+                      data-vertical-slider
+                      data-auto-slide={String(Boolean(section.autoSlide))}
+                      data-slider-orientation={section.sliderOrientation || "vertical"}
+                    >
+                      <div class="home-vertical-slider-track" data-vertical-slider-track>
+                        {section.sliderImages.length > 0 ? (
+                          section.sliderImages.map((image) => (
+                            <div class="home-vertical-slide">
+                              {image.href ? (
+                                <a href={image.href}>
+                                  <img
+                                    src={image.imageUrl}
+                                    alt={image.imageAlt || section.title}
+                                  />
+                                </a>
+                              ) : (
+                                <img
+                                  src={image.imageUrl}
+                                  alt={image.imageAlt || section.title}
+                                />
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div class="home-vertical-slide home-image-placeholder" />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : section.style === "imageZoom" ? (
+                  <div class="home-image-zoom-layout">
+                    <div class="home-image-zoom-copy">
+                      <h2>{section.title}</h2>
+                      {section.body && <p>{section.body}</p>}
+                    </div>
+                    <div class="home-image-zoom-frame">
+                      {section.imageUrl ? (
+                        <img
+                          src={section.imageUrl}
+                          alt={section.imageAlt || section.title}
+                        />
+                      ) : (
+                        <div class="home-image-placeholder" />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div class="home-section-copy">
+                    <h2>{section.title}</h2>
+                    {section.body && <p>{section.body}</p>}
+                    {section.imageUrl && (
+                      <img
+                        src={section.imageUrl}
+                        alt={section.imageAlt || section.title}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+              {section.style === "wavy" && section.wavePosition === "bottom" && (
+                <div class="home-wave-divider home-wave-divider-bottom" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 1440 150"
+                    preserveAspectRatio="none"
+                    focusable="false"
+                  >
+                    <path
+                      d="M0,66 C160,18 302,16 455,54 C626,97 777,111 940,67 C1110,20 1288,26 1440,72 L1440,0 L0,0 Z"
+                    />
+                  </svg>
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+      )
+    }
+
     <!-- Features Section -->
     <section class="py-16 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">
-          How It Works
+          {howItWorks.heading}
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-gray-50 p-8 rounded-xl shadow-sm">
+          {howItWorks.cards.map((card, index) => (
             <div
-              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6"
+              class="group relative overflow-hidden p-8 rounded-xl shadow-sm"
+              style={getHowItWorksCardStyle(card)}
             >
-              <svg
-                class="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+              {card.cardStyle === "imageZoom" && card.backgroundImageUrl && (
+                <>
+                  <img
+                    src={card.backgroundImageUrl}
+                    alt=""
+                    class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                  />
+                  <div
+                    class="absolute inset-0"
+                    style={`background-color: rgba(${hexToRgbString(card.overlayColor)}, ${Number(card.overlayOpacity) / 100});`}
+                  />
+                </>
+              )}
+              <div class="relative z-10">
+              <div
+                class="w-12 h-12 rounded-lg flex items-center justify-center mb-6"
+                style={`background-color: ${card.accentBackgroundColor}; color: ${card.accentColor};`}
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                ></path>
-              </svg>
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d={getHowItWorksIconPath(card.iconKey)}
+                  ></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-3" style={`color: ${card.titleColor};`}>
+                {card.title}
+              </h3>
+              <p style={`color: ${card.bodyTextColor};`}>{card.body}</p>
+              </div>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">Edit Markdown</h3>
-            <p class="text-gray-600">
-              Use the admin control panel to write blog posts in markdown with
-              frontmatter. The editor provides a live preview.
-            </p>
-          </div>
-          <div class="bg-gray-50 p-8 rounded-xl shadow-sm">
-            <div
-              class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-6"
-            >
-              <svg
-                class="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
-                ></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">Save to Files</h3>
-            <p class="text-gray-600">
-              Posts are saved as .md files in <code
-                class="bg-gray-200 px-1 rounded">src/pages/blog/</code
-              >. The API handles file creation and validation.
-            </p>
-          </div>
-          <div class="bg-gray-50 p-8 rounded-xl shadow-sm">
-            <div
-              class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6"
-            >
-              <svg
-                class="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">Dynamic Pages</h3>
-            <p class="text-gray-600">
-              Astro generates static pages for each blog post using dynamic
-              routing. Tailwind CSS ensures beautiful, responsive design.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </section>
@@ -380,3 +524,270 @@ const heroStyle = getHeroStyle(heroConfig);
     </section>
   </div>
 </Layout>
+
+<style>
+  .home-managed-section {
+    position: relative;
+    overflow: hidden;
+    padding: 4.5rem 1rem;
+    background: var(--home-section-bg, #ffffff);
+  }
+
+  .home-managed-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+
+  .home-section-normal {
+    background: var(--home-section-bg, #ffffff);
+  }
+
+  .home-section-copy {
+    max-width: 52rem;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .home-section-copy h2,
+  .home-image-zoom-copy h2 {
+    color: var(--home-section-heading, #111827);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .home-section-copy p,
+  .home-image-zoom-copy p {
+    margin-top: 1.25rem;
+    color: var(--home-section-body, #4b5563);
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  .home-section-copy img {
+    margin: 2rem auto 0;
+    max-height: 24rem;
+    width: min(100%, 44rem);
+    border-radius: 0.5rem;
+    object-fit: cover;
+    box-shadow: 0 18px 40px rgb(15 23 42 / 0.16);
+  }
+
+  .home-section-wavy {
+    background:
+      radial-gradient(circle at 18% 20%, rgb(255 255 255 / 0.32), transparent 26rem),
+      linear-gradient(180deg, var(--home-section-bg, #eff6ff) 0%, var(--home-section-bg-to, #dbeafe) 100%);
+  }
+
+  .home-section-wave-top {
+    padding-top: 7.5rem;
+    padding-bottom: 4.5rem;
+  }
+
+  .home-section-wave-bottom {
+    padding-top: 4.5rem;
+    padding-bottom: 7.5rem;
+  }
+
+  .home-wave-divider {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 7rem;
+    line-height: 0;
+    pointer-events: none;
+  }
+
+  .home-wave-divider-top {
+    top: 0;
+  }
+
+  .home-wave-divider-bottom {
+    bottom: 0;
+    transform: rotate(180deg);
+  }
+
+  .home-wave-divider svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-wave-divider path {
+    fill: var(--home-section-wave, #ffffff);
+  }
+
+  .home-section-image-zoom {
+    background: var(--home-section-bg, #f9fafb);
+  }
+
+  .home-section-vertical-slider {
+    background: var(--home-section-bg, #ffffff);
+  }
+
+  .home-image-zoom-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .home-image-zoom-frame {
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    border-radius: 0.5rem;
+    background: #dbeafe;
+    box-shadow: 0 20px 45px rgb(15 23 42 / 0.18);
+  }
+
+  .home-image-zoom-frame img,
+  .home-image-placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-image-zoom-frame img {
+    display: block;
+    object-fit: cover;
+    transition: transform 500ms ease;
+  }
+
+  .home-image-zoom-frame:hover img {
+    transform: scale(1.1);
+  }
+
+  .home-image-placeholder {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  }
+
+  .home-vertical-slider-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .home-vertical-slider-copy {
+    text-align: left;
+  }
+
+  .home-vertical-slider {
+    height: min(70vh, 34rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.5rem;
+    background: #111827;
+    box-shadow: 0 22px 48px rgb(15 23 42 / 0.18);
+    scroll-snap-type: y mandatory;
+  }
+
+  .home-horizontal-slider {
+    height: 28rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+  }
+
+  .home-vertical-slider[data-auto-slide="true"] {
+    overflow: hidden;
+  }
+
+  .home-vertical-slider-track {
+    display: grid;
+    gap: 0;
+    transition: transform 650ms ease;
+  }
+
+  .home-horizontal-slider .home-vertical-slider-track {
+    display: flex;
+    height: 100%;
+  }
+
+  .home-vertical-slide {
+    height: min(70vh, 34rem);
+    scroll-snap-align: start;
+  }
+
+  .home-horizontal-slider .home-vertical-slide {
+    width: 100%;
+    min-width: 100%;
+    height: 28rem;
+  }
+
+  .home-vertical-slide a,
+  .home-vertical-slide img {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+
+  .home-vertical-slide img {
+    object-fit: cover;
+  }
+
+  @media (max-width: 767px) {
+    .home-managed-section {
+      padding: 3.5rem 1rem;
+    }
+
+    .home-image-zoom-layout {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      text-align: center;
+    }
+
+    .home-vertical-slider-layout {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .home-vertical-slider-copy {
+      text-align: center;
+    }
+
+    .home-image-zoom-frame {
+      aspect-ratio: 4 / 3;
+    }
+
+    .home-vertical-slider,
+    .home-vertical-slide {
+      height: 24rem;
+    }
+
+    .home-horizontal-slider,
+    .home-horizontal-slider .home-vertical-slide {
+      height: 20rem;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const sliders = document.querySelectorAll("[data-vertical-slider][data-auto-slide='true']");
+
+    sliders.forEach((slider) => {
+      const track = slider.querySelector("[data-vertical-slider-track]");
+      const slides = slider.querySelectorAll(".home-vertical-slide");
+
+      if (!track || slides.length < 2) return;
+
+      let index = 0;
+      window.setInterval(() => {
+        const orientation = slider.dataset.sliderOrientation || "vertical";
+        index = (index + 1) % slides.length;
+        const distance = orientation === "horizontal" ? slider.clientWidth : slider.clientHeight;
+        const axis = orientation === "horizontal" ? "X" : "Y";
+        track.style.transform = `translate${axis}(-${index * distance}px)`;
+      }, 3500);
+
+      window.addEventListener("resize", () => {
+        const orientation = slider.dataset.sliderOrientation || "vertical";
+        const distance = orientation === "horizontal" ? slider.clientWidth : slider.clientHeight;
+        const axis = orientation === "horizontal" ? "X" : "Y";
+        track.style.transform = `translate${axis}(-${index * distance}px)`;
+      });
+    });
+  })();
+</script>

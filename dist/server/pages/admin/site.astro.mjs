@@ -1,7 +1,7 @@
 /* empty css                                    */
-import { e as createComponent, k as renderComponent, r as renderTemplate } from '../../chunks/astro/server_CPVj0fOm.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate } from '../../chunks/astro/server_RHxhWfPN.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_Cu0GZ52K.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_zSSWPtV9.mjs';
 import { useState, useMemo, useEffect } from 'preact/hooks';
 import { jsx, jsxs } from 'preact/jsx-runtime';
 export { renderers } from '../../renderers.mjs';
@@ -290,6 +290,10 @@ function SiteChromeAdmin() {
             href: "/admin/hero",
             class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
             children: "Hero Control"
+          }), jsx("a", {
+            href: "/admin/home-sections",
+            class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
+            children: "Home Sections"
           }), jsx("a", {
             href: "/",
             class: "inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700",

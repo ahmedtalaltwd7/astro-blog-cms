@@ -1,0 +1,61 @@
+{
+  "heading": "CARDS",
+  "cards": [
+    {
+      "title": "Edit Markdown twd",
+      "body": "Use the admin control panel to write blog posts in markdown with frontmatter. The editor provides a live preview.",
+      "accentColor": "#7df86d",
+      "accentBackgroundColor": "#467cc3",
+      "cardBackgroundColor": "#f9fafb",
+      "titleColor": "#ffffff",
+      "bodyTextColor": "#e6e6e6",
+      "backgroundImageUrl": "/how-it-works-assets/20260501081523997-ey9yq.webp",
+      "overlayColor": "#000000",
+      "overlayOpacity": 30,
+      "cardStyle": "imageZoom",
+      "iconKey": "check"
+    },
+    {
+      "title": "Dynamic Pages",
+      "body": "Astro generates pages for each blog post using dynamic routing. Tailwind CSS keeps the design responsive.",
+      "accentColor": "#16a34a",
+      "accentBackgroundColor": "#dcfce7",
+      "cardBackgroundColor": "#f9fafb",
+      "titleColor": "#111827",
+      "bodyTextColor": "#4b5563",
+      "backgroundImageUrl": "",
+      "overlayColor": "#000000",
+      "overlayOpacity": 0,
+      "cardStyle": "normal",
+      "iconKey": "file"
+    },
+    {
+      "title": "New Card",
+      "body": "Add card content here.",
+      "accentColor": "#2563eb",
+      "accentBackgroundColor": "#dbeafe",
+      "cardBackgroundColor": "#f9fafb",
+      "titleColor": "#111827",
+      "bodyTextColor": "#ffffff",
+      "backgroundImageUrl": "/how-it-works-assets/20260501081750947-wu3zs.webp",
+      "overlayColor": "#000000",
+      "overlayOpacity": 25,
+      "cardStyle": "normal",
+      "iconKey": "check"
+    },
+    {
+      "title": "New Card",
+      "body": "Add card content here.",
+      "accentColor": "#2563eb",
+      "accentBackgroundColor": "#dbeafe",
+      "cardBackgroundColor": "#f9fafb",
+      "titleColor": "#fafcff",
+      "bodyTextColor": "#dbdfe6",
+      "backgroundImageUrl": "/how-it-works-assets/20260501082540145-p81xy.webp",
+      "overlayColor": "#da7272",
+      "overlayOpacity": 32,
+      "cardStyle": "normal",
+      "iconKey": "edit"
+    }
+  ]
+}

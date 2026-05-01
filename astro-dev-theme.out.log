@@ -72,3 +72,43 @@
 [2m05:24:41[22m [34m[200][39m /blog [2m3ms[22m
 [2m05:24:41[22m [34m[200][39m /api/list-posts [2m12ms[22m
 [2m05:25:04[22m [34m[200][39m /admin/site [2m5ms[22m
+[2m05:38:18[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:38:18[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:40:39[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:40:39[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:45:13[22m [34m[watch][39m src/lib/site-config.js
+[2m05:45:13[22m [34m[watch][39m src/lib/site-config.js
+[2m05:45:17[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:45:17[22m [34m[watch][39m src/layouts/Layout.astro
+[2m05:45:25[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m05:45:25[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:31:00[22m [34m[watch][39m src/pages/index.astro
+[2m07:31:00[22m [34m[watch][39m src/pages/index.astro
+[2m07:31:14[22m [34m[watch][39m src/pages/admin.astro
+[2m07:31:14[22m [34m[watch][39m src/pages/admin.astro
+[2m07:31:21[22m [34m[watch][39m src/pages/admin/hero.astro
+[2m07:31:21[22m [34m[watch][39m src/pages/admin/hero.astro
+[2m07:31:27[22m [34m[watch][39m src/components/HeroAdmin.jsx
+[2m07:31:27[22m [34m[watch][39m src/components/HeroAdmin.jsx
+[2m07:31:32[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:31:32[22m [34m[watch][39m src/components/SiteChromeAdmin.jsx
+[2m07:38:58[22m [34m[watch][39m src/pages/index.astro
+[2m07:38:58[22m [34m[watch][39m src/pages/index.astro
+[2m07:53:11[22m [34m[watch][39m src/pages/index.astro
+[2m07:53:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:09:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:09:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:14:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:14:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:30:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:30:32[22m [34m[watch][39m src/pages/index.astro
+[2m08:30:43[22m [34m[watch][39m src/pages/index.astro
+[2m08:30:43[22m [34m[watch][39m src/pages/index.astro
+[2m08:41:53[22m [34m[watch][39m src/pages/index.astro
+[2m08:41:53[22m [34m[watch][39m src/pages/index.astro
+[2m08:42:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:42:11[22m [34m[watch][39m src/pages/index.astro
+[2m08:46:12[22m [34m[watch][39m src/pages/index.astro
+[2m08:46:12[22m [34m[watch][39m src/pages/index.astro
+[2m08:46:27[22m [34m[watch][39m src/pages/index.astro
+[2m08:46:27[22m [34m[watch][39m src/pages/index.astro

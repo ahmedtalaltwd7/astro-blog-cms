@@ -232,6 +232,12 @@ export default function HeroAdmin() {
               Blog Editor
             </a>
             <a
+              href="/admin/home-sections"
+              class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Home Sections
+            </a>
+            <a
               href="/"
               class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
             >
