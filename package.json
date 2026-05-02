@@ -14,8 +14,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.5",
     "@astrojs/preact": "^4.0.0",
+    "@astrojs/vercel": "^9.0.5",
     "astro": "^5.17.3",
     "fabric": "^7.3.1",
     "marked": "^17.0.5",
