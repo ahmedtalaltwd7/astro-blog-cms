@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { marked } from "marked";
+import { readTextBlob } from "../../lib/runtime-storage.js";
 export const prerender = false;
 
 const { slug } = Astro.params;
@@ -93,7 +94,9 @@ if (shouldUseRuntimeMarkdown || !Content) {
     `${safeSlug}.md`,
   );
   try {
-    const raw = await fs.readFile(filePath, "utf-8");
+    const raw =
+      (await readTextBlob(`blog-posts/${safeSlug}.md`)) ||
+      (await fs.readFile(filePath, "utf-8"));
     // simple frontmatter parse
     function parseFrontmatter(content: string) {
       const lines = content.split("\n");

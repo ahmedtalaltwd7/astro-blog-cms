@@ -5,6 +5,7 @@ import path from "node:path";
 import { readHeroConfig } from "../lib/hero-config.js";
 import { readHomeSections } from "../lib/home-sections.js";
 import { readHowItWorks } from "../lib/how-it-works.js";
+import { listBlobEntries } from "../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -27,7 +28,7 @@ function parseFrontmatter(content: string) {
 
 const blogDir = path.join(process.cwd(), "src", "content", "blog");
 const files = await fs.readdir(blogDir);
-const posts = await Promise.all(
+const filesystemPosts = await Promise.all(
   files
     .filter((filename) => filename.endsWith(".md"))
     .map(async (filename) => {
@@ -52,6 +53,34 @@ const posts = await Promise.all(
       };
     }),
 );
+const blobPosts = await Promise.all(
+  (await listBlobEntries("blog-posts/"))
+    .filter((entry) => entry.pathname.endsWith(".md"))
+    .map(async (entry) => {
+      const response = await fetch(entry.downloadUrl || entry.url);
+      const filename = entry.pathname.replace(/^blog-posts\//, "");
+      const content = response.ok ? await response.text() : "";
+      const frontmatter = parseFrontmatter(content);
+      const uploadedAt = new Date(entry.uploadedAt);
+      const slug = frontmatter.slug || filename.replace(".md", "");
+
+      return {
+        slug,
+        createdAtMs: uploadedAt.getTime(),
+        frontmatter: {
+          title: frontmatter.title || filename.replace(".md", ""),
+          description: frontmatter.description,
+          pubDate: frontmatter.pubDate,
+          image: frontmatter.image,
+          thumbnail: frontmatter.thumbnail,
+        },
+      };
+    }),
+);
+const postsBySlug = new Map();
+for (const post of filesystemPosts) postsBySlug.set(post.slug, post);
+for (const post of blobPosts) postsBySlug.set(post.slug, post);
+const posts = [...postsBySlug.values()];
 const latestPosts = posts
   .sort((a, b) => b.createdAtMs - a.createdAtMs)
   .slice(0, 3);
