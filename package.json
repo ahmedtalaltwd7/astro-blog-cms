@@ -16,6 +16,7 @@
   "dependencies": {
     "@astrojs/preact": "^4.0.0",
     "@astrojs/vercel": "^9.0.5",
+    "@vercel/blob": "^2.3.3",
     "astro": "^5.17.3",
     "fabric": "^7.3.1",
     "marked": "^17.0.5",

@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
+import { put } from "@vercel/blob";
 
 export const prerender = false;
 
@@ -43,6 +44,10 @@ function getRandomSuffix() {
 
 function generateImageFilename() {
   return `${getFullTimeStamp()}-${getRandomSuffix()}.webp`;
+}
+
+function isVercelRuntime() {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
 async function getImageDirs() {
@@ -98,6 +103,39 @@ async function optimizeImageBuffer(buffer) {
     optimized: optimizedBuffer.length < buffer.length,
     originalSize: buffer.length,
     savedSize: optimizedBuffer.length,
+  };
+}
+
+async function saveImageForCurrentRuntime(imageFilename, optimizedBuffer) {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`${IMAGE_DIR_NAME}/${imageFilename}`, optimizedBuffer, {
+      access: "public",
+      contentType: "image/webp",
+    });
+
+    return {
+      imageUrl: blob.url,
+      storage: "vercel-blob",
+    };
+  }
+
+  if (isVercelRuntime()) {
+    return {
+      imageUrl: `data:image/webp;base64,${optimizedBuffer.toString("base64")}`,
+      storage: "inline",
+    };
+  }
+
+  const imageDirs = await getImageDirs();
+
+  for (const imageDir of imageDirs) {
+    await fs.mkdir(imageDir, { recursive: true });
+    await fs.writeFile(path.join(imageDir, imageFilename), optimizedBuffer);
+  }
+
+  return {
+    imageUrl: `/${IMAGE_DIR_NAME}/${imageFilename}`,
+    storage: "filesystem",
   };
 }
 
@@ -178,14 +216,11 @@ export async function POST({ request }) {
 
     const optimized = await optimizeImageBuffer(buffer);
     const imageFilename = generateImageFilename();
-    const imageDirs = await getImageDirs();
-
-    for (const imageDir of imageDirs) {
-      await fs.mkdir(imageDir, { recursive: true });
-      await fs.writeFile(path.join(imageDir, imageFilename), optimized.buffer);
-    }
-
-    const imageUrl = `/${IMAGE_DIR_NAME}/${imageFilename}`;
+    const savedImage = await saveImageForCurrentRuntime(
+      imageFilename,
+      optimized.buffer,
+    );
+    const imageUrl = savedImage.imageUrl;
 
     return addCorsHeaders(
       new Response(
@@ -199,6 +234,7 @@ export async function POST({ request }) {
             savedSize: optimized.savedSize,
             format: optimized.format,
             inputFormat: optimized.inputFormat,
+            storage: savedImage.storage,
           },
         }),
         {
