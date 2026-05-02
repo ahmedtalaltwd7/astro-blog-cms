@@ -16,20 +16,6 @@
       "iconKey": "check"
     },
     {
-      "title": "Dynamic Pages",
-      "body": "Astro generates pages for each blog post using dynamic routing. Tailwind CSS keeps the design responsive.",
-      "accentColor": "#16a34a",
-      "accentBackgroundColor": "#dcfce7",
-      "cardBackgroundColor": "#f9fafb",
-      "titleColor": "#111827",
-      "bodyTextColor": "#4b5563",
-      "backgroundImageUrl": "",
-      "overlayColor": "#000000",
-      "overlayOpacity": 0,
-      "cardStyle": "normal",
-      "iconKey": "file"
-    },
-    {
       "title": "New Card",
       "body": "Add card content here.",
       "accentColor": "#2563eb",
