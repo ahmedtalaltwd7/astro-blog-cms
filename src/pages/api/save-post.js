@@ -1,6 +1,13 @@
 import fs from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import {
+  isReadonlyRuntime,
+  readTextBlob,
+  requireWritableStorage,
+  saveWebpAsset,
+  writeTextBlob,
+} from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -200,19 +207,21 @@ async function saveUploadedImage(buffer, originalName, timestamp) {
   const thumbFilename = generateThumbFilename(imageFilename);
   const optimization = await optimizeImageBuffer(buffer);
   const thumbBuffer = await createThumbnailBuffer(buffer);
+  const savedImage = await saveWebpAsset({
+    directory: "blog-images",
+    filename: imageFilename,
+    buffer: optimization.buffer,
+    localDirs: imageDirs,
+  });
+  const savedThumb = await saveWebpAsset({
+    directory: "blog-thumbs",
+    filename: thumbFilename,
+    buffer: thumbBuffer,
+    localDirs: thumbDirs,
+  });
 
-  for (const imageDir of imageDirs) {
-    await fs.mkdir(imageDir, { recursive: true });
-    await fs.writeFile(path.join(imageDir, imageFilename), optimization.buffer);
-  }
-
-  for (const thumbDir of thumbDirs) {
-    await fs.mkdir(thumbDir, { recursive: true });
-    await fs.writeFile(path.join(thumbDir, thumbFilename), thumbBuffer);
-  }
-
-  const imageUrl = `/blog-images/${imageFilename}`;
-  const thumbnailUrl = `/blog-thumbs/${thumbFilename}`;
+  const imageUrl = savedImage.url;
+  const thumbnailUrl = savedThumb.url;
   const savedKb = Math.round(optimization.savedSize / 1024);
   const originalKb = Math.round(optimization.originalSize / 1024);
   const thumbKb = Math.round(thumbBuffer.length / 1024);
@@ -230,6 +239,7 @@ async function saveUploadedImage(buffer, originalName, timestamp) {
       format: optimization.format,
       inputFormat: optimization.inputFormat,
       thumbnailSize: thumbBuffer.length,
+      storage: savedImage.storage,
     },
   };
 }
@@ -238,12 +248,6 @@ export async function POST({ request }) {
   try {
     const timestamp = new Date().toISOString();
     console.error(`[${timestamp}] API route called`);
-    // Write debug to file
-    await fs.writeFile(
-      path.join(process.cwd(), "debug.log"),
-      `[${timestamp}] API called\n`,
-      { flag: "a" },
-    );
 
     const contentType = request.headers.get("content-type") || "";
 
@@ -294,11 +298,6 @@ export async function POST({ request }) {
         data = JSON.parse(rawBody);
       } catch (parseError) {
         console.error(`[${timestamp}] JSON parse error:`, parseError);
-        await fs.writeFile(
-          path.join(process.cwd(), "debug.log"),
-          `[${timestamp}] JSON parse error: ${parseError.message}\n`,
-          { flag: "a" },
-        );
         return addCorsHeaders(
           new Response(
             JSON.stringify({
@@ -381,14 +380,12 @@ export async function POST({ request }) {
 
     // Determine the blog directory path (store posts in content, not pages)
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
-
-    // Ensure the directory exists
-    await fs.mkdir(blogDir, { recursive: true });
-
     const filePath = path.join(blogDir, filename);
     let pubDate = new Date().toISOString().split("T")[0];
     try {
-      const existingContent = await fs.readFile(filePath, "utf8");
+      const existingContent = isReadonlyRuntime()
+        ? await readTextBlob(`blog-posts/${filename}`)
+        : await fs.readFile(filePath, "utf8");
       pubDate = getFrontmatterValue(existingContent, "pubDate") || pubDate;
       thumbnailUrl =
         imageUrl && !thumbnailUrl
@@ -415,8 +412,13 @@ tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
 
     const fullContent = frontmatter + strippedContent;
 
-    // Write the file
-    await fs.writeFile(filePath, fullContent, "utf8");
+    if (isReadonlyRuntime()) {
+      requireWritableStorage("save blog posts");
+      await writeTextBlob(`blog-posts/${filename}`, fullContent, "text/markdown");
+    } else {
+      await fs.mkdir(blogDir, { recursive: true });
+      await fs.writeFile(filePath, fullContent, "utf8");
+    }
 
     return addCorsHeaders(
       new Response(

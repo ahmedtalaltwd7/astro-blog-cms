@@ -1,5 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
+import {
+  isReadonlyRuntime,
+  readJsonBlob,
+  requireWritableStorage,
+  writeJsonBlob,
+} from "./runtime-storage.js";
 
 export const DEFAULT_HERO_CONFIG = {
   pageTitle: "Home - Astro Blog",
@@ -89,6 +95,9 @@ export function normalizeHeroConfig(value = {}) {
 }
 
 export async function readHeroConfig() {
+  const blobConfig = await readJsonBlob("admin-data/hero.json");
+  if (blobConfig) return normalizeHeroConfig(blobConfig);
+
   try {
     const raw = await fs.readFile(getHeroConfigPath(), "utf-8");
     return normalizeHeroConfig(JSON.parse(raw));
@@ -99,6 +108,11 @@ export async function readHeroConfig() {
 
 export async function writeHeroConfig(config) {
   const normalized = normalizeHeroConfig(config);
+  if (isReadonlyRuntime()) {
+    requireWritableStorage("save hero settings");
+    return writeJsonBlob("admin-data/hero.json", normalized);
+  }
+
   const filePath = getHeroConfigPath();
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");

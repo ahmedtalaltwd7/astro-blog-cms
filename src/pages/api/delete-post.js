@@ -1,5 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import {
+  deleteBlobEntry,
+  isReadonlyRuntime,
+  readTextBlob,
+} from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -23,18 +28,33 @@ export async function POST({ request }) {
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
     const filePath = path.join(blogDir, safeFilename);
 
-    // Check if file exists
-    try {
-      await fs.access(filePath);
-    } catch {
-      return new Response(JSON.stringify({ error: "File not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+    const blobPath = `blog-posts/${safeFilename}`;
+    const blobContent = await readTextBlob(blobPath);
+
+    if (blobContent) {
+      await deleteBlobEntry(blobPath);
+    } else {
+      if (isReadonlyRuntime()) {
+        return new Response(JSON.stringify({ error: "File not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+      } catch {
+        return new Response(JSON.stringify({ error: "File not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Delete the file
+      await fs.unlink(filePath);
     }
 
-    // Delete the file
-    await fs.unlink(filePath);
     console.log(`Deleted blog post: ${safeFilename}`);
 
     return new Response(

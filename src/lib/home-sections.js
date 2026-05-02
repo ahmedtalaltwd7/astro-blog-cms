@@ -1,5 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
+import {
+  isReadonlyRuntime,
+  readJsonBlob,
+  requireWritableStorage,
+  writeJsonBlob,
+} from "./runtime-storage.js";
 
 export const SECTION_STYLES = new Set(["normal", "wavy", "imageZoom", "verticalSlider"]);
 export const WAVE_POSITIONS = new Set(["top", "bottom"]);
@@ -85,6 +91,9 @@ export function normalizeHomeSections(value = []) {
 }
 
 export async function readHomeSections() {
+  const blobSections = await readJsonBlob("admin-data/home-sections.json");
+  if (blobSections) return normalizeHomeSections(blobSections);
+
   try {
     const raw = await fs.readFile(getHomeSectionsPath(), "utf-8");
     return normalizeHomeSections(JSON.parse(raw));
@@ -95,6 +104,11 @@ export async function readHomeSections() {
 
 export async function writeHomeSections(sections) {
   const normalized = normalizeHomeSections(sections);
+  if (isReadonlyRuntime()) {
+    requireWritableStorage("save home sections");
+    return writeJsonBlob("admin-data/home-sections.json", normalized);
+  }
+
   const filePath = getHomeSectionsPath();
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");

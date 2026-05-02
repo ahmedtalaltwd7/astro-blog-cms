@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { readTextBlob } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -69,16 +70,21 @@ export async function GET({ request, url }) {
     }
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
     const filePath = path.join(blogDir, filename);
-    // Check if file exists
-    try {
-      await fs.access(filePath);
-    } catch (err) {
-      return new Response(JSON.stringify({ error: "File not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+    let content = await readTextBlob(`blog-posts/${filename}`);
+
+    if (!content) {
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+      } catch (err) {
+        return new Response(JSON.stringify({ error: "File not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      content = await fs.readFile(filePath, "utf-8");
     }
-    const content = await fs.readFile(filePath, "utf-8");
+
     const { frontmatter, body } = parseFrontmatter(content);
     return new Response(
       JSON.stringify({

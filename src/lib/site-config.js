@@ -1,5 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
+import {
+  isReadonlyRuntime,
+  readJsonBlob,
+  requireWritableStorage,
+  writeJsonBlob,
+} from "./runtime-storage.js";
 
 export const DEFAULT_SITE_CONFIG = {
   brandName: "Astro Blog",
@@ -120,6 +126,9 @@ export function normalizeSiteConfig(value = {}) {
 }
 
 export async function readSiteConfig() {
+  const blobConfig = await readJsonBlob("admin-data/site.json");
+  if (blobConfig) return normalizeSiteConfig(blobConfig);
+
   try {
     const raw = await fs.readFile(getSiteConfigPath(), "utf-8");
     return normalizeSiteConfig(JSON.parse(raw));
@@ -130,6 +139,11 @@ export async function readSiteConfig() {
 
 export async function writeSiteConfig(config) {
   const normalized = normalizeSiteConfig(config);
+  if (isReadonlyRuntime()) {
+    requireWritableStorage("save header and footer settings");
+    return writeJsonBlob("admin-data/site.json", normalized);
+  }
+
   const filePath = getSiteConfigPath();
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");

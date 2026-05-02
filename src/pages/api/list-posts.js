@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { listBlobEntries } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -8,6 +9,112 @@ function normalizeTag(value) {
     .trim()
     .replace(/^#+/, "")
     .toLowerCase();
+}
+
+function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updatedAtMs }) {
+  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  let title = filename.replace(".md", "");
+  let pubDate = "";
+  let description = "";
+  let author = "";
+  let tags = [];
+  let image = "";
+  let thumbnail = "";
+
+  if (frontmatterMatch) {
+    const frontmatter = frontmatterMatch[1];
+    const lines = frontmatter.split("\n");
+    for (const line of lines) {
+      if (line.startsWith("title:")) {
+        title = line.replace("title:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("pubDate:")) {
+        pubDate = line.replace("pubDate:", "").trim();
+      } else if (line.startsWith("description:")) {
+        description = line.replace("description:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("author:")) {
+        author = line.replace("author:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("tags:")) {
+        const tagsStr = line.replace("tags:", "").trim();
+        if (tagsStr.startsWith("[") && tagsStr.endsWith("]")) {
+          tags = tagsStr
+            .slice(1, -1)
+            .split(",")
+            .map((tagValue) => tagValue.trim().replace(/^["']|["']$/g, ""))
+            .filter(Boolean);
+        }
+      } else if (line.startsWith("image:")) {
+        image = line.replace("image:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("thumbnail:")) {
+        thumbnail = line.replace("thumbnail:", "").trim().replace(/^["']|["']$/g, "");
+      }
+    }
+  }
+
+  return {
+    filename,
+    title,
+    pubDate,
+    description,
+    author,
+    tags,
+    image,
+    thumbnail,
+    createdAt,
+    createdAtMs,
+    updatedAt,
+    updatedAtMs,
+    contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
+    slug: filename.replace(".md", ""),
+  };
+}
+
+async function readFilesystemPosts() {
+  const blogDir = path.join(process.cwd(), "src", "content", "blog");
+  const files = await fs.readdir(blogDir);
+  const markdownFiles = files.filter((file) => file.endsWith(".md"));
+
+  return Promise.all(
+    markdownFiles.map(async (filename) => {
+      const filePath = path.join(blogDir, filename);
+      const [content, stats] = await Promise.all([
+        fs.readFile(filePath, "utf-8"),
+        fs.stat(filePath),
+      ]);
+
+      return parsePost({
+        filename,
+        content,
+        createdAt: stats.birthtime.toISOString(),
+        createdAtMs: stats.birthtimeMs,
+        updatedAt: stats.mtime.toISOString(),
+        updatedAtMs: stats.mtimeMs,
+      });
+    }),
+  );
+}
+
+async function readBlobPosts() {
+  const blobEntries = await listBlobEntries("blog-posts/");
+
+  return Promise.all(
+    blobEntries
+      .filter((entry) => entry.pathname.endsWith(".md"))
+      .map(async (entry) => {
+        const response = await fetch(entry.downloadUrl || entry.url);
+        const content = response.ok ? await response.text() : "";
+        const filename = entry.pathname.replace(/^blog-posts\//, "");
+        const uploadedAt = new Date(entry.uploadedAt);
+
+        return parsePost({
+          filename,
+          content,
+          createdAt: uploadedAt.toISOString(),
+          createdAtMs: uploadedAt.getTime(),
+          updatedAt: uploadedAt.toISOString(),
+          updatedAtMs: uploadedAt.getTime(),
+        });
+      }),
+  );
 }
 
 export async function GET({ request, url }) {
@@ -19,90 +126,14 @@ export async function GET({ request, url }) {
     const tag = normalizeTag(searchParams.get("tag"));
     const offset = (page - 1) * limit;
 
-    const blogDir = path.join(process.cwd(), "src", "content", "blog");
-    const files = await fs.readdir(blogDir);
-    const markdownFiles = files.filter((file) => file.endsWith(".md"));
-
-    const posts = await Promise.all(
-      markdownFiles.map(async (filename) => {
-        const filePath = path.join(blogDir, filename);
-        const [content, stats] = await Promise.all([
-          fs.readFile(filePath, "utf-8"),
-          fs.stat(filePath),
-        ]);
-        // Extract frontmatter (simple parsing)
-        const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
-        let title = filename.replace(".md", "");
-        let pubDate = "";
-        let description = "";
-        let author = "";
-        let tags = [];
-        let image = "";
-        let thumbnail = "";
-
-        if (frontmatterMatch) {
-          const frontmatter = frontmatterMatch[1];
-          const lines = frontmatter.split("\n");
-          for (const line of lines) {
-            if (line.startsWith("title:")) {
-              title = line
-                .replace("title:", "")
-                .trim()
-                .replace(/^["']|["']$/g, "");
-            } else if (line.startsWith("pubDate:")) {
-              pubDate = line.replace("pubDate:", "").trim();
-            } else if (line.startsWith("description:")) {
-              description = line
-                .replace("description:", "")
-                .trim()
-                .replace(/^["']|["']$/g, "");
-            } else if (line.startsWith("author:")) {
-              author = line
-                .replace("author:", "")
-                .trim()
-                .replace(/^["']|["']$/g, "");
-            } else if (line.startsWith("tags:")) {
-              const tagsStr = line.replace("tags:", "").trim();
-              if (tagsStr.startsWith("[") && tagsStr.endsWith("]")) {
-                tags = tagsStr
-                  .slice(1, -1)
-                  .split(",")
-                  .map((t) => t.trim().replace(/^["']|["']$/g, ""))
-                  .filter(Boolean);
-              }
-            } else if (line.startsWith("image:")) {
-              image = line
-                .replace("image:", "")
-                .trim()
-                .replace(/^["']|["']$/g, "");
-            } else if (line.startsWith("thumbnail:")) {
-              thumbnail = line
-                .replace("thumbnail:", "")
-                .trim()
-                .replace(/^["']|["']$/g, "");
-            }
-          }
-        }
-
-        return {
-          filename,
-          title,
-          pubDate,
-          description,
-          author,
-          tags,
-          image,
-          thumbnail,
-          createdAt: stats.birthtime.toISOString(),
-          createdAtMs: stats.birthtimeMs,
-          updatedAt: stats.mtime.toISOString(),
-          updatedAtMs: stats.mtimeMs,
-          contentPreview:
-            content.slice(0, 200) + (content.length > 200 ? "..." : ""),
-          slug: filename.replace(".md", ""),
-        };
-      }),
-    );
+    const postsByFilename = new Map();
+    for (const post of await readFilesystemPosts()) {
+      postsByFilename.set(post.filename, post);
+    }
+    for (const post of await readBlobPosts()) {
+      postsByFilename.set(post.filename, post);
+    }
+    const posts = [...postsByFilename.values()];
 
     const filteredPosts = posts.filter((post) => {
       const matchesSearch = search

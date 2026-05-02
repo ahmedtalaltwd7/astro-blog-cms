@@ -6,6 +6,7 @@ import {
   readHeroConfig,
   writeHeroConfig,
 } from "../../lib/hero-config.js";
+import { isReadonlyRuntime, saveWebpAsset } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -71,6 +72,8 @@ function getHeroImageFilename(imageUrl) {
 }
 
 async function pruneHeroImages(keepImageUrl = "") {
+  if (isReadonlyRuntime()) return;
+
   const keepFilename = getHeroImageFilename(keepImageUrl);
   const imageDirs = await getHeroImageDirs();
 
@@ -133,21 +136,22 @@ async function saveHeroImage(imageBase64, imageFilename) {
 
   const optimized = await optimizeImage(buffer);
   const filename = generateImageFilename();
-  const imageDirs = await getHeroImageDirs();
-
-  for (const imageDir of imageDirs) {
-    await fs.mkdir(imageDir, { recursive: true });
-    await fs.writeFile(path.join(imageDir, filename), optimized.buffer);
-  }
+  const savedAsset = await saveWebpAsset({
+    directory: HERO_IMAGE_DIR,
+    filename,
+    buffer: optimized.buffer,
+    localDirs: await getHeroImageDirs(),
+  });
 
   return {
-    imageUrl: `/${HERO_IMAGE_DIR}/${filename}`,
+    imageUrl: savedAsset.url,
     imageOptimization: {
       optimized: optimized.optimized,
       originalSize: optimized.originalSize,
       savedSize: optimized.savedSize,
       format: optimized.format,
       inputFormat: optimized.inputFormat,
+      storage: savedAsset.storage,
     },
   };
 }

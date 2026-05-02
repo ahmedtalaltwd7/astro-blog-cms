@@ -5,6 +5,7 @@ import {
   readHomeSections,
   writeHomeSections,
 } from "../../lib/home-sections.js";
+import { saveWebpAsset } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -83,14 +84,14 @@ async function saveSectionImage(imageBase64) {
     .webp(IMAGE_WEBP_OPTIONS)
     .toBuffer();
   const filename = generateImageFilename();
-  const assetDirs = await getHomeSectionAssetDirs();
+  const savedAsset = await saveWebpAsset({
+    directory: HOME_SECTION_ASSET_DIR,
+    filename,
+    buffer: optimizedBuffer,
+    localDirs: await getHomeSectionAssetDirs(),
+  });
 
-  for (const assetDir of assetDirs) {
-    await fs.mkdir(assetDir, { recursive: true });
-    await fs.writeFile(path.join(assetDir, filename), optimizedBuffer);
-  }
-
-  return `/${HOME_SECTION_ASSET_DIR}/${filename}`;
+  return savedAsset.url;
 }
 
 async function prepareSectionsForSave(sections = []) {

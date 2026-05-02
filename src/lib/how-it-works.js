@@ -1,5 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
+import {
+  isReadonlyRuntime,
+  readJsonBlob,
+  requireWritableStorage,
+  writeJsonBlob,
+} from "./runtime-storage.js";
 
 export const CARD_STYLES = new Set(["normal", "imageZoom"]);
 export const CARD_ICONS = new Set(["edit", "file", "check", "star", "image", "rocket"]);
@@ -119,6 +125,9 @@ export function normalizeHowItWorks(value = {}) {
 }
 
 export async function readHowItWorks() {
+  const blobConfig = await readJsonBlob("admin-data/how-it-works.json");
+  if (blobConfig) return normalizeHowItWorks(blobConfig);
+
   try {
     const raw = await fs.readFile(getHowItWorksPath(), "utf-8");
     return normalizeHowItWorks(JSON.parse(raw));
@@ -129,6 +138,11 @@ export async function readHowItWorks() {
 
 export async function writeHowItWorks(config) {
   const normalized = normalizeHowItWorks(config);
+  if (isReadonlyRuntime()) {
+    requireWritableStorage("save how it works settings");
+    return writeJsonBlob("admin-data/how-it-works.json", normalized);
+  }
+
   const filePath = getHowItWorksPath();
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");

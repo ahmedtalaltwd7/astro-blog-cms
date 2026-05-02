@@ -5,6 +5,7 @@ import {
   readHowItWorks,
   writeHowItWorks,
 } from "../../lib/how-it-works.js";
+import { saveWebpAsset } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -83,14 +84,14 @@ async function saveCardBackgroundImage(imageBase64) {
     .webp(IMAGE_WEBP_OPTIONS)
     .toBuffer();
   const filename = generateImageFilename();
-  const assetDirs = await getHowItWorksAssetDirs();
+  const savedAsset = await saveWebpAsset({
+    directory: HOW_IT_WORKS_ASSET_DIR,
+    filename,
+    buffer: optimizedBuffer,
+    localDirs: await getHowItWorksAssetDirs(),
+  });
 
-  for (const assetDir of assetDirs) {
-    await fs.mkdir(assetDir, { recursive: true });
-    await fs.writeFile(path.join(assetDir, filename), optimizedBuffer);
-  }
-
-  return `/${HOW_IT_WORKS_ASSET_DIR}/${filename}`;
+  return savedAsset.url;
 }
 
 async function prepareConfigForSave(config = {}) {

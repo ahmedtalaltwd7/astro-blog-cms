@@ -6,6 +6,7 @@ import {
   readSiteConfig,
   writeSiteConfig,
 } from "../../lib/site-config.js";
+import { isReadonlyRuntime, saveWebpAsset } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -71,6 +72,8 @@ function getSiteAssetFilename(logoUrl) {
 }
 
 async function pruneSiteAssets(keepLogoUrl = "") {
+  if (isReadonlyRuntime()) return;
+
   const keepFilename = getSiteAssetFilename(keepLogoUrl);
   const assetDirs = await getSiteAssetDirs();
 
@@ -130,20 +133,21 @@ async function saveLogo(imageBase64) {
 
   const optimized = await optimizeLogo(buffer);
   const filename = generateLogoFilename();
-  const assetDirs = await getSiteAssetDirs();
-
-  for (const assetDir of assetDirs) {
-    await fs.mkdir(assetDir, { recursive: true });
-    await fs.writeFile(path.join(assetDir, filename), optimized.buffer);
-  }
+  const savedAsset = await saveWebpAsset({
+    directory: SITE_ASSET_DIR,
+    filename,
+    buffer: optimized.buffer,
+    localDirs: await getSiteAssetDirs(),
+  });
 
   return {
-    logoUrl: `/${SITE_ASSET_DIR}/${filename}`,
+    logoUrl: savedAsset.url,
     logoOptimization: {
       originalSize: optimized.originalSize,
       savedSize: optimized.savedSize,
       inputFormat: optimized.inputFormat,
       format: "webp",
+      storage: savedAsset.storage,
     },
   };
 }
