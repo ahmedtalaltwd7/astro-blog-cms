@@ -19,3 +19,9 @@
 [2m21:55:58[22m [34m[glob-loader][39m Reloaded data from [32mnoor-twd.md[39m
 [2m21:59:32[22m Configuration file updated. Restarting...
 [2m21:59:32[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m21:59:33[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m21:59:33[22m [34m[content][39m Syncing content
+[2m21:59:33[22m [34m[content][39m Astro config changed
+[2m21:59:33[22m [34m[content][39m Clearing content store
+[2m21:59:34[22m [34m[content][39m Synced content
+[2m21:59:34[22m [34m[types][39m Generated [2m1.83s[22m
