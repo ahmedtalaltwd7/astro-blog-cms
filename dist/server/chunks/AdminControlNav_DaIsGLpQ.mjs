@@ -1,0 +1,51 @@
+import { e as createComponent, m as maybeRenderHead, g as addAttribute, r as renderTemplate, h as createAstro } from './astro/server_RHxhWfPN.mjs';
+import 'piccolore';
+import 'clsx';
+
+const $$Astro = createAstro();
+const $$AdminControlNav = createComponent(($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$AdminControlNav;
+  const { active = "editor" } = Astro2.props;
+  const adminLinks = [
+    {
+      key: "editor",
+      label: "Blog Editor",
+      href: "/admin",
+      description: "Create and manage posts"
+    },
+    {
+      key: "hero",
+      label: "Hero",
+      href: "/admin/hero",
+      description: "Homepage first section"
+    },
+    {
+      key: "home-sections",
+      label: "Home Sections",
+      href: "/admin/home-sections",
+      description: "Cards, sections, sliders"
+    },
+    {
+      key: "site",
+      label: "Header & Footer",
+      href: "/admin/site",
+      description: "Brand and navigation"
+    }
+  ];
+  return renderTemplate`${maybeRenderHead()}<section class="border-b border-slate-200 bg-white"> <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8"> <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"> <div> <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">
+Admin Control Center
+</p> <h1 class="mt-1 text-2xl font-bold text-slate-950 sm:text-3xl">
+Website Controls
+</h1> <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+Move through the admin pages in order: write content, tune the home page,
+          then adjust the site chrome.
+</p> </div> <a href="/" class="inline-flex w-fit items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+View Site
+</a> </div> <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Admin controls"> ${adminLinks.map((link, index) => {
+    const isActive = active === link.key;
+    return renderTemplate`<a${addAttribute(link.href, "href")}${addAttribute(isActive ? "page" : void 0, "aria-current")}${addAttribute(`rounded-md border p-4 transition ${isActive ? "border-blue-500 bg-blue-50 text-blue-900 shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-200 hover:bg-white hover:text-blue-700"}`, "class")}> <span class="flex items-center gap-3"> <span${addAttribute(`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold ${isActive ? "bg-blue-600 text-white" : "bg-white text-slate-500"}`, "class")}> ${index + 1} </span> <span class="min-w-0"> <span class="block truncate text-sm font-semibold">${link.label}</span> <span class="mt-1 block truncate text-xs text-slate-500"> ${link.description} </span> </span> </span> </a>`;
+  })} </nav> </div> </section>`;
+}, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/AdminControlNav.astro", void 0);
+
+export { $$AdminControlNav as $ };

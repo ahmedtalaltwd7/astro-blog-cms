@@ -1,8 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import HomeSectionsAdmin from "../../components/HomeSectionsAdmin.jsx";
+import AdminControlNav from "../../components/AdminControlNav.astro";
 ---
 
 <Layout title="Admin Panel - Home Sections">
+  <AdminControlNav active="home-sections" />
   <HomeSectionsAdmin client:load />
 </Layout>

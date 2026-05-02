@@ -1,9 +1,10 @@
 /* empty css                                    */
-import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_RHxhWfPN.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate } from '../../chunks/astro/server_RHxhWfPN.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_zSSWPtV9.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_DyeyJaqy.mjs';
 import { useState, useMemo, useEffect } from 'preact/hooks';
 import { jsx, jsxs, Fragment } from 'preact/jsx-runtime';
+import { $ as $$AdminControlNav } from '../../chunks/AdminControlNav_DaIsGLpQ.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const DEFAULT_CONFIG = {
@@ -213,9 +214,9 @@ function HeroAdmin() {
     class: "min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8",
     children: jsxs("div", {
       class: "mx-auto max-w-7xl",
-      children: [jsxs("div", {
-        class: "mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between",
-        children: [jsxs("div", {
+      children: [jsx("div", {
+        class: "mb-8",
+        children: jsxs("div", {
           children: [jsx("p", {
             class: "text-sm font-medium uppercase tracking-wide text-blue-600",
             children: "Admin"
@@ -223,22 +224,7 @@ function HeroAdmin() {
             class: "mt-1 text-3xl font-bold text-gray-900",
             children: "Hero Section Control"
           })]
-        }), jsxs("div", {
-          class: "flex flex-wrap gap-3",
-          children: [jsx("a", {
-            href: "/admin",
-            class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
-            children: "Blog Editor"
-          }), jsx("a", {
-            href: "/admin/home-sections",
-            class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50",
-            children: "Home Sections"
-          }), jsx("a", {
-            href: "/",
-            class: "inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700",
-            children: "View Home"
-          })]
-        })]
+        })
       }), jsxs("div", {
         class: "grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]",
         children: [jsxs("form", {
@@ -510,11 +496,7 @@ function HeroAdmin() {
 }
 
 const $$Hero = createComponent(($$result, $$props, $$slots) => {
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Hero Section" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="bg-blue-50 border-b border-blue-100"> <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8"> <div class="flex flex-wrap gap-3"> <a href="/admin/site" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
-Edit Header and Footer
-</a> <a href="/admin/home-sections" class="inline-flex items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-100">
-Edit Home Sections
-</a> </div> </div> </div> ${renderComponent($$result2, "HeroAdmin", HeroAdmin, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/HeroAdmin.jsx", "client:component-export": "default" })} ` })}`;
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Admin Panel - Hero Section" }, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "AdminControlNav", $$AdminControlNav, { "active": "hero" })} ${renderComponent($$result2, "HeroAdmin", HeroAdmin, { "client:load": true, "client:component-hydration": "load", "client:component-path": "C:/Users/Ahmed Talal/Desktop/astro-blog/src/components/HeroAdmin.jsx", "client:component-export": "default" })} ` })}`;
 }, "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin/hero.astro", void 0);
 
 const $$file = "C:/Users/Ahmed Talal/Desktop/astro-blog/src/pages/admin/hero.astro";

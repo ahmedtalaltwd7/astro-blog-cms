@@ -1,7 +1,7 @@
 /* empty css                                 */
 import { e as createComponent, r as renderTemplate, k as renderComponent, m as maybeRenderHead, g as addAttribute, n as Fragment } from '../chunks/astro/server_RHxhWfPN.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_zSSWPtV9.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DyeyJaqy.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { r as readHeroConfig } from '../chunks/hero-config_BMBZyFvS.mjs';

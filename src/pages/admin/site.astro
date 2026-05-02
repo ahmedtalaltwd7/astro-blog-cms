@@ -1,8 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import SiteChromeAdmin from "../../components/SiteChromeAdmin.jsx";
+import AdminControlNav from "../../components/AdminControlNav.astro";
 ---
 
 <Layout title="Admin Panel - Header and Footer">
+  <AdminControlNav active="site" />
   <SiteChromeAdmin client:load />
 </Layout>

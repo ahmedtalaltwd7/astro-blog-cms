@@ -215,7 +215,7 @@ export default function HeroAdmin() {
   return (
     <div class="min-h-screen bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
-        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-8">
           <div>
             <p class="text-sm font-medium uppercase tracking-wide text-blue-600">
               Admin
@@ -223,26 +223,6 @@ export default function HeroAdmin() {
             <h1 class="mt-1 text-3xl font-bold text-gray-900">
               Hero Section Control
             </h1>
-          </div>
-          <div class="flex flex-wrap gap-3">
-            <a
-              href="/admin"
-              class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Blog Editor
-            </a>
-            <a
-              href="/admin/home-sections"
-              class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              Home Sections
-            </a>
-            <a
-              href="/"
-              class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            >
-              View Home
-            </a>
           </div>
         </div>
 

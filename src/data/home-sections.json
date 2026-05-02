@@ -34,42 +34,6 @@
     "sliderImages": []
   },
   {
-    "id": "f617ac17-7975-4ca9-837c-d64d390205df",
-    "title": "Vertical Image Slider",
-    "body": "Add images, links, and auto-slide behavior for this homepage slider.",
-    "imageUrl": "",
-    "imageAlt": "Vertical Image Slider",
-    "style": "verticalSlider",
-    "backgroundColor": "#eff6ff",
-    "backgroundColorTo": "#dbeafe",
-    "waveColor": "#ffffff",
-    "wavePosition": "top",
-    "textColor": "#111827",
-    "bodyTextColor": "#4b5563",
-    "autoSlide": true,
-    "sliderOrientation": "horizontal",
-    "sliderImages": [
-      {
-        "id": "45fd42d9-f41d-4386-86d1-fce78b69c8df",
-        "imageUrl": "/home-section-assets/20260501084301289-dk3cv.webp",
-        "imageAlt": "Slide 1",
-        "href": "/blog"
-      },
-      {
-        "id": "6a522142-8aa7-4371-baa6-f17307e483af",
-        "imageUrl": "/home-section-assets/20260501084301372-x5fio.webp",
-        "imageAlt": "Slide 2",
-        "href": ""
-      },
-      {
-        "id": "25f176d7-ba2f-4192-afc3-37b28c71754b",
-        "imageUrl": "/home-section-assets/20260501084301194-mhul5.webp",
-        "imageAlt": "Slide 3",
-        "href": ""
-      }
-    ]
-  },
-  {
     "id": "9e945906-7839-4d36-b2bd-fd1286e9573d",
     "title": "Vertical Image Slider",
     "body": "Add images, links, and auto-slide behavior for this homepage slider.",
@@ -94,6 +58,36 @@
       {
         "id": "6b4078e1-bf28-4703-a21a-19c78da73d49",
         "imageUrl": "/home-section-assets/20260501085010475-sjosj.webp",
+        "imageAlt": "Slide 2",
+        "href": ""
+      }
+    ]
+  },
+  {
+    "id": "5c4bca58-7d83-4260-9483-5bc3748b46c8",
+    "title": "Vertical Image Slider",
+    "body": "Add images, links, and auto-slide behavior for this homepage slider.",
+    "imageUrl": "",
+    "imageAlt": "Vertical Image Slider",
+    "style": "verticalSlider",
+    "backgroundColor": "#eff6ff",
+    "backgroundColorTo": "#dbeafe",
+    "waveColor": "#ffffff",
+    "wavePosition": "top",
+    "textColor": "#111827",
+    "bodyTextColor": "#4b5563",
+    "autoSlide": true,
+    "sliderOrientation": "horizontal",
+    "sliderImages": [
+      {
+        "id": "daa67500-6d5a-45d6-a310-981df6428322",
+        "imageUrl": "/home-section-assets/20260501090625761-h8k24.webp",
+        "imageAlt": "Slide 1",
+        "href": ""
+      },
+      {
+        "id": "9e905ffe-f7b6-43d2-85c7-93f873e00b06",
+        "imageUrl": "/home-section-assets/20260501090625820-s99mo.webp",
         "imageAlt": "Slide 2",
         "href": ""
       }
