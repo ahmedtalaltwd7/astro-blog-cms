@@ -263,11 +263,19 @@ const lightboxItems = galleryItems.map((item) => ({
               >
                 <button
                   type="button"
-                  class="block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-slate-100 text-left"
+                  class="block aspect-[4/3] w-full cursor-pointer overflow-hidden bg-slate-100 text-left"
                   data-gallery-open
                   aria-label={`Open ${item.alt || item.title || `gallery image ${index + 1}`}`}
                 >
-                  <picture class="block h-full w-full">
+                  <div class="relative h-full w-full" data-thumb-frame>
+                    <div
+                      class="absolute inset-0 flex items-center justify-center bg-slate-100"
+                      data-thumb-spinner
+                      aria-hidden="true"
+                    >
+                      <span class="h-9 w-9 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></span>
+                    </div>
+                    <picture class="block h-full w-full">
                     {item.grid.sources.map((source) => (
                       <source srcset={source.srcset} type={source.type} sizes={item.grid.sizes} />
                     ))}
@@ -278,11 +286,13 @@ const lightboxItems = galleryItems.map((item) => ({
                       width={item.grid.img.width}
                       height={item.grid.img.height}
                       alt={item.alt}
-                      class="h-full w-full object-cover transition duration-300 hover:scale-105"
+                      class="h-full w-full object-cover opacity-0 transition duration-300 hover:scale-105"
+                      data-gallery-thumb
                       loading={index < 6 ? "eager" : "lazy"}
                       decoding="async"
                     />
-                  </picture>
+                    </picture>
+                  </div>
                 </button>
                 {(item.title || item.caption) && (
                   <figcaption class="p-4">
@@ -318,7 +328,7 @@ const lightboxItems = galleryItems.map((item) => ({
     </section>
 
     <div
-      class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/90 px-4 py-5"
+      class="fixed inset-0 z-[100] hidden bg-slate-950/90 px-3 py-4 sm:items-center sm:justify-center sm:px-4 sm:py-5"
       data-gallery-lightbox
       role="dialog"
       aria-modal="true"
@@ -335,41 +345,55 @@ const lightboxItems = galleryItems.map((item) => ({
 
       <button
         type="button"
-        class="absolute left-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20 sm:inline-flex"
+        class="absolute left-2 top-[42%] z-10 inline-flex h-14 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-black/35 text-4xl leading-none text-white transition hover:bg-black/50 sm:left-3 sm:top-1/2 sm:h-12 sm:w-12 sm:bg-white/10 sm:text-3xl sm:hover:bg-white/20"
         data-lightbox-prev
         aria-label="Previous image"
       >
         &#8249;
       </button>
 
-      <div class="w-full max-w-6xl">
-        <picture class="flex max-h-[78vh] items-center justify-center">
-          <source data-lightbox-source="avif" type="image/avif" />
-          <source data-lightbox-source="webp" type="image/webp" />
-          <img
-            data-lightbox-image
-            src=""
-            alt=""
-            class="max-h-[78vh] w-auto max-w-full rounded-md object-contain shadow-2xl"
-            decoding="async"
-          />
-        </picture>
+      <div class="flex h-full w-full flex-col sm:h-auto sm:max-w-6xl">
+        <div
+          class="relative flex h-[calc(100svh-190px)] min-h-0 items-center justify-center overflow-hidden rounded-md sm:h-[78vh] sm:max-h-[78vh]"
+          data-lightbox-stage
+        >
+          <div
+            class="absolute inset-0 flex items-center justify-center bg-slate-950/50"
+            data-lightbox-spinner
+            aria-hidden="true"
+          >
+            <span class="h-12 w-12 animate-spin rounded-full border-4 border-white/25 border-t-white"></span>
+          </div>
+          <div class="flex h-full w-full items-center justify-center px-12 py-3 sm:px-16 sm:py-6" data-lightbox-canvas>
+            <picture class="flex h-full w-full items-center justify-center">
+            <source data-lightbox-source="avif" type="image/avif" />
+            <source data-lightbox-source="webp" type="image/webp" />
+            <img
+              data-lightbox-image
+              src=""
+              alt=""
+              class="h-full w-full rounded-md object-contain opacity-0 shadow-2xl transition duration-200"
+              decoding="async"
+            />
+            </picture>
+          </div>
+        </div>
         <div class="mx-auto mt-4 max-w-3xl text-center text-white">
           <p class="text-sm font-semibold text-white/70" data-lightbox-counter></p>
           <h2 class="mt-1 text-xl font-bold" data-lightbox-title></h2>
           <p class="mt-2 text-sm leading-6 text-white/75" data-lightbox-caption></p>
         </div>
-        <div class="mt-5 grid grid-cols-2 gap-3 sm:hidden">
+        <div class="mt-auto grid grid-cols-2 gap-3 border-t border-white/10 bg-slate-950/95 pt-4 sm:hidden">
           <button
             type="button"
-            class="rounded-md bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+            class="rounded-md bg-white/10 px-4 py-4 text-sm font-semibold text-white"
             data-lightbox-prev-mobile
           >
             Previous
           </button>
           <button
             type="button"
-            class="rounded-md bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+            class="rounded-md bg-white/10 px-4 py-4 text-sm font-semibold text-white"
             data-lightbox-next-mobile
           >
             Next
@@ -379,7 +403,7 @@ const lightboxItems = galleryItems.map((item) => ({
 
       <button
         type="button"
-        class="absolute right-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20 sm:inline-flex"
+        class="absolute right-2 top-[42%] z-10 inline-flex h-14 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-black/35 text-4xl leading-none text-white transition hover:bg-black/50 sm:right-3 sm:top-1/2 sm:h-12 sm:w-12 sm:bg-white/10 sm:text-3xl sm:hover:bg-white/20"
         data-lightbox-next
         aria-label="Next image"
       >
@@ -396,7 +420,9 @@ const lightboxItems = galleryItems.map((item) => ({
       const loadMoreButton = document.querySelector("[data-gallery-load-more]");
       const countText = document.querySelector("[data-gallery-count]");
       const lightbox = document.querySelector("[data-gallery-lightbox]");
+      const thumbImages = Array.from(document.querySelectorAll("[data-gallery-thumb]"));
       const lightboxImage = document.querySelector("[data-lightbox-image]");
+      const lightboxSpinner = document.querySelector("[data-lightbox-spinner]");
       const lightboxTitle = document.querySelector("[data-lightbox-title]");
       const lightboxCaption = document.querySelector("[data-lightbox-caption]");
       const lightboxCounter = document.querySelector("[data-lightbox-counter]");
@@ -419,6 +445,18 @@ const lightboxItems = galleryItems.map((item) => ({
         }
       }
 
+      function showThumbImage(image) {
+        image.classList.remove("opacity-0");
+        image.closest("[data-thumb-frame]")?.querySelector("[data-thumb-spinner]")?.classList.add("hidden");
+      }
+
+      function setLightboxLoading(isLoading) {
+        if (!lightboxSpinner || !lightboxImage) return;
+
+        lightboxSpinner.classList.toggle("hidden", !isLoading);
+        lightboxImage.classList.toggle("opacity-0", isLoading);
+      }
+
       function setSource(sourceElement, source) {
         if (!sourceElement) return;
 
@@ -438,6 +476,7 @@ const lightboxItems = galleryItems.map((item) => ({
         const item = items[activeIndex];
         const avif = item.full.sources.find((source) => source.type === "image/avif");
         const webp = item.full.sources.find((source) => source.type === "image/webp");
+        setLightboxLoading(true);
 
         setSource(avifSource, { ...avif, sizes: item.full.sizes });
         setSource(webpSource, { ...webp, sizes: item.full.sizes });
@@ -484,6 +523,24 @@ const lightboxItems = galleryItems.map((item) => ({
         lightbox.classList.remove("flex");
         document.body.style.overflow = "";
       }
+
+      thumbImages.forEach((image) => {
+        if (image.complete) {
+          showThumbImage(image);
+          return;
+        }
+
+        image.addEventListener("load", () => showThumbImage(image));
+        image.addEventListener("error", () => showThumbImage(image));
+      });
+
+      lightboxImage?.addEventListener("load", () => {
+        setLightboxLoading(false);
+      });
+
+      lightboxImage?.addEventListener("error", () => {
+        setLightboxLoading(false);
+      });
 
       loadMoreButton?.addEventListener("click", () => {
         visibleCount = Math.min(visibleCount + pageSize, galleryCards.length);
