@@ -6,7 +6,12 @@ import {
   readGalleryConfig,
   writeGalleryConfig,
 } from "../../lib/gallery-config.js";
-import { saveAsset } from "../../lib/runtime-storage.js";
+import {
+  deleteBlobEntry,
+  hasBlobStorage,
+  isReadonlyRuntime,
+  saveAsset,
+} from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -68,6 +73,108 @@ async function getGalleryImageDirs() {
   }
 
   return dirs;
+}
+
+function getGalleryAssetPath(assetUrl = "") {
+  const value = String(assetUrl || "").trim();
+  if (!value || value.startsWith("data:image/")) return "";
+
+  let pathname = value;
+  if (/^https?:\/\//i.test(value)) {
+    try {
+      pathname = new URL(value).pathname;
+    } catch {
+      return "";
+    }
+  }
+
+  const normalizedPath = pathname.replace(/\\/g, "/");
+  const galleryPrefix = `/${GALLERY_IMAGE_DIR}/`;
+  const prefixIndex = normalizedPath.indexOf(galleryPrefix);
+  if (prefixIndex === -1 && !normalizedPath.startsWith(`${GALLERY_IMAGE_DIR}/`)) {
+    return "";
+  }
+
+  const relativePath =
+    prefixIndex >= 0
+      ? normalizedPath.slice(prefixIndex + 1)
+      : normalizedPath.replace(/^\/+/, "");
+  const filename = path.basename(relativePath);
+  if (!/\.(webp|avif)$/i.test(filename)) return "";
+
+  return `${GALLERY_IMAGE_DIR}/${filename}`;
+}
+
+function collectGalleryAssetPaths(config) {
+  const paths = new Set();
+  const addImagePaths = (image) => {
+    [image?.webpUrl, image?.avifUrl, image?.imageUrl].forEach((url) => {
+      const assetPath = getGalleryAssetPath(url);
+      if (assetPath) paths.add(assetPath);
+    });
+  };
+
+  addImagePaths(config?.thumbnail);
+  (Array.isArray(config?.images) ? config.images : []).forEach(addImagePaths);
+  return paths;
+}
+
+async function deleteLocalGalleryAsset(assetPath, localDirs) {
+  const filename = path.basename(assetPath);
+
+  await Promise.all(
+    localDirs.map(async (localDir) => {
+      const resolvedDir = path.resolve(localDir);
+      const filePath = path.resolve(resolvedDir, filename);
+      if (!filePath.startsWith(`${resolvedDir}${path.sep}`)) return;
+
+      try {
+        await fs.unlink(filePath);
+      } catch (error) {
+        if (error?.code !== "ENOENT") {
+          throw error;
+        }
+      }
+    }),
+  );
+}
+
+async function deleteRemovedGalleryAssets(previousConfig, nextConfig) {
+  const previousPaths = collectGalleryAssetPaths(previousConfig);
+  const nextPaths = collectGalleryAssetPaths(nextConfig);
+  const removedPaths = [...previousPaths].filter((assetPath) => !nextPaths.has(assetPath));
+  if (removedPaths.length === 0) return [];
+
+  const localDirs = isReadonlyRuntime() ? [] : await getGalleryImageDirs();
+  const deletedAssets = [];
+
+  for (const assetPath of removedPaths) {
+    let deleted = false;
+
+    if (hasBlobStorage()) {
+      try {
+        await deleteBlobEntry(assetPath);
+        deleted = true;
+      } catch (error) {
+        console.error(`Could not delete gallery blob asset ${assetPath}:`, error);
+      }
+    }
+
+    if (localDirs.length > 0) {
+      try {
+        await deleteLocalGalleryAsset(assetPath, localDirs);
+        deleted = true;
+      } catch (error) {
+        console.error(`Could not delete local gallery asset ${assetPath}:`, error);
+      }
+    }
+
+    if (deleted) {
+      deletedAssets.push(assetPath);
+    }
+  }
+
+  return deletedAssets;
 }
 
 async function optimizeImagePair(buffer) {
@@ -215,11 +322,13 @@ export async function POST({ request }) {
     const data = await request.json();
     const prepared = await prepareGalleryForSave(data, current);
     const config = await writeGalleryConfig(prepared.config);
+    const deletedAssets = await deleteRemovedGalleryAssets(current, config);
 
     return jsonResponse({
       success: true,
       config,
       imageOptimizations: prepared.optimizations,
+      deletedAssets,
     });
   } catch (error) {
     console.error("Error saving gallery settings:", error);
