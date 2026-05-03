@@ -20,6 +20,7 @@ const footerStyle = [
 ].join(" ");
 const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} rounded-md px-3 py-2 font-medium`;
 const footerLinks = siteConfig.footerLinks.length > 0 ? siteConfig.footerLinks : siteConfig.navLinks;
+const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 ---
 
 <!doctype html>
@@ -27,8 +28,7 @@ const footerLinks = siteConfig.footerLinks.length > 0 ? siteConfig.footerLinks :
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" href={siteIconUrl} />
 		<meta name="generator" content={Astro.generator} />
 		{description && <meta name="description" content={description} />}
 		<script is:inline>

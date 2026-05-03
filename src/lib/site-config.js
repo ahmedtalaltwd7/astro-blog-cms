@@ -10,6 +10,7 @@ import {
 export const DEFAULT_SITE_CONFIG = {
   brandName: "Astro Blog",
   logoUrl: "/favicon.svg",
+  iconUrl: "/favicon.svg",
   navLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
@@ -77,6 +78,7 @@ export function normalizeSiteConfig(value = {}) {
   return {
     brandName: normalizeText(config.brandName, DEFAULT_SITE_CONFIG.brandName),
     logoUrl: normalizeUrl(config.logoUrl, DEFAULT_SITE_CONFIG.logoUrl),
+    iconUrl: normalizeUrl(config.iconUrl, DEFAULT_SITE_CONFIG.iconUrl),
     navLinks: normalizeLinks(config.navLinks),
     footerLinks: normalizeLinks(
       config.footerLinks,

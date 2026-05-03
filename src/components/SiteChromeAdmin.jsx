@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 const DEFAULT_CONFIG = {
   brandName: "Astro Blog",
   logoUrl: "/favicon.svg",
+  iconUrl: "/favicon.svg",
   navLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
@@ -111,11 +112,14 @@ export default function SiteChromeAdmin() {
   const [config, setConfig] = useState(DEFAULT_CONFIG);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState("");
+  const [iconFile, setIconFile] = useState(null);
+  const [iconPreview, setIconPreview] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   const previewLogo = logoPreview || config.logoUrl;
+  const previewIcon = iconPreview || config.iconUrl;
 
   const headerPreviewStyle = useMemo(
     () => ({
@@ -237,6 +241,12 @@ export default function SiteChromeAdmin() {
     setLogoPreview(file ? URL.createObjectURL(file) : "");
   };
 
+  const handleIconChange = (event) => {
+    const file = event.currentTarget.files?.[0];
+    setIconFile(file || null);
+    setIconPreview(file ? URL.createObjectURL(file) : "");
+  };
+
   const handleRemoveLogo = () => {
     if (!confirm("Remove the site logo? Save afterward to publish this change.")) {
       return;
@@ -247,6 +257,16 @@ export default function SiteChromeAdmin() {
     setConfig((current) => ({ ...current, logoUrl: "" }));
   };
 
+  const handleRemoveIcon = () => {
+    if (!confirm("Remove the site icon? Save afterward to publish this change.")) {
+      return;
+    }
+
+    setIconFile(null);
+    setIconPreview("");
+    setConfig((current) => ({ ...current, iconUrl: "" }));
+  };
+
   const handleReset = () => {
     if (!confirm("Reset header and footer controls to default values? Save afterward to publish the reset.")) {
       return;
@@ -254,6 +274,8 @@ export default function SiteChromeAdmin() {
 
     setLogoFile(null);
     setLogoPreview("");
+    setIconFile(null);
+    setIconPreview("");
     setConfig(DEFAULT_CONFIG);
     setMessage("Default header and footer settings are loaded. Save to apply them.");
   };
@@ -272,6 +294,10 @@ export default function SiteChromeAdmin() {
       if (logoFile) {
         logoBase64 = await fileToDataUrl(logoFile);
       }
+      let iconBase64 = "";
+      if (iconFile) {
+        iconBase64 = await fileToDataUrl(iconFile);
+      }
 
       const response = await fetch("/api/site-settings", {
         method: "POST",
@@ -279,7 +305,9 @@ export default function SiteChromeAdmin() {
         body: JSON.stringify({
           ...config,
           logoBase64,
+          iconBase64,
           removeLogo: !config.logoUrl && !logoFile,
+          removeIcon: !config.iconUrl && !iconFile,
         }),
       });
       const data = await response.json();
@@ -291,6 +319,8 @@ export default function SiteChromeAdmin() {
       setConfig({ ...DEFAULT_CONFIG, ...data.config });
       setLogoFile(null);
       setLogoPreview("");
+      setIconFile(null);
+      setIconPreview("");
       setMessage("Header and footer updated successfully.");
     } catch (error) {
       setMessage(`Save error: ${error.message}`);
@@ -362,6 +392,36 @@ export default function SiteChromeAdmin() {
                   >
                     Remove Logo
                   </button>
+                )}
+                <label class="block">
+                  <span class="block text-sm font-medium text-gray-700">
+                    Site Icon
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleIconChange}
+                    class="mt-2 block w-full cursor-pointer rounded-md border border-gray-300 bg-white text-sm text-gray-700 file:mr-4 file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-blue-700"
+                  />
+                </label>
+                {config.iconUrl && !iconPreview && (
+                  <p class="text-sm text-gray-600">Current icon: {config.iconUrl}</p>
+                )}
+                {(config.iconUrl || iconPreview) && (
+                  <div class="flex items-center gap-3">
+                    <img
+                      src={previewIcon}
+                      alt=""
+                      class="h-10 w-10 rounded-md border border-gray-200 object-contain"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveIcon}
+                      class="w-fit rounded-md border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                    >
+                      Remove Icon
+                    </button>
+                  </div>
                 )}
               </div>
             </section>
@@ -610,6 +670,16 @@ export default function SiteChromeAdmin() {
             <section class="rounded-lg bg-white p-5 shadow-sm">
               <h2 class="text-lg font-semibold text-gray-900">Live Preview</h2>
               <div class="mt-4 overflow-hidden rounded-lg border border-gray-200 shadow-inner">
+                <div class="flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3">
+                  {previewIcon && (
+                    <img
+                      src={previewIcon}
+                      alt=""
+                      class="h-5 w-5 rounded object-contain"
+                    />
+                  )}
+                  <span class="text-sm font-medium text-gray-600">Browser site icon</span>
+                </div>
                 <div
                   class="border-b px-4 py-4"
                   style={headerPreviewStyle}

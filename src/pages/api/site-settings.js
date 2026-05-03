@@ -47,7 +47,7 @@ function getRandomSuffix() {
   return Math.random().toString(36).slice(2, 7).padEnd(5, "0");
 }
 
-function generateLogoFilename() {
+function generateSiteAssetFilename() {
   return `${getFullTimeStamp()}-${getRandomSuffix()}.webp`;
 }
 
@@ -71,10 +71,12 @@ function getSiteAssetFilename(logoUrl) {
   return path.basename(url);
 }
 
-async function pruneSiteAssets(keepLogoUrl = "") {
+async function pruneSiteAssets(keepUrls = []) {
   if (isReadonlyRuntime()) return;
 
-  const keepFilename = getSiteAssetFilename(keepLogoUrl);
+  const keepFilenames = new Set(
+    [keepUrls].flat().map(getSiteAssetFilename).filter(Boolean),
+  );
   const assetDirs = await getSiteAssetDirs();
 
   for (const assetDir of assetDirs) {
@@ -87,7 +89,7 @@ async function pruneSiteAssets(keepLogoUrl = "") {
 
     await Promise.all(
       entries
-        .filter((entry) => entry.isFile() && entry.name !== keepFilename)
+        .filter((entry) => entry.isFile() && !keepFilenames.has(entry.name))
         .map(async (entry) => {
           try {
             await fs.unlink(path.join(assetDir, entry.name));
@@ -99,7 +101,7 @@ async function pruneSiteAssets(keepLogoUrl = "") {
   }
 }
 
-async function optimizeLogo(buffer) {
+async function optimizeSiteAsset(buffer) {
   const image = sharp(buffer, { failOn: "none" }).rotate();
   const metadata = await image.metadata();
   const optimizedBuffer = await image
@@ -120,19 +122,19 @@ async function optimizeLogo(buffer) {
   };
 }
 
-async function saveLogo(imageBase64) {
+async function saveSiteImage(imageBase64, label = "Image") {
   const matches = String(imageBase64 || "").match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (!matches) {
-    throw new Error("Logo must be a valid image file.");
+    throw new Error(`${label} must be a valid image file.`);
   }
 
   const buffer = Buffer.from(matches[2], "base64");
   if (buffer.length > MAX_UPLOAD_BYTES) {
-    throw new Error("Logo must be smaller than 5MB.");
+    throw new Error(`${label} must be smaller than 5MB.`);
   }
 
-  const optimized = await optimizeLogo(buffer);
-  const filename = generateLogoFilename();
+  const optimized = await optimizeSiteAsset(buffer);
+  const filename = generateSiteAssetFilename();
   const savedAsset = await saveWebpAsset({
     directory: SITE_ASSET_DIR,
     filename,
@@ -141,8 +143,8 @@ async function saveLogo(imageBase64) {
   });
 
   return {
-    logoUrl: savedAsset.url,
-    logoOptimization: {
+    url: savedAsset.url,
+    optimization: {
       originalSize: optimized.originalSize,
       savedSize: optimized.savedSize,
       inputFormat: optimized.inputFormat,
@@ -162,29 +164,42 @@ export async function POST({ request }) {
     const current = await readSiteConfig();
     const data = await request.json();
     let logoUrl = data.logoUrl || current.logoUrl;
+    let iconUrl = data.iconUrl || current.iconUrl;
     let logoOptimization = null;
+    let iconOptimization = null;
 
     if (data.logoBase64) {
-      const savedLogo = await saveLogo(data.logoBase64);
-      logoUrl = savedLogo.logoUrl;
-      logoOptimization = savedLogo.logoOptimization;
-      await pruneSiteAssets(logoUrl);
+      const savedLogo = await saveSiteImage(data.logoBase64, "Logo");
+      logoUrl = savedLogo.url;
+      logoOptimization = savedLogo.optimization;
+    }
+
+    if (data.iconBase64) {
+      const savedIcon = await saveSiteImage(data.iconBase64, "Site icon");
+      iconUrl = savedIcon.url;
+      iconOptimization = savedIcon.optimization;
     }
 
     if (data.removeLogo) {
       logoUrl = "";
-      await pruneSiteAssets();
     }
+
+    if (data.removeIcon) {
+      iconUrl = "";
+    }
+
+    await pruneSiteAssets([logoUrl, iconUrl]);
 
     const config = await writeSiteConfig(
       normalizeSiteConfig({
         ...current,
         ...data,
         logoUrl,
+        iconUrl,
       }),
     );
 
-    return jsonResponse({ success: true, config, logoOptimization });
+    return jsonResponse({ success: true, config, logoOptimization, iconOptimization });
   } catch (error) {
     console.error("Error saving site settings:", error);
     return jsonResponse(
