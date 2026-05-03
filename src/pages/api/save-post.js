@@ -3,6 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import {
   isReadonlyRuntime,
+  listBlobEntries,
   readTextBlob,
   requireWritableStorage,
   saveWebpAsset,
@@ -75,6 +76,52 @@ function normalizeTags(value) {
       seen.add(key);
       return true;
     });
+}
+
+function parsePostOrder(value) {
+  const number = Number.parseInt(String(value || "").trim(), 10);
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+async function getHighestPostOrder(blogDir) {
+  const orderNumbers = [];
+
+  try {
+    const files = await fs.readdir(blogDir);
+    await Promise.all(
+      files
+        .filter((filename) => filename.endsWith(".md"))
+        .map(async (filename) => {
+          const content = await fs.readFile(path.join(blogDir, filename), "utf8");
+          const postOrder = parsePostOrder(getFrontmatterValue(content, "postOrder"));
+          if (postOrder !== null) {
+            orderNumbers.push(postOrder);
+          }
+        }),
+    );
+  } catch {
+    // The content directory may not exist yet for the first post.
+  }
+
+  try {
+    const blobEntries = await listBlobEntries("blog-posts/");
+    await Promise.all(
+      blobEntries
+        .filter((entry) => entry.pathname.endsWith(".md"))
+        .map(async (entry) => {
+          const response = await fetch(entry.downloadUrl || entry.url);
+          const content = response.ok ? await response.text() : "";
+          const postOrder = parsePostOrder(getFrontmatterValue(content, "postOrder"));
+          if (postOrder !== null) {
+            orderNumbers.push(postOrder);
+          }
+        }),
+    );
+  } catch {
+    // Blob storage is optional in local development.
+  }
+
+  return Math.max(0, ...orderNumbers);
 }
 
 export async function OPTIONS({ request }) {
@@ -268,6 +315,7 @@ export async function POST({ request }) {
       imageUrl = "",
       thumbnailUrl = "",
       originalFilename = "",
+      updatePostOrderNumber = false,
       imageOptimization = null;
 
     if (contentType.includes("multipart/form-data")) {
@@ -275,6 +323,7 @@ export async function POST({ request }) {
       const formData = await request.formData();
       filename = formData.get("filename");
       originalFilename = formData.get("originalFilename") || filename;
+      updatePostOrderNumber = formData.get("updatePostOrderNumber") === "true";
       title = formData.get("title");
       content = formData.get("content");
       if (formData.has("tags")) {
@@ -322,6 +371,7 @@ export async function POST({ request }) {
       }
       filename = data.filename;
       originalFilename = data.originalFilename || filename;
+      updatePostOrderNumber = Boolean(data.updatePostOrderNumber);
       title = data.title;
       content = data.content;
       if (Object.prototype.hasOwnProperty.call(data, "tags")) {
@@ -399,16 +449,20 @@ export async function POST({ request }) {
     const now = new Date();
     let pubDate = now.toISOString().split("T")[0];
     let createdAt = now.toISOString();
+    let postOrder = null;
+    let existingContentFound = false;
     try {
       const blobContent = await readTextBlob(`blog-posts/${existingFilename}`);
       const existingContent =
         blobContent ||
         (!isReadonlyRuntime() ? await fs.readFile(existingFilePath, "utf8") : "");
+      existingContentFound = Boolean(existingContent);
       pubDate = getFrontmatterValue(existingContent, "pubDate") || pubDate;
       createdAt =
         getFrontmatterValue(existingContent, "createdAt") ||
         getFrontmatterValue(existingContent, "pubDate") ||
         createdAt;
+      postOrder = parsePostOrder(getFrontmatterValue(existingContent, "postOrder"));
       imageUrl = imageUrl || getFrontmatterValue(existingContent, "image");
       thumbnailUrl =
         imageUrl && !thumbnailUrl
@@ -416,6 +470,9 @@ export async function POST({ request }) {
           : thumbnailUrl;
     } catch {
       // New post: use today's date.
+    }
+    if (!existingContentFound || updatePostOrderNumber) {
+      postOrder = (await getHighestPostOrder(blogDir)) + 1;
     }
 
     // Create frontmatter
@@ -426,6 +483,9 @@ createdAt: ${createdAt}
 description: "A blog post about ${title}"
 author: "Blog Author"
 tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
+    if (postOrder !== null) {
+      frontmatter += `\npostOrder: ${postOrder}`;
+    }
     if (imageUrl && imageUrl.trim() !== "") {
       frontmatter += `\nimage: "${imageUrl.replace(/"/g, '\\"')}"`;
     }
@@ -450,6 +510,7 @@ tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
           success: true,
           message: `Post saved as ${filename}`,
           path: filePath,
+          postOrder,
           imageUrl,
           thumbnailUrl,
           imageOptimization,

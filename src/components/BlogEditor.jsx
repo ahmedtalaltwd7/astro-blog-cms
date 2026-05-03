@@ -344,6 +344,7 @@ export default function BlogEditor() {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [originalFilename, setOriginalFilename] = useState("");
+  const [updatePostOrderNumber, setUpdatePostOrderNumber] = useState(false);
   const [previewMode, setPreviewMode] = useState("split");
   const [selectedSnippet, setSelectedSnippet] = useState(snippets[0].label);
   const [cursorInfo, setCursorInfo] = useState({ line: 1, column: 1 });
@@ -377,6 +378,7 @@ export default function BlogEditor() {
         post.title,
         post.description,
         post.pubDate,
+        post.postOrder,
         ...(post.tags || []),
       ]
         .filter(Boolean)
@@ -506,6 +508,7 @@ export default function BlogEditor() {
     setContent("Loading...");
     setIsEditing(true);
     setOriginalFilename(post.filename);
+    setUpdatePostOrderNumber(false);
     setMessage(`Loading "${post.filename}"...`);
     try {
       const response = await fetch(
@@ -623,6 +626,7 @@ export default function BlogEditor() {
           thumbnail,
           imageBase64,
           imageFilename,
+          updatePostOrderNumber,
         }),
       });
 
@@ -649,6 +653,7 @@ export default function BlogEditor() {
         setImagePreview("");
         setIsEditing(false);
         setOriginalFilename("");
+        setUpdatePostOrderNumber(false);
         fetchExistingPosts();
       } else {
         setMessage(`Error: ${result.error}`);
@@ -684,6 +689,7 @@ export default function BlogEditor() {
     setImagePreview("");
     setIsEditing(false);
     setOriginalFilename("");
+    setUpdatePostOrderNumber(false);
   };
 
   const updateCursorInfo = () => {
@@ -1146,6 +1152,22 @@ export default function BlogEditor() {
                   )}
                 </div>
 
+                {isEditing && (
+                  <label class="flex items-start gap-3 rounded-md border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={updatePostOrderNumber}
+                      onChange={(event) =>
+                        setUpdatePostOrderNumber(event.currentTarget.checked)
+                      }
+                      class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>
+                      Give this post the newest order number when updating
+                    </span>
+                  </label>
+                )}
+
                 <div>
                   <label
                     for="image"
@@ -1572,6 +1594,9 @@ export default function BlogEditor() {
                             </div>
                             <p class="mt-2 text-xs text-gray-400">
                               Published: {post.pubDate || "Unknown"}
+                            </p>
+                            <p class="mt-1 text-xs text-gray-400">
+                              Order: {post.postOrder || "Not numbered"}
                             </p>
                           </div>
                           <div class="flex shrink-0 gap-2">

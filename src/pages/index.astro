@@ -33,6 +33,24 @@ function parseDateMs(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function parsePostOrder(value: string | undefined) {
+  const parsed = Number.parseInt(String(value || "").trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function comparePostsByOrder(
+  a: { postOrder: number | null; createdAtMs: number; slug: string },
+  b: { postOrder: number | null; createdAtMs: number; slug: string },
+) {
+  if (a.postOrder !== null && b.postOrder !== null) {
+    return b.postOrder - a.postOrder || a.slug.localeCompare(b.slug);
+  }
+  if (a.postOrder !== null) return -1;
+  if (b.postOrder !== null) return 1;
+
+  return b.createdAtMs - a.createdAtMs || a.slug.localeCompare(b.slug);
+}
+
 const blogDir = path.join(process.cwd(), "src", "content", "blog");
 const files = await fs.readdir(blogDir);
 const filesystemPosts = await Promise.all(
@@ -49,6 +67,7 @@ const filesystemPosts = await Promise.all(
 
       return {
         slug,
+        postOrder: parsePostOrder(frontmatter.postOrder),
         createdAtMs:
           parseDateMs(frontmatter.pubDate || frontmatter.createdAt) ??
           fileStats.birthtimeMs,
@@ -75,6 +94,7 @@ const blobPosts = await Promise.all(
 
       return {
         slug,
+        postOrder: parsePostOrder(frontmatter.postOrder),
         createdAtMs:
           parseDateMs(frontmatter.pubDate || frontmatter.createdAt) ??
           uploadedAt.getTime(),
@@ -93,7 +113,7 @@ for (const post of filesystemPosts) postsBySlug.set(post.slug, post);
 for (const post of blobPosts) postsBySlug.set(post.slug, post);
 const posts = [...postsBySlug.values()];
 const latestPosts = posts
-  .sort((a, b) => b.createdAtMs - a.createdAtMs || a.slug.localeCompare(b.slug))
+  .sort(comparePostsByOrder)
   .slice(0, 3);
 
 const heroConfig = await readHeroConfig();

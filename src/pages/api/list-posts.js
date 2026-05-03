@@ -16,6 +16,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
   let title = filename.replace(".md", "");
   let pubDate = "";
   let frontmatterCreatedAt = "";
+  let postOrder = null;
   let description = "";
   let author = "";
   let tags = [];
@@ -32,6 +33,8 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
         pubDate = line.replace("pubDate:", "").trim();
       } else if (line.startsWith("createdAt:")) {
         frontmatterCreatedAt = line.replace("createdAt:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("postOrder:")) {
+        postOrder = parsePostOrder(line.replace("postOrder:", ""));
       } else if (line.startsWith("description:")) {
         description = line.replace("description:", "").trim().replace(/^["']|["']$/g, "");
       } else if (line.startsWith("author:")) {
@@ -62,6 +65,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
     tags,
     image,
     thumbnail,
+    postOrder,
     createdAt: frontmatterCreatedAt || createdAt,
     createdAtMs: parseDateMs(pubDate || frontmatterCreatedAt) ?? createdAtMs,
     updatedAt,
@@ -69,6 +73,11 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
     contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
     slug: filename.replace(".md", ""),
   };
+}
+
+function parsePostOrder(value) {
+  const number = Number.parseInt(String(value || "").trim(), 10);
+  return Number.isFinite(number) && number > 0 ? number : null;
 }
 
 function parseDateMs(value) {
@@ -156,11 +165,21 @@ export async function GET({ request, url }) {
       return matchesSearch && matchesTag;
     });
 
-    // Sort by publish date so editing a post does not bump it above newer posts.
+    // Numbered posts are ordered by postOrder. Older unnumbered posts keep
+    // their publish-date fallback until they are saved with an order number.
     filteredPosts.sort(
-      (a, b) =>
-        b.createdAtMs - a.createdAtMs ||
-        a.filename.localeCompare(b.filename),
+      (a, b) => {
+        if (a.postOrder !== null && b.postOrder !== null) {
+          return b.postOrder - a.postOrder || a.filename.localeCompare(b.filename);
+        }
+        if (a.postOrder !== null) return -1;
+        if (b.postOrder !== null) return 1;
+
+        return (
+          b.createdAtMs - a.createdAtMs ||
+          a.filename.localeCompare(b.filename)
+        );
+      },
     );
 
     const total = filteredPosts.length;
