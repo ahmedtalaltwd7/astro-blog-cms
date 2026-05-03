@@ -15,6 +15,11 @@ export const DEFAULT_SITE_CONFIG = {
     { label: "Blog", href: "/blog" },
     { label: "Hero", href: "/admin/hero" },
   ],
+  footerLinks: [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+    { label: "Admin", href: "/admin" },
+  ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
   headerBrandTextColor: "#111827",
@@ -52,17 +57,17 @@ function normalizeText(value, fallback) {
   return text || fallback;
 }
 
-function normalizeLinks(value) {
-  const links = Array.isArray(value) ? value : DEFAULT_SITE_CONFIG.navLinks;
+function normalizeLinks(value, fallback = DEFAULT_SITE_CONFIG.navLinks, maxLinks = 6) {
+  const links = Array.isArray(value) ? value : fallback;
   const normalized = links
     .map((link) => ({
       label: String(link?.label || "").trim(),
       href: normalizeUrl(link?.href),
     }))
     .filter((link) => link.label && link.href)
-    .slice(0, 6);
+    .slice(0, maxLinks);
 
-  return normalized.length > 0 ? normalized : DEFAULT_SITE_CONFIG.navLinks;
+  return normalized.length > 0 ? normalized : fallback;
 }
 
 export function normalizeSiteConfig(value = {}) {
@@ -73,6 +78,11 @@ export function normalizeSiteConfig(value = {}) {
     brandName: normalizeText(config.brandName, DEFAULT_SITE_CONFIG.brandName),
     logoUrl: normalizeUrl(config.logoUrl, DEFAULT_SITE_CONFIG.logoUrl),
     navLinks: normalizeLinks(config.navLinks),
+    footerLinks: normalizeLinks(
+      config.footerLinks,
+      Array.isArray(value.navLinks) ? normalizeLinks(value.navLinks) : DEFAULT_SITE_CONFIG.footerLinks,
+      8,
+    ),
     headerBackgroundColor: normalizeHexColor(
       config.headerBackgroundColor,
       DEFAULT_SITE_CONFIG.headerBackgroundColor,

@@ -8,6 +8,11 @@ const DEFAULT_CONFIG = {
     { label: "Blog", href: "/blog" },
     { label: "Hero", href: "/admin/hero" },
   ],
+  footerLinks: [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+    { label: "Admin", href: "/admin" },
+  ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
   headerBrandTextColor: "#111827",
@@ -180,10 +185,25 @@ export default function SiteChromeAdmin() {
     });
   };
 
+  const updateFooterLink = (index, field, value) => {
+    setConfig((current) => {
+      const footerLinks = [...current.footerLinks];
+      footerLinks[index] = { ...footerLinks[index], [field]: value };
+      return { ...current, footerLinks };
+    });
+  };
+
   const addNavLink = () => {
     setConfig((current) => ({
       ...current,
       navLinks: [...current.navLinks, { label: "New Link", href: "/" }].slice(0, 6),
+    }));
+  };
+
+  const addFooterLink = () => {
+    setConfig((current) => ({
+      ...current,
+      footerLinks: [...current.footerLinks, { label: "New Link", href: "/" }].slice(0, 8),
     }));
   };
 
@@ -196,6 +216,18 @@ export default function SiteChromeAdmin() {
     setConfig((current) => ({
       ...current,
       navLinks: current.navLinks.filter((_, linkIndex) => linkIndex !== index),
+    }));
+  };
+
+  const removeFooterLink = (index) => {
+    const linkLabel = config.footerLinks[index]?.label || "this footer link";
+    if (!confirm(`Remove "${linkLabel}" from footer? Save afterward to publish this change.`)) {
+      return;
+    }
+
+    setConfig((current) => ({
+      ...current,
+      footerLinks: current.footerLinks.filter((_, linkIndex) => linkIndex !== index),
     }));
   };
 
@@ -497,6 +529,64 @@ export default function SiteChromeAdmin() {
               </div>
             </section>
 
+            <section class="rounded-lg bg-white p-6 shadow-sm">
+              <div class="flex items-center justify-between gap-4">
+                <h2 class="text-lg font-semibold text-gray-900">Footer Links</h2>
+                <button
+                  type="button"
+                  onClick={addFooterLink}
+                  disabled={config.footerLinks.length >= 8}
+                  class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Add Link
+                </button>
+              </div>
+              <div class="mt-5 grid gap-4">
+                {config.footerLinks.map((link, index) => (
+                  <div
+                    key={`${link.label}-${index}`}
+                    class="grid gap-3 rounded-md border border-gray-200 bg-gray-50 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+                  >
+                    <label class="block">
+                      <span class="block text-sm font-medium text-gray-700">
+                        Label
+                      </span>
+                      <input
+                        type="text"
+                        value={link.label}
+                        onInput={(event) =>
+                          updateFooterLink(index, "label", event.currentTarget.value)
+                        }
+                        class="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      />
+                    </label>
+                    <label class="block">
+                      <span class="block text-sm font-medium text-gray-700">
+                        URL
+                      </span>
+                      <input
+                        type="text"
+                        value={link.href}
+                        onInput={(event) =>
+                          updateFooterLink(index, "href", event.currentTarget.value)
+                        }
+                        class="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      />
+                    </label>
+                    <div class="flex items-end">
+                      <button
+                        type="button"
+                        onClick={() => removeFooterLink(index)}
+                        class="rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <div class="flex flex-wrap items-center gap-3">
               <button
                 type="submit"
@@ -561,7 +651,7 @@ export default function SiteChromeAdmin() {
                     />
                   )}
                   <div class="mb-3 flex justify-center gap-4 text-sm">
-                    {config.navLinks.map((link, index) => (
+                    {config.footerLinks.map((link, index) => (
                       <span
                         key={`${link.label}-${index}`}
                         style={{ color: config.footerLinkColor }}
