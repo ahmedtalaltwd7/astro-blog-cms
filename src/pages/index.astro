@@ -26,6 +26,13 @@ function parseFrontmatter(content: string) {
   return frontmatter;
 }
 
+function parseDateMs(value: string | undefined) {
+  if (!value) return null;
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 const blogDir = path.join(process.cwd(), "src", "content", "blog");
 const files = await fs.readdir(blogDir);
 const filesystemPosts = await Promise.all(
@@ -42,7 +49,9 @@ const filesystemPosts = await Promise.all(
 
       return {
         slug,
-        createdAtMs: fileStats.birthtimeMs,
+        createdAtMs:
+          parseDateMs(frontmatter.createdAt || frontmatter.pubDate) ??
+          fileStats.birthtimeMs,
         frontmatter: {
           title: frontmatter.title || filename.replace(".md", ""),
           description: frontmatter.description,
@@ -66,7 +75,9 @@ const blobPosts = await Promise.all(
 
       return {
         slug,
-        createdAtMs: uploadedAt.getTime(),
+        createdAtMs:
+          parseDateMs(frontmatter.createdAt || frontmatter.pubDate) ??
+          uploadedAt.getTime(),
         frontmatter: {
           title: frontmatter.title || filename.replace(".md", ""),
           description: frontmatter.description,

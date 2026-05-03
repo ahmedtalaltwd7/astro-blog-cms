@@ -188,6 +188,11 @@ export default function SiteChromeAdmin() {
   };
 
   const removeNavLink = (index) => {
+    const linkLabel = config.navLinks[index]?.label || "this navigation link";
+    if (!confirm(`Remove "${linkLabel}" from navigation? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setConfig((current) => ({
       ...current,
       navLinks: current.navLinks.filter((_, linkIndex) => linkIndex !== index),
@@ -201,12 +206,20 @@ export default function SiteChromeAdmin() {
   };
 
   const handleRemoveLogo = () => {
+    if (!confirm("Remove the site logo? Save afterward to publish this change.")) {
+      return;
+    }
+
     setLogoFile(null);
     setLogoPreview("");
     setConfig((current) => ({ ...current, logoUrl: "" }));
   };
 
   const handleReset = () => {
+    if (!confirm("Reset header and footer controls to default values? Save afterward to publish the reset.")) {
+      return;
+    }
+
     setLogoFile(null);
     setLogoPreview("");
     setConfig(DEFAULT_CONFIG);
@@ -215,6 +228,10 @@ export default function SiteChromeAdmin() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!confirm("Save header and footer settings and update the site?")) {
+      return;
+    }
+
     setSaving(true);
     setMessage("Saving header and footer settings...");
 

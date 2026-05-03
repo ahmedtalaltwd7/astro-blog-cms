@@ -145,6 +145,10 @@ export default function HeroAdmin() {
   };
 
   const handleRemoveImage = () => {
+    if (!confirm("Remove the hero image? Save the page afterward to publish this change.")) {
+      return;
+    }
+
     setImageFile(null);
     setImagePreview("");
     setConfig((current) => ({
@@ -155,6 +159,10 @@ export default function HeroAdmin() {
   };
 
   const handleReset = () => {
+    if (!confirm("Reset the hero controls to default values? Save afterward to publish the reset.")) {
+      return;
+    }
+
     setImageFile(null);
     setImagePreview("");
     setConfig(DEFAULT_CONFIG);
@@ -163,6 +171,10 @@ export default function HeroAdmin() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!confirm("Save hero settings and update the homepage?")) {
+      return;
+    }
+
     setSaving(true);
     setMessage("Saving hero settings...");
 

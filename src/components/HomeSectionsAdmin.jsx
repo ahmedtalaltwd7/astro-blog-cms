@@ -613,6 +613,11 @@ export default function HomeSectionsAdmin() {
   };
 
   const removeSectionImage = (index) => {
+    const sectionTitle = sections[index]?.title || "this section";
+    if (!confirm(`Remove the image from "${sectionTitle}"? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setSections((current) => {
       const next = [...current];
       const section = { ...next[index] };
@@ -663,6 +668,11 @@ export default function HomeSectionsAdmin() {
   };
 
   const removeSliderImage = (sectionIndex, imageIndex) => {
+    const sectionTitle = sections[sectionIndex]?.title || "this slider";
+    if (!confirm(`Remove slide ${imageIndex + 1} from "${sectionTitle}"? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setSections((current) => {
       const next = [...current];
       const sliderImages = (next[sectionIndex]?.sliderImages || []).filter(
@@ -695,6 +705,11 @@ export default function HomeSectionsAdmin() {
   };
 
   const deleteHowItWorksCard = (index) => {
+    const cardTitle = howItWorks.cards[index]?.title || `card ${index + 1}`;
+    if (!confirm(`Delete "${cardTitle}" from How It Works? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setHowItWorks((current) => {
       const cards = current.cards.filter((_, cardIndex) => cardIndex !== index);
       setActiveCardIndex(Math.max(0, Math.min(index, cards.length - 1)));
@@ -732,6 +747,11 @@ export default function HomeSectionsAdmin() {
   };
 
   const removeHowItWorksCardImage = (index) => {
+    const cardTitle = howItWorks.cards[index]?.title || `card ${index + 1}`;
+    if (!confirm(`Remove the background image from "${cardTitle}"? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setHowItWorks((current) => {
       const cards = [...current.cards];
       const card = { ...cards[index] };
@@ -763,6 +783,11 @@ export default function HomeSectionsAdmin() {
   };
 
   const deleteSection = (index) => {
+    const sectionTitle = sections[index]?.title || `section ${index + 1}`;
+    if (!confirm(`Delete "${sectionTitle}"? Save afterward to publish this change.`)) {
+      return;
+    }
+
     setSections((current) => {
       const next = current.filter((_, sectionIndex) => sectionIndex !== index);
       setActiveSectionIndex(Math.max(0, Math.min(index, next.length - 1)));
@@ -785,6 +810,10 @@ export default function HomeSectionsAdmin() {
 
   const saveSections = async (event) => {
     event.preventDefault();
+    if (!confirm("Save home page sections and update the homepage?")) {
+      return;
+    }
+
     setSaving(true);
     setMessage("Saving home page sections...");
 

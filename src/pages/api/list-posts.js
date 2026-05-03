@@ -15,6 +15,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
   const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
   let title = filename.replace(".md", "");
   let pubDate = "";
+  let frontmatterCreatedAt = "";
   let description = "";
   let author = "";
   let tags = [];
@@ -29,6 +30,8 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
         title = line.replace("title:", "").trim().replace(/^["']|["']$/g, "");
       } else if (line.startsWith("pubDate:")) {
         pubDate = line.replace("pubDate:", "").trim();
+      } else if (line.startsWith("createdAt:")) {
+        frontmatterCreatedAt = line.replace("createdAt:", "").trim().replace(/^["']|["']$/g, "");
       } else if (line.startsWith("description:")) {
         description = line.replace("description:", "").trim().replace(/^["']|["']$/g, "");
       } else if (line.startsWith("author:")) {
@@ -59,13 +62,20 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
     tags,
     image,
     thumbnail,
-    createdAt,
-    createdAtMs,
+    createdAt: frontmatterCreatedAt || createdAt,
+    createdAtMs: parseDateMs(frontmatterCreatedAt || pubDate) ?? createdAtMs,
     updatedAt,
     updatedAtMs,
     contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
     slug: filename.replace(".md", ""),
   };
+}
+
+function parseDateMs(value) {
+  if (!value) return null;
+
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 async function readFilesystemPosts() {

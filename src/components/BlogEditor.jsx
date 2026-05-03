@@ -331,6 +331,7 @@ export default function BlogEditor() {
   const [title, setTitle] = useState("My Amazing Blog Post");
   const [tagsInput, setTagsInput] = useState("blog, astro");
   const [image, setImage] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [content, setContent] = useState(INITIAL_CONTENT);
@@ -518,6 +519,7 @@ export default function BlogEditor() {
       setTitle(frontmatter.title || post.title);
       setTagsInput(formatTagsInput(frontmatter.tags || post.tags || []));
       setImage(frontmatter.image || "");
+      setThumbnail(frontmatter.thumbnail || post.thumbnail || "");
       setContent(body.trim());
       setImageFile(null);
       setImagePreview("");
@@ -570,6 +572,17 @@ export default function BlogEditor() {
       setMessage("Filename must end with .md");
       return;
     }
+
+    const saveAction = isEditing
+      ? `update "${originalFilename || filename}"`
+      : filenameExists
+        ? `overwrite "${filename}"`
+        : `save "${filename}"`;
+
+    if (!confirm(`Are you sure you want to ${saveAction}?`)) {
+      return;
+    }
+
     setIsSaving(true);
     setMessage("Saving...");
     const contentToSave = latestContentRef.current;
@@ -602,10 +615,12 @@ export default function BlogEditor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           filename,
+          originalFilename,
           title,
           tags: normalizeHashtags(tagsInput),
           content: contentToSave,
           image,
+          thumbnail,
           imageBase64,
           imageFilename,
         }),
@@ -629,6 +644,7 @@ export default function BlogEditor() {
         setTagsInput("");
         setContent("");
         setImage("");
+        setThumbnail("");
         setImageFile(null);
         setImagePreview("");
         setIsEditing(false);
@@ -663,6 +679,7 @@ export default function BlogEditor() {
     setContent("");
     setMessage("");
     setImage("");
+    setThumbnail("");
     setImageFile(null);
     setImagePreview("");
     setIsEditing(false);
@@ -1422,7 +1439,11 @@ export default function BlogEditor() {
                     disabled={isSaving}
                     class="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {isSaving ? "Saving..." : "Save Post"}
+                    {isSaving
+                      ? "Saving..."
+                      : isEditing
+                        ? "Update Post"
+                        : "Save Post"}
                   </button>
 
                   <button

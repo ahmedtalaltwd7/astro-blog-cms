@@ -41,14 +41,24 @@ function stripFrontmatter(content) {
 }
 
 function getFrontmatterValue(content, key) {
-  const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+  const frontmatterMatch = String(content || "").match(/^---\s*\n([\s\S]*?)\n---/);
   if (!frontmatterMatch) return "";
 
   const line = frontmatterMatch[1]
     .split("\n")
     .find((frontmatterLine) => frontmatterLine.startsWith(`${key}:`));
 
-  return line ? line.replace(`${key}:`, "").trim() : "";
+  if (!line) return "";
+
+  const value = line.replace(`${key}:`, "").trim();
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1).replace(/\\"/g, '"').replace(/\\'/g, "'");
+  }
+
+  return value;
 }
 
 function normalizeTags(value) {
@@ -257,12 +267,14 @@ export async function POST({ request }) {
       tags = ["blog", "astro"],
       imageUrl = "",
       thumbnailUrl = "",
+      originalFilename = "",
       imageOptimization = null;
 
     if (contentType.includes("multipart/form-data")) {
       // Handle multipart/form-data (file upload)
       const formData = await request.formData();
       filename = formData.get("filename");
+      originalFilename = formData.get("originalFilename") || filename;
       title = formData.get("title");
       content = formData.get("content");
       if (formData.has("tags")) {
@@ -309,6 +321,7 @@ export async function POST({ request }) {
         );
       }
       filename = data.filename;
+      originalFilename = data.originalFilename || filename;
       title = data.title;
       content = data.content;
       if (Object.prototype.hasOwnProperty.call(data, "tags")) {
@@ -381,12 +394,22 @@ export async function POST({ request }) {
     // Determine the blog directory path (store posts in content, not pages)
     const blogDir = path.join(process.cwd(), "src", "content", "blog");
     const filePath = path.join(blogDir, filename);
-    let pubDate = new Date().toISOString().split("T")[0];
+    const existingFilename = originalFilename || filename;
+    const existingFilePath = path.join(blogDir, existingFilename);
+    const now = new Date();
+    let pubDate = now.toISOString().split("T")[0];
+    let createdAt = now.toISOString();
     try {
-      const existingContent = isReadonlyRuntime()
-        ? await readTextBlob(`blog-posts/${filename}`)
-        : await fs.readFile(filePath, "utf8");
+      const blobContent = await readTextBlob(`blog-posts/${existingFilename}`);
+      const existingContent =
+        blobContent ||
+        (!isReadonlyRuntime() ? await fs.readFile(existingFilePath, "utf8") : "");
       pubDate = getFrontmatterValue(existingContent, "pubDate") || pubDate;
+      createdAt =
+        getFrontmatterValue(existingContent, "createdAt") ||
+        getFrontmatterValue(existingContent, "pubDate") ||
+        createdAt;
+      imageUrl = imageUrl || getFrontmatterValue(existingContent, "image");
       thumbnailUrl =
         imageUrl && !thumbnailUrl
           ? getFrontmatterValue(existingContent, "thumbnail")
@@ -399,6 +422,7 @@ export async function POST({ request }) {
     let frontmatter = `---
 title: "${title.replace(/"/g, '\\"')}"
 pubDate: ${pubDate}
+createdAt: ${createdAt}
 description: "A blog post about ${title}"
 author: "Blog Author"
 tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
