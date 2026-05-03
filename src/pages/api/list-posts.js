@@ -63,7 +63,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
     image,
     thumbnail,
     createdAt: frontmatterCreatedAt || createdAt,
-    createdAtMs: parseDateMs(frontmatterCreatedAt || pubDate) ?? createdAtMs,
+    createdAtMs: parseDateMs(pubDate || frontmatterCreatedAt) ?? createdAtMs,
     updatedAt,
     updatedAtMs,
     contentPreview: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
@@ -156,8 +156,12 @@ export async function GET({ request, url }) {
       return matchesSearch && matchesTag;
     });
 
-    // Sort by original creation time so editing a post keeps it in place.
-    filteredPosts.sort((a, b) => b.createdAtMs - a.createdAtMs);
+    // Sort by publish date so editing a post does not bump it above newer posts.
+    filteredPosts.sort(
+      (a, b) =>
+        b.createdAtMs - a.createdAtMs ||
+        a.filename.localeCompare(b.filename),
+    );
 
     const total = filteredPosts.length;
     const paginatedPosts = filteredPosts.slice(offset, offset + limit);

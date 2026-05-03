@@ -1442,7 +1442,7 @@ export default function BlogEditor() {
                     {isSaving
                       ? "Saving..."
                       : isEditing
-                        ? "Update Post"
+                        ? "Update"
                         : "Save Post"}
                   </button>
 

@@ -50,7 +50,7 @@ const filesystemPosts = await Promise.all(
       return {
         slug,
         createdAtMs:
-          parseDateMs(frontmatter.createdAt || frontmatter.pubDate) ??
+          parseDateMs(frontmatter.pubDate || frontmatter.createdAt) ??
           fileStats.birthtimeMs,
         frontmatter: {
           title: frontmatter.title || filename.replace(".md", ""),
@@ -76,7 +76,7 @@ const blobPosts = await Promise.all(
       return {
         slug,
         createdAtMs:
-          parseDateMs(frontmatter.createdAt || frontmatter.pubDate) ??
+          parseDateMs(frontmatter.pubDate || frontmatter.createdAt) ??
           uploadedAt.getTime(),
         frontmatter: {
           title: frontmatter.title || filename.replace(".md", ""),
@@ -93,7 +93,7 @@ for (const post of filesystemPosts) postsBySlug.set(post.slug, post);
 for (const post of blobPosts) postsBySlug.set(post.slug, post);
 const posts = [...postsBySlug.values()];
 const latestPosts = posts
-  .sort((a, b) => b.createdAtMs - a.createdAtMs)
+  .sort((a, b) => b.createdAtMs - a.createdAtMs || a.slug.localeCompare(b.slug))
   .slice(0, 3);
 
 const heroConfig = await readHeroConfig();
