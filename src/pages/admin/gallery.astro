@@ -1,0 +1,10 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GalleryAdmin from "../../components/GalleryAdmin.jsx";
+import AdminControlNav from "../../components/AdminControlNav.astro";
+---
+
+<Layout title="Admin Panel - Gallery">
+  <AdminControlNav active="gallery" />
+  <GalleryAdmin client:load />
+</Layout>

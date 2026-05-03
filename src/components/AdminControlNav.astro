@@ -21,6 +21,12 @@ const adminLinks = [
     description: "Cards, sections, sliders",
   },
   {
+    key: "gallery",
+    label: "Gallery",
+    href: "/admin/gallery",
+    description: "Thumbnail and images",
+  },
+  {
     key: "site",
     label: "Header & Footer",
     href: "/admin/site",
@@ -53,7 +59,7 @@ const adminLinks = [
       </a>
     </div>
 
-    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Admin controls">
+    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Admin controls">
       {
         adminLinks.map((link, index) => {
           const isActive = active === link.key;

@@ -92,13 +92,20 @@ export async function deleteBlobEntry(pathname) {
   await del(pathname);
 }
 
-export async function saveWebpAsset({ directory, filename, buffer, localDirs }) {
+export async function saveAsset({
+  directory,
+  filename,
+  buffer,
+  localDirs,
+  contentType = "application/octet-stream",
+  inlineMime = contentType,
+}) {
   if (hasBlobStorage()) {
     const blob = await put(`${directory}/${filename}`, buffer, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
-      contentType: "image/webp",
+      contentType,
     });
 
     return {
@@ -109,7 +116,7 @@ export async function saveWebpAsset({ directory, filename, buffer, localDirs }) 
 
   if (isReadonlyRuntime()) {
     return {
-      url: `data:image/webp;base64,${buffer.toString("base64")}`,
+      url: `data:${inlineMime};base64,${buffer.toString("base64")}`,
       storage: "inline",
     };
   }
@@ -123,4 +130,15 @@ export async function saveWebpAsset({ directory, filename, buffer, localDirs }) 
     url: `/${directory}/${filename}`,
     storage: "filesystem",
   };
+}
+
+export async function saveWebpAsset({ directory, filename, buffer, localDirs }) {
+  return saveAsset({
+    directory,
+    filename,
+    buffer,
+    localDirs,
+    contentType: "image/webp",
+    inlineMime: "image/webp",
+  });
 }

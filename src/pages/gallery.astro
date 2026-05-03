@@ -1,0 +1,530 @@
+---
+import fs from "fs/promises";
+import path from "path";
+import sharp from "sharp";
+import { getImage } from "astro:assets";
+import Layout from "../layouts/Layout.astro";
+import { readGalleryConfig } from "../lib/gallery-config.js";
+
+const gallery = await readGalleryConfig();
+const thumbnail = gallery.thumbnail;
+const PAGE_SIZE = 12;
+const FALLBACK_DIMENSIONS = { width: 1200, height: 900 };
+const GRID_WIDTH = 720;
+const GRID_HEIGHT = 540;
+const LIGHTBOX_WIDTH = 1800;
+const requestOrigin = Astro.url.origin;
+
+function getPrimarySrc(image) {
+  return image?.imageUrl || image?.webpUrl || image?.avifUrl || "";
+}
+
+function getAspectRatio(width, height) {
+  return width > 0 && height > 0 ? width / height : 4 / 3;
+}
+
+function isOptimizableSrc(src) {
+  return src.startsWith("/") || /^https?:\/\//i.test(src);
+}
+
+function getTransformSrc(src) {
+  if (src.startsWith("/") && !src.startsWith("//")) {
+    return new URL(src, requestOrigin).toString();
+  }
+
+  return src;
+}
+
+function getPublicFilePath(src) {
+  if (!src.startsWith("/") || src.startsWith("//")) return "";
+
+  const publicDir = path.join(process.cwd(), "public");
+  const cleanPath = decodeURIComponent(src.split("?")[0]).replace(/^\/+/, "");
+  const filePath = path.normalize(path.join(publicDir, cleanPath));
+
+  if (!filePath.startsWith(path.normalize(publicDir))) return "";
+  return filePath;
+}
+
+async function getImageDimensions(image) {
+  const width = Number(image?.width);
+  const height = Number(image?.height);
+
+  if (Number.isFinite(width) && width > 0 && Number.isFinite(height) && height > 0) {
+    return { width: Math.round(width), height: Math.round(height) };
+  }
+
+  const filePath = getPublicFilePath(getPrimarySrc(image));
+  if (filePath) {
+    try {
+      const metadata = await sharp(await fs.readFile(filePath), {
+        failOn: "none",
+      }).metadata();
+      if (metadata.width && metadata.height) {
+        return { width: metadata.width, height: metadata.height };
+      }
+    } catch {
+      // Remote and data images fall back to a stable aspect ratio.
+    }
+  }
+
+  return FALLBACK_DIMENSIONS;
+}
+
+async function createAstroPicture(image, options) {
+  const src = getPrimarySrc(image);
+  const fallbackSrc = getPrimarySrc(image);
+
+  if (!src || !isOptimizableSrc(src)) {
+    return {
+      sources: [
+        image.avifUrl && { type: "image/avif", srcset: image.avifUrl },
+        (image.webpUrl || image.imageUrl) && {
+          type: "image/webp",
+          srcset: image.webpUrl || image.imageUrl,
+        },
+      ].filter(Boolean),
+      img: {
+        src: fallbackSrc,
+        srcset: "",
+        width: options.width,
+        height: options.height,
+      },
+      sizes: options.sizes,
+    };
+  }
+
+  try {
+    const transform = {
+      src: getTransformSrc(src),
+      width: options.width,
+      height: options.height,
+      widths: options.widths,
+      sizes: options.sizes,
+      quality: options.quality,
+      ...(options.fit ? { fit: options.fit, position: "center" } : {}),
+    };
+    const [avifImage, webpImage, fallbackImage] = await Promise.all([
+      getImage({ ...transform, format: "avif" }),
+      getImage({ ...transform, format: "webp" }),
+      getImage({ ...transform, format: "jpg" }),
+    ]);
+
+    return {
+      sources: [
+        {
+          type: "image/avif",
+          srcset: avifImage.srcSet.attribute || avifImage.src,
+        },
+        {
+          type: "image/webp",
+          srcset: webpImage.srcSet.attribute || webpImage.src,
+        },
+      ],
+      img: {
+        src: fallbackImage.src,
+        srcset: fallbackImage.srcSet.attribute,
+        width: fallbackImage.attributes.width || options.width,
+        height: fallbackImage.attributes.height || options.height,
+      },
+      sizes: options.sizes,
+    };
+  } catch {
+    return {
+      sources: [
+        image.avifUrl && { type: "image/avif", srcset: image.avifUrl },
+        (image.webpUrl || image.imageUrl) && {
+          type: "image/webp",
+          srcset: image.webpUrl || image.imageUrl,
+        },
+      ].filter(Boolean),
+      img: {
+        src: fallbackSrc,
+        srcset: "",
+        width: options.width,
+        height: options.height,
+      },
+      sizes: options.sizes,
+    };
+  }
+}
+
+async function prepareGalleryImage(image, index) {
+  const dimensions = await getImageDimensions(image);
+  const aspectRatio = getAspectRatio(dimensions.width, dimensions.height);
+  const lightboxHeight = Math.round(LIGHTBOX_WIDTH / aspectRatio);
+  const grid = await createAstroPicture(image, {
+    width: GRID_WIDTH,
+    height: GRID_HEIGHT,
+    widths: [360, 540, 720],
+    sizes: "(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw",
+    fit: "cover",
+    quality: 78,
+  });
+  const full = await createAstroPicture(image, {
+    width: LIGHTBOX_WIDTH,
+    height: lightboxHeight,
+    widths: [720, 1080, 1440, 1800],
+    sizes: "92vw",
+    quality: 82,
+  });
+
+  return {
+    ...image,
+    index,
+    grid,
+    full,
+  };
+}
+
+const thumbnailPicture =
+  thumbnail.webpUrl || thumbnail.imageUrl || thumbnail.avifUrl
+    ? await createAstroPicture(thumbnail, {
+        width: GRID_WIDTH,
+        height: GRID_HEIGHT,
+        widths: [360, 540, 720],
+        sizes: "(min-width: 1024px) 360px, 92vw",
+        fit: "cover",
+        quality: 80,
+      })
+    : null;
+const galleryItems = await Promise.all(gallery.images.map(prepareGalleryImage));
+const lightboxItems = galleryItems.map((item) => ({
+  title: item.title,
+  alt: item.alt,
+  caption: item.caption,
+  full: item.full,
+}));
+---
+
+<Layout title={`${gallery.title} - Astro Blog`} description={gallery.description}>
+  <main class="bg-gray-50">
+    <section class="border-b border-slate-200 bg-white">
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:px-8">
+        <div class="flex flex-col justify-center">
+          <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">
+            Gallery
+          </p>
+          <h1 class="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+            {gallery.title}
+          </h1>
+          {gallery.description && (
+            <p class="mt-5 max-w-2xl text-base leading-7 text-slate-600">
+              {gallery.description}
+            </p>
+          )}
+        </div>
+
+        {thumbnailPicture && (
+          <picture class="block aspect-[4/3] overflow-hidden rounded-md bg-slate-100 shadow-sm">
+            {thumbnailPicture.sources.map((source) => (
+              <source
+                srcset={source.srcset}
+                type={source.type}
+                sizes={thumbnailPicture.sizes}
+              />
+            ))}
+            <img
+              src={thumbnailPicture.img.src}
+              srcset={thumbnailPicture.img.srcset}
+              sizes={thumbnailPicture.sizes}
+              width={thumbnailPicture.img.width}
+              height={thumbnailPicture.img.height}
+              alt={thumbnail.alt}
+              class="h-full w-full object-cover"
+              loading="eager"
+              decoding="async"
+            />
+          </picture>
+        )}
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      {galleryItems.length > 0 ? (
+        <>
+          <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-950">Images</h2>
+              <p class="mt-1 text-sm text-slate-600" data-gallery-count>
+                Showing {Math.min(PAGE_SIZE, galleryItems.length)} of {galleryItems.length}
+              </p>
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-gallery-grid>
+            {galleryItems.map((item, index) => (
+              <figure
+                class={`gallery-card overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm ${
+                  index >= PAGE_SIZE ? "hidden" : ""
+                }`}
+                data-gallery-item
+                data-gallery-index={index}
+              >
+                <button
+                  type="button"
+                  class="block aspect-[4/3] w-full cursor-zoom-in overflow-hidden bg-slate-100 text-left"
+                  data-gallery-open
+                  aria-label={`Open ${item.alt || item.title || `gallery image ${index + 1}`}`}
+                >
+                  <picture class="block h-full w-full">
+                    {item.grid.sources.map((source) => (
+                      <source srcset={source.srcset} type={source.type} sizes={item.grid.sizes} />
+                    ))}
+                    <img
+                      src={item.grid.img.src}
+                      srcset={item.grid.img.srcset}
+                      sizes={item.grid.sizes}
+                      width={item.grid.img.width}
+                      height={item.grid.img.height}
+                      alt={item.alt}
+                      class="h-full w-full object-cover transition duration-300 hover:scale-105"
+                      loading={index < 6 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
+                  </picture>
+                </button>
+                {(item.title || item.caption) && (
+                  <figcaption class="p-4">
+                    {item.title && (
+                      <h2 class="text-base font-semibold text-slate-950">{item.title}</h2>
+                    )}
+                    {item.caption && (
+                      <p class="mt-2 text-sm leading-6 text-slate-600">{item.caption}</p>
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+
+          {galleryItems.length > PAGE_SIZE && (
+            <div class="mt-8 flex justify-center">
+              <button
+                type="button"
+                class="rounded-md bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                data-gallery-load-more
+              >
+                Load More
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div class="rounded-md border border-dashed border-slate-300 bg-white p-10 text-center text-slate-600">
+          No gallery images have been published yet.
+        </div>
+      )}
+    </section>
+
+    <div
+      class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/90 px-4 py-5"
+      data-gallery-lightbox
+      role="dialog"
+      aria-modal="true"
+      aria-label="Gallery image viewer"
+    >
+      <button
+        type="button"
+        class="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+        data-lightbox-close
+        aria-label="Close gallery viewer"
+      >
+        &times;
+      </button>
+
+      <button
+        type="button"
+        class="absolute left-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20 sm:inline-flex"
+        data-lightbox-prev
+        aria-label="Previous image"
+      >
+        &#8249;
+      </button>
+
+      <div class="w-full max-w-6xl">
+        <picture class="flex max-h-[78vh] items-center justify-center">
+          <source data-lightbox-source="avif" type="image/avif" />
+          <source data-lightbox-source="webp" type="image/webp" />
+          <img
+            data-lightbox-image
+            src=""
+            alt=""
+            class="max-h-[78vh] w-auto max-w-full rounded-md object-contain shadow-2xl"
+            decoding="async"
+          />
+        </picture>
+        <div class="mx-auto mt-4 max-w-3xl text-center text-white">
+          <p class="text-sm font-semibold text-white/70" data-lightbox-counter></p>
+          <h2 class="mt-1 text-xl font-bold" data-lightbox-title></h2>
+          <p class="mt-2 text-sm leading-6 text-white/75" data-lightbox-caption></p>
+        </div>
+        <div class="mt-5 grid grid-cols-2 gap-3 sm:hidden">
+          <button
+            type="button"
+            class="rounded-md bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+            data-lightbox-prev-mobile
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            class="rounded-md bg-white/10 px-4 py-3 text-sm font-semibold text-white"
+            data-lightbox-next-mobile
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="absolute right-3 top-1/2 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20 sm:inline-flex"
+        data-lightbox-next
+        aria-label="Next image"
+      >
+        &#8250;
+      </button>
+    </div>
+  </main>
+
+  <script define:vars={{ lightboxItems, PAGE_SIZE }}>
+    (() => {
+      const items = lightboxItems;
+      const pageSize = PAGE_SIZE;
+      const galleryCards = Array.from(document.querySelectorAll("[data-gallery-item]"));
+      const loadMoreButton = document.querySelector("[data-gallery-load-more]");
+      const countText = document.querySelector("[data-gallery-count]");
+      const lightbox = document.querySelector("[data-gallery-lightbox]");
+      const lightboxImage = document.querySelector("[data-lightbox-image]");
+      const lightboxTitle = document.querySelector("[data-lightbox-title]");
+      const lightboxCaption = document.querySelector("[data-lightbox-caption]");
+      const lightboxCounter = document.querySelector("[data-lightbox-counter]");
+      const avifSource = document.querySelector('[data-lightbox-source="avif"]');
+      const webpSource = document.querySelector('[data-lightbox-source="webp"]');
+      let visibleCount = Math.min(pageSize, galleryCards.length);
+      let activeIndex = 0;
+
+      function syncVisibleCards() {
+        galleryCards.forEach((card, index) => {
+          card.classList.toggle("hidden", index >= visibleCount);
+        });
+
+        if (countText) {
+          countText.textContent = `Showing ${visibleCount} of ${galleryCards.length}`;
+        }
+
+        if (loadMoreButton) {
+          loadMoreButton.classList.toggle("hidden", visibleCount >= galleryCards.length);
+        }
+      }
+
+      function setSource(sourceElement, source) {
+        if (!sourceElement) return;
+
+        if (source?.srcset) {
+          sourceElement.setAttribute("srcset", source.srcset);
+          sourceElement.setAttribute("sizes", source.sizes || "92vw");
+        } else {
+          sourceElement.removeAttribute("srcset");
+          sourceElement.removeAttribute("sizes");
+        }
+      }
+
+      function renderLightbox(index) {
+        if (!items.length || !lightboxImage) return;
+
+        activeIndex = (index + items.length) % items.length;
+        const item = items[activeIndex];
+        const avif = item.full.sources.find((source) => source.type === "image/avif");
+        const webp = item.full.sources.find((source) => source.type === "image/webp");
+
+        setSource(avifSource, { ...avif, sizes: item.full.sizes });
+        setSource(webpSource, { ...webp, sizes: item.full.sizes });
+
+        lightboxImage.src = item.full.img.src;
+        lightboxImage.alt = item.alt || item.title || "";
+
+        if (item.full.img.srcset) {
+          lightboxImage.srcset = item.full.img.srcset;
+          lightboxImage.sizes = item.full.sizes || "92vw";
+        } else {
+          lightboxImage.removeAttribute("srcset");
+          lightboxImage.removeAttribute("sizes");
+        }
+
+        if (lightboxTitle) {
+          lightboxTitle.textContent = item.title || "";
+          lightboxTitle.classList.toggle("hidden", !item.title);
+        }
+
+        if (lightboxCaption) {
+          lightboxCaption.textContent = item.caption || "";
+          lightboxCaption.classList.toggle("hidden", !item.caption);
+        }
+
+        if (lightboxCounter) {
+          lightboxCounter.textContent = `${activeIndex + 1} / ${items.length}`;
+        }
+      }
+
+      function openLightbox(index) {
+        if (!lightbox || !items.length) return;
+
+        renderLightbox(index);
+        lightbox.classList.remove("hidden");
+        lightbox.classList.add("flex");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeLightbox() {
+        if (!lightbox) return;
+
+        lightbox.classList.add("hidden");
+        lightbox.classList.remove("flex");
+        document.body.style.overflow = "";
+      }
+
+      loadMoreButton?.addEventListener("click", () => {
+        visibleCount = Math.min(visibleCount + pageSize, galleryCards.length);
+        syncVisibleCards();
+      });
+
+      galleryCards.forEach((card) => {
+        card.querySelector("[data-gallery-open]")?.addEventListener("click", () => {
+          openLightbox(Number(card.dataset.galleryIndex || 0));
+        });
+      });
+
+      document.querySelector("[data-lightbox-close]")?.addEventListener("click", closeLightbox);
+      document.querySelector("[data-lightbox-prev]")?.addEventListener("click", () => {
+        renderLightbox(activeIndex - 1);
+      });
+      document.querySelector("[data-lightbox-next]")?.addEventListener("click", () => {
+        renderLightbox(activeIndex + 1);
+      });
+      document.querySelector("[data-lightbox-prev-mobile]")?.addEventListener("click", () => {
+        renderLightbox(activeIndex - 1);
+      });
+      document.querySelector("[data-lightbox-next-mobile]")?.addEventListener("click", () => {
+        renderLightbox(activeIndex + 1);
+      });
+
+      lightbox?.addEventListener("click", (event) => {
+        if (event.target === lightbox) {
+          closeLightbox();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (!lightbox || lightbox.classList.contains("hidden")) return;
+
+        if (event.key === "Escape") closeLightbox();
+        if (event.key === "ArrowLeft") renderLightbox(activeIndex - 1);
+        if (event.key === "ArrowRight") renderLightbox(activeIndex + 1);
+      });
+
+      syncVisibleCards();
+    })();
+  </script>
+</Layout>

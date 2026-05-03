@@ -1,0 +1,48 @@
+{
+  "title": "Gallery111",
+  "description": "A curated set of images from the site.",
+  "thumbnail": {
+    "webpUrl": "/gallery-images/20260503075432062-gpd65.webp",
+    "avifUrl": "/gallery-images/20260503075432062-gpd65.avif",
+    "imageUrl": "/gallery-images/20260503075432062-gpd65.webp",
+    "alt": "Gallery thumbnail"
+  },
+  "images": [
+    {
+      "id": "gallery-1777784063697-blzp56",
+      "title": "Hd2k SNknJX1QjgQoOwjA",
+      "alt": "Hd2k SNknJX1QjgQoOwjA",
+      "caption": "",
+      "webpUrl": "/gallery-images/20260503075434719-txbj9.webp",
+      "avifUrl": "/gallery-images/20260503075434719-txbj9.avif",
+      "imageUrl": "/gallery-images/20260503075434719-txbj9.webp"
+    },
+    {
+      "id": "gallery-1777784063675-u8pva7",
+      "title": "XvLPmwLRXAC5u2Oiu 38p",
+      "alt": "XvLPmwLRXAC5u2Oiu 38p",
+      "caption": "",
+      "webpUrl": "/gallery-images/20260503075436273-uv2c8.webp",
+      "avifUrl": "/gallery-images/20260503075436273-uv2c8.avif",
+      "imageUrl": "/gallery-images/20260503075436273-uv2c8.webp"
+    },
+    {
+      "id": "gallery-1777784063707-hjrcqy",
+      "title": "w3 pTwTER7o3QyEgdYUHZ",
+      "alt": "w3 pTwTER7o3QyEgdYUHZ",
+      "caption": "",
+      "webpUrl": "/gallery-images/20260503075435267-j3o7t.webp",
+      "avifUrl": "/gallery-images/20260503075435267-j3o7t.avif",
+      "imageUrl": "/gallery-images/20260503075435267-j3o7t.webp"
+    },
+    {
+      "id": "gallery-1777784063684-99s7nx",
+      "title": "y061ogO03UhJ2KNQDLW8",
+      "alt": "y061ogO03UhJ2KNQDLW8",
+      "caption": "",
+      "webpUrl": "/gallery-images/20260503075435836-im0hc.webp",
+      "avifUrl": "/gallery-images/20260503075435836-im0hc.avif",
+      "imageUrl": "/gallery-images/20260503075435836-im0hc.webp"
+    }
+  ]
+}
