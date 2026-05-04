@@ -1,0 +1,10 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminControlNav from "../../components/AdminControlNav.astro";
+import PageEditor from "../../components/PageEditor.jsx";
+---
+
+<Layout title="Admin Panel - Pages">
+  <AdminControlNav active="pages" />
+  <PageEditor client:load />
+</Layout>

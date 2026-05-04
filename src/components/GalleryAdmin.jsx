@@ -1,5 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 
+const MAX_GALLERY_IMAGES = 200;
+
 const DEFAULT_CONFIG = {
   title: "Gallery",
   description: "A curated set of images from the site.",
@@ -96,6 +98,29 @@ function ImageFormatMeta({ image }) {
         AVIF
       </span>
     </div>
+  );
+}
+
+function AddImagesButton({ onAddImages, disabled = false, label = "Add Images" }) {
+  return (
+    <label
+      class={`inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 md:w-auto ${
+        disabled ? "pointer-events-none opacity-50" : ""
+      }`}
+    >
+      {label}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        disabled={disabled}
+        onChange={(event) => {
+          onAddImages(event.currentTarget.files);
+          event.currentTarget.value = "";
+        }}
+        class="sr-only"
+      />
+    </label>
   );
 }
 
@@ -268,14 +293,29 @@ export default function GalleryAdmin() {
     );
     if (selectedFiles.length === 0) return;
 
+    const remainingSlots = Math.max(0, MAX_GALLERY_IMAGES - config.images.length);
+    if (remainingSlots === 0) {
+      setMessage(`The gallery can hold up to ${MAX_GALLERY_IMAGES} images.`);
+      return;
+    }
+
     const nextImages = await Promise.all(
-      selectedFiles.map(async (file) => createImageItem(file, await fileToDataUrl(file))),
+      selectedFiles
+        .slice(0, remainingSlots)
+        .map(async (file) => createImageItem(file, await fileToDataUrl(file))),
     );
 
     setConfig((current) => ({
       ...current,
-      images: [...current.images, ...nextImages].slice(0, 48),
+      images: [...current.images, ...nextImages].slice(0, MAX_GALLERY_IMAGES),
     }));
+
+    const skipped = selectedFiles.length - nextImages.length;
+    setMessage(
+      skipped > 0
+        ? `Added ${nextImages.length} image${nextImages.length === 1 ? "" : "s"}. ${skipped} skipped because the gallery limit is ${MAX_GALLERY_IMAGES}.`
+        : `Added ${nextImages.length} image${nextImages.length === 1 ? "" : "s"}. Save Gallery to publish.`,
+    );
   };
 
   const updateImage = (index, field, value) => {
@@ -483,18 +523,14 @@ export default function GalleryAdmin() {
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 class="text-xl font-bold text-slate-950">Images</h2>
-              <p class="mt-1 text-sm text-slate-600">{config.images.length} images</p>
+              <p class="mt-1 text-sm text-slate-600">
+                {config.images.length} of {MAX_GALLERY_IMAGES} images
+              </p>
             </div>
-            <label class="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 md:w-auto">
-              Add Images
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(event) => addImages(event.currentTarget.files)}
-                class="sr-only"
-              />
-            </label>
+            <AddImagesButton
+              onAddImages={addImages}
+              disabled={saving || config.images.length >= MAX_GALLERY_IMAGES}
+            />
           </div>
 
           <div class="mt-6 grid gap-4">
@@ -517,6 +553,16 @@ export default function GalleryAdmin() {
               </div>
             )}
           </div>
+
+          {config.images.length > 0 && (
+            <div class="mt-6 flex justify-center">
+              <AddImagesButton
+                onAddImages={addImages}
+                disabled={saving || config.images.length >= MAX_GALLERY_IMAGES}
+                label="Add More Images"
+              />
+            </div>
+          )}
         </section>
       </form>
     </div>

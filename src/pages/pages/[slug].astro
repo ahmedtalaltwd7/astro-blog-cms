@@ -1,0 +1,254 @@
+---
+import { marked } from "marked";
+import Layout from "../../layouts/Layout.astro";
+import {
+  parsePageMarkdown,
+  readPageContent,
+  slugFromPageFilename,
+} from "../../lib/static-pages.js";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const requestedSlug = String(slug || "").replace(/\.md$/i, "");
+const safeSlug = requestedSlug.replace(/[^a-zA-Z0-9_-]/g, "");
+
+if (!safeSlug || safeSlug !== requestedSlug) {
+  return Astro.redirect("/404");
+}
+
+if (String(slug || "").toLowerCase().endsWith(".md")) {
+  return Astro.redirect(`/pages/${safeSlug}`, 301);
+}
+
+const content = await readPageContent(`${safeSlug}.md`);
+if (!content) {
+  return Astro.redirect("/404");
+}
+
+const parsed = parsePageMarkdown(content);
+const frontmatter = parsed.frontmatter;
+marked.setOptions({ gfm: true, breaks: false });
+const htmlContent = await marked(parsed.body || "");
+const pageUrl = `/pages/${slugFromPageFilename(`${safeSlug}.md`)}`;
+const galleryImages = frontmatter.pageType === "gallery" ? frontmatter.galleryImages : [];
+const markdownContentClass = [
+  "max-w-none text-gray-800",
+  "[&_a]:text-blue-700 [&_a]:underline",
+  "[&_blockquote]:mb-4 [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2",
+  "[&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1",
+  "[&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold",
+  "[&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold",
+  "[&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold",
+  "[&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-lg",
+  "[&_li]:ml-5",
+  "[&_ol]:mb-4 [&_ol]:list-decimal",
+  "[&_p]:mb-4",
+  "[&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4",
+  "[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100",
+  "[&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse",
+  "[&_td]:border [&_td]:border-gray-200 [&_td]:p-2",
+  "[&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2",
+  "[&_ul]:mb-4 [&_ul]:list-disc",
+].join(" ");
+---
+
+<Layout title={`${frontmatter.title} - Astro Blog`} description={frontmatter.description}>
+  <main class="min-h-screen bg-gray-50">
+    <section class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+        <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">
+          {frontmatter.pageType === "gallery" ? "Gallery Page" : "Page"}
+        </p>
+        <h1 class="mt-3 text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl">
+          {frontmatter.title}
+        </h1>
+        {frontmatter.description && (
+          <p class="mt-5 max-w-3xl text-base leading-7 text-slate-600">
+            {frontmatter.description}
+          </p>
+        )}
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <article class="rounded-md border border-slate-200 bg-white p-6 shadow-sm md:p-10">
+        <div class={markdownContentClass} set:html={htmlContent} />
+      </article>
+
+      {galleryImages.length > 0 && (
+        <div class="mt-8">
+          <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-950">Gallery</h2>
+              <p class="mt-1 text-sm text-slate-600">
+                {galleryImages.length} images
+              </p>
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {galleryImages.map((image, index) => (
+              <figure class="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
+                <button
+                  type="button"
+                  class="block aspect-[4/3] w-full cursor-pointer overflow-hidden bg-slate-100 text-left"
+                  data-page-gallery-open
+                  data-page-gallery-index={index}
+                  aria-label={`Open ${image.alt || image.title || `image ${index + 1}`}`}
+                >
+                  <img
+                    src={image.imageUrl}
+                    alt={image.alt || image.title || ""}
+                    class="h-full w-full object-cover transition duration-300 hover:scale-105"
+                    loading={index < 6 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                </button>
+                {(image.title || image.caption) && (
+                  <figcaption class="p-4">
+                    {image.title && (
+                      <h3 class="text-base font-semibold text-slate-950">
+                        {image.title}
+                      </h3>
+                    )}
+                    {image.caption && (
+                      <p class="mt-2 text-sm leading-6 text-slate-600">
+                        {image.caption}
+                      </p>
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div class="mt-10 border-t border-slate-200 pt-6">
+        <a href={pageUrl} class="text-sm font-semibold text-blue-700 hover:text-blue-800">
+          Permalink
+        </a>
+      </div>
+    </section>
+
+    {galleryImages.length > 0 && (
+      <div
+        class="fixed inset-0 z-[100] hidden bg-slate-950/90 px-3 py-4 sm:items-center sm:justify-center"
+        data-page-gallery-lightbox
+        role="dialog"
+        aria-modal="true"
+        aria-label="Gallery image viewer"
+      >
+        <button
+          type="button"
+          class="absolute right-4 top-4 z-30 inline-flex h-11 w-11 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+          data-page-gallery-close
+          aria-label="Close gallery viewer"
+        >
+          &times;
+        </button>
+        <button
+          type="button"
+          class="absolute left-3 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+          data-page-gallery-prev
+          aria-label="Previous image"
+        >
+          &#8249;
+        </button>
+        <div class="flex h-full w-full max-w-6xl flex-col items-center justify-center">
+          <img
+            data-page-gallery-image
+            src=""
+            alt=""
+            class="max-h-[78vh] max-w-full rounded-md object-contain shadow-2xl"
+            decoding="async"
+          />
+          <div class="mt-4 max-w-3xl text-center text-white">
+            <p class="text-sm font-semibold text-white/70" data-page-gallery-counter></p>
+            <h2 class="mt-1 text-xl font-bold" data-page-gallery-title></h2>
+            <p class="mt-2 text-sm leading-6 text-white/75" data-page-gallery-caption></p>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="absolute right-3 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-md bg-white/10 text-3xl leading-none text-white transition hover:bg-white/20"
+          data-page-gallery-next
+          aria-label="Next image"
+        >
+          &#8250;
+        </button>
+      </div>
+    )}
+  </main>
+
+  <script define:vars={{ galleryImages }}>
+    (() => {
+      const items = galleryImages;
+      const lightbox = document.querySelector("[data-page-gallery-lightbox]");
+      const image = document.querySelector("[data-page-gallery-image]");
+      const title = document.querySelector("[data-page-gallery-title]");
+      const caption = document.querySelector("[data-page-gallery-caption]");
+      const counter = document.querySelector("[data-page-gallery-counter]");
+      let activeIndex = 0;
+
+      function render(index) {
+        if (!items.length || !image) return;
+
+        activeIndex = (index + items.length) % items.length;
+        const item = items[activeIndex];
+        image.src = item.imageUrl;
+        image.alt = item.alt || item.title || "";
+        if (title) {
+          title.textContent = item.title || "";
+          title.classList.toggle("hidden", !item.title);
+        }
+        if (caption) {
+          caption.textContent = item.caption || "";
+          caption.classList.toggle("hidden", !item.caption);
+        }
+        if (counter) counter.textContent = `${activeIndex + 1} / ${items.length}`;
+      }
+
+      function open(index) {
+        if (!lightbox) return;
+        render(index);
+        lightbox.classList.remove("hidden");
+        lightbox.classList.add("flex");
+        document.body.style.overflow = "hidden";
+      }
+
+      function close() {
+        if (!lightbox) return;
+        lightbox.classList.add("hidden");
+        lightbox.classList.remove("flex");
+        document.body.style.overflow = "";
+      }
+
+      document.querySelectorAll("[data-page-gallery-open]").forEach((button) => {
+        button.addEventListener("click", () => {
+          open(Number(button.dataset.pageGalleryIndex || 0));
+        });
+      });
+
+      document.querySelector("[data-page-gallery-close]")?.addEventListener("click", close);
+      document.querySelector("[data-page-gallery-prev]")?.addEventListener("click", () => render(activeIndex - 1));
+      document.querySelector("[data-page-gallery-next]")?.addEventListener("click", () => render(activeIndex + 1));
+
+      lightbox?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest("button") && !target.closest("[data-page-gallery-image]")) {
+          close();
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (!lightbox || lightbox.classList.contains("hidden")) return;
+        if (event.key === "Escape") close();
+        if (event.key === "ArrowLeft") render(activeIndex - 1);
+        if (event.key === "ArrowRight") render(activeIndex + 1);
+      });
+    })();
+  </script>
+</Layout>

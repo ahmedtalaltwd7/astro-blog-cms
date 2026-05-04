@@ -18,6 +18,7 @@ export const DEFAULT_GALLERY_CONFIG = {
   },
   images: [],
 };
+export const MAX_GALLERY_IMAGES = 200;
 
 export function getGalleryConfigPath() {
   return path.join(process.cwd(), "src", "data", "gallery.json");
@@ -85,7 +86,7 @@ export function normalizeGalleryConfig(value = {}) {
     images: images
       .map(normalizeImage)
       .filter((image) => image.webpUrl || image.avifUrl)
-      .slice(0, 48),
+      .slice(0, MAX_GALLERY_IMAGES),
   };
 }
 

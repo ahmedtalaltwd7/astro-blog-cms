@@ -15,6 +15,12 @@ const adminLinks = [
     description: "Homepage first section",
   },
   {
+    key: "pages",
+    label: "Pages",
+    href: "/admin/pages",
+    description: "Markdown and galleries",
+  },
+  {
     key: "home-sections",
     label: "Home Sections",
     href: "/admin/home-sections",
@@ -59,7 +65,7 @@ const adminLinks = [
       </a>
     </div>
 
-    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Admin controls">
+    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-6" aria-label="Admin controls">
       {
         adminLinks.map((link, index) => {
           const isActive = active === link.key;
