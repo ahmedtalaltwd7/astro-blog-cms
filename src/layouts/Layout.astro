@@ -47,6 +47,20 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 				document.documentElement.dataset.theme = theme;
 			})();
 		</script>
+		<script is:inline>
+			(() => {
+				let enabled = false;
+				try {
+					enabled = localStorage.getItem("adminArabicContentMode") === "true";
+				} catch {
+					enabled = false;
+				}
+
+				document.documentElement.classList.toggle("admin-arabic-content-mode", enabled);
+				document.documentElement.dir = enabled ? "rtl" : "ltr";
+				document.documentElement.lang = enabled ? "ar" : "en";
+			})();
+		</script>
 		<title>{title}</title>
 	</head>
 	<body class="bg-gray-50">
@@ -303,5 +317,6 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 				window.addEventListener("scroll", updateHeader, { passive: true });
 			})();
 		</script>
+		<script src="/admin-arabic-mode.js" defer></script>
 	</body>
 </html>

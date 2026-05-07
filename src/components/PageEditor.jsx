@@ -81,15 +81,36 @@ Hidden markdown-friendly details go here.
 
 function makeFilename(value) {
   const slug = String(value || "")
+    .normalize("NFKC")
     .toLowerCase()
     .trim()
     .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
+    .slice(0, 80);
 
   return `${slug || "new-page"}.md`;
 }
+
+const normalizeContentLanguage = (value) => (value === "ar" ? "ar" : "en");
+
+const hasArabicContent = (value) =>
+  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+
+const resolveContentLanguage = (value, fallbackText = "") => {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
+};
+
+const getInitialContentLanguage = () => {
+  if (typeof window === "undefined") return "en";
+
+  try {
+    return localStorage.getItem("adminArabicContentMode") === "true" ? "ar" : "en";
+  } catch {
+    return "en";
+  }
+};
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -409,6 +430,7 @@ export default function PageEditor() {
   const [description, setDescription] = useState("");
   const [filename, setFilename] = useState("new-page.md");
   const [pageType, setPageType] = useState("normal");
+  const [language, setLanguage] = useState(getInitialContentLanguage);
   const [content, setContent] = useState(DEFAULT_CONTENT);
   const [galleryImages, setGalleryImages] = useState([]);
   const [previewMode, setPreviewMode] = useState("split");
@@ -508,6 +530,7 @@ export default function PageEditor() {
     setDescription("");
     setFilename("new-page.md");
     setPageType("normal");
+    setLanguage(getInitialContentLanguage());
     setContent(DEFAULT_CONTENT);
     setGalleryImages([]);
     setPreviewMode("split");
@@ -529,6 +552,14 @@ export default function PageEditor() {
       setTitle(data.frontmatter.title || page.title);
       setDescription(data.frontmatter.description || "");
       setPageType(data.frontmatter.pageType || "normal");
+      setLanguage(
+        resolveContentLanguage(
+          data.frontmatter.language || page.language,
+          `${data.frontmatter.title || page.title || ""} ${
+            data.frontmatter.description || ""
+          } ${data.body || ""}`,
+        ),
+      );
       setContent(data.body || "");
       setGalleryImages(data.frontmatter.galleryImages || []);
       setPreviewMode("split");
@@ -914,6 +945,7 @@ export default function PageEditor() {
           title,
           description,
           pageType,
+          language,
           content,
           galleryImages,
         }),
@@ -1003,6 +1035,8 @@ export default function PageEditor() {
                   <input
                     class={textInputClass()}
                     value={title}
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                    lang={language}
                     onInput={(event) => {
                       const nextTitle = event.currentTarget.value;
                       setTitle(nextTitle);
@@ -1027,10 +1061,24 @@ export default function PageEditor() {
                     <option value="gallery">Image gallery page</option>
                   </select>
                 </Field>
+                <Field label="Content Language">
+                  <select
+                    class={textInputClass()}
+                    value={language}
+                    onInput={(event) =>
+                      setLanguage(normalizeContentLanguage(event.currentTarget.value))
+                    }
+                  >
+                    <option value="en">English</option>
+                    <option value="ar">Arabic / العربية</option>
+                  </select>
+                </Field>
                 <Field label="Description">
                   <input
                     class={textInputClass()}
                     value={description}
+                    dir={language === "ar" ? "rtl" : "ltr"}
+                    lang={language}
                     onInput={(event) => setDescription(event.currentTarget.value)}
                   />
                 </Field>
@@ -1045,7 +1093,7 @@ export default function PageEditor() {
                   </label>
                   <div class="flex flex-wrap items-center gap-3">
                     <a
-                      href={`/pages/${filename.replace(/\.md$/i, "")}`}
+                      href={`/pages/${encodeURIComponent(filename.replace(/\.md$/i, ""))}`}
                       target="_blank"
                       rel="noreferrer"
                       class="text-sm font-semibold text-blue-700 hover:text-blue-800"
@@ -1251,6 +1299,8 @@ export default function PageEditor() {
                       class="h-full min-h-[520px] w-full resize-y border-0 bg-white px-4 py-3 font-mono text-sm leading-6 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                       placeholder="Write your page in markdown here..."
                       value={content}
+                      dir={language === "ar" ? "rtl" : "ltr"}
+                      lang={language}
                       onInput={(event) => {
                         setContent(event.currentTarget.value);
                         updateCursorInfo();
@@ -1266,6 +1316,9 @@ export default function PageEditor() {
                   <div class="min-h-[520px] bg-white p-4">
                     <div
                       class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                      data-content-language={language}
+                      dir={language === "ar" ? "rtl" : "ltr"}
+                      lang={language}
                       dangerouslySetInnerHTML={{ __html: previewParts.beforeHtml }}
                     />
                     {previewParts.hasEditableImage && (
@@ -1277,6 +1330,9 @@ export default function PageEditor() {
                     {previewParts.hasEditableImage && (
                       <div
                         class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                        data-content-language={language}
+                        dir={language === "ar" ? "rtl" : "ltr"}
+                        lang={language}
                         dangerouslySetInnerHTML={{ __html: previewParts.afterHtml }}
                       />
                     )}
@@ -1298,7 +1354,12 @@ export default function PageEditor() {
             </section>
 
             {pageType === "gallery" && (
-              <section class="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+              <section
+                class="rounded-md border border-slate-200 bg-white p-6 shadow-sm"
+                data-content-language={language}
+                dir={language === "ar" ? "rtl" : "ltr"}
+                lang={language}
+              >
                 <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                   <div>
                     <h2 class="text-xl font-bold text-slate-950">Gallery Images</h2>
@@ -1387,7 +1448,7 @@ export default function PageEditor() {
                       <button type="button" onClick={() => editPage(page)} class="text-blue-700 hover:text-blue-800">
                         Edit
                       </button>
-                      <a href={`/pages/${page.slug}`} target="_blank" rel="noreferrer" class="text-slate-700 hover:text-slate-900">
+                      <a href={`/pages/${encodeURIComponent(page.slug)}`} target="_blank" rel="noreferrer" class="text-slate-700 hover:text-slate-900">
                         Open
                       </a>
                       <button type="button" onClick={() => deletePage(page)} class="text-red-700 hover:text-red-800">

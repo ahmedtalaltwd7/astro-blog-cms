@@ -231,6 +231,7 @@ const limit = 6;
        * @property {string[]} [tags]
        * @property {string} [image]
        * @property {string} [thumbnail]
+       * @property {string} [language]
        */
 
       /**
@@ -272,11 +273,13 @@ const limit = 6;
           post.description || "No description provided.",
         );
         const safePubDate = escapeHtml(post.pubDate);
+        const language = post.language === "ar" ? "ar" : "en";
+        const dir = language === "ar" ? "rtl" : "ltr";
         const imageHtml = imageUrl
           ? `<div class="thumb-loading-frame h-48"><img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" class="h-48 w-full object-cover" loading="lazy" decoding="async" /></div>`
           : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
         return `
-          <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
+          <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300" data-content-language="${language}" dir="${dir}" lang="${language}">
             ${imageHtml}
             <div class="p-6">
               <div class="flex items-center text-sm text-gray-500 mb-3">

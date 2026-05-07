@@ -15,17 +15,36 @@ export function normalizePageType(value) {
   return PAGE_TYPES.has(value) ? value : "normal";
 }
 
+export function normalizeContentLanguage(value) {
+  return value === "ar" ? "ar" : "en";
+}
+
+export function hasArabicContent(value) {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+}
+
+export function resolveContentLanguage(value, fallbackText = "") {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
+}
+
 export function normalizePageFilename(value) {
-  const text = String(value || "").trim();
+  const text = String(value || "").normalize("NFKC").trim();
   const withExtension = text.endsWith(".md") ? text : `${text}.md`;
 
   if (!withExtension || withExtension === ".md") return "";
-  if (/[\\/]/.test(withExtension) || withExtension.includes("..")) return "";
+  if (
+    /[\\/]/.test(withExtension) ||
+    withExtension.includes("..") ||
+    /[\0<>:"|?*]/.test(withExtension)
+  ) {
+    return "";
+  }
 
   return withExtension
     .toLowerCase()
     .replace(/['"]/g, "")
-    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/[^\p{L}\p{M}\p{N}._-]+/gu, "-")
     .replace(/^-+|-+(?=\.md$)/g, "");
 }
 
@@ -83,6 +102,10 @@ export function parsePageMarkdown(content) {
       title: frontmatter.title || "Untitled Page",
       description: frontmatter.description || "",
       pageType: normalizePageType(frontmatter.pageType),
+      language: resolveContentLanguage(
+        frontmatter.language,
+        `${frontmatter.title || ""} ${frontmatter.description || ""} ${body}`,
+      ),
       createdAt: frontmatter.createdAt || "",
       updatedAt: frontmatter.updatedAt || "",
       galleryImages: Array.isArray(frontmatter.galleryImages)
@@ -97,6 +120,7 @@ export function buildPageMarkdown({
   title,
   description,
   pageType,
+  language = "en",
   createdAt,
   galleryImages = [],
   content,
@@ -108,6 +132,7 @@ export function buildPageMarkdown({
     `title: ${JSON.stringify(String(title || "Untitled Page").trim() || "Untitled Page")}`,
     `description: ${JSON.stringify(String(description || "").trim())}`,
     `pageType: ${JSON.stringify(normalizePageType(pageType))}`,
+    `language: ${JSON.stringify(normalizeContentLanguage(language))}`,
     `createdAt: ${JSON.stringify(createdAt || now)}`,
     `updatedAt: ${JSON.stringify(now)}`,
     `galleryImages: ${JSON.stringify(JSON.stringify(normalizedGalleryImages))}`,
@@ -196,6 +221,7 @@ export async function listPageFiles() {
         title: parsed.frontmatter.title,
         description: parsed.frontmatter.description,
         pageType: parsed.frontmatter.pageType,
+        language: parsed.frontmatter.language,
         galleryImageCount: parsed.frontmatter.galleryImages.length,
         updatedAt: parsed.frontmatter.updatedAt || "",
         updatedAtMs: page.updatedAtMs,

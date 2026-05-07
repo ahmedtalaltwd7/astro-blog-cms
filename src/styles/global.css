@@ -35,6 +35,78 @@
     background-color: #111827;
     color: #f8fafc;
   }
+
+  .admin-arabic-field {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+  }
+
+  .admin-arabic-field::placeholder {
+    text-align: right;
+  }
+
+  [data-content-language="ar"],
+  [data-content-language="ar"] .max-w-none,
+  [data-content-language="ar"][data-public-content],
+  [data-content-language="ar"][data-gallery-content],
+  .admin-arabic-content-mode [data-public-content]:not([data-content-language]),
+  .admin-arabic-content-mode [data-gallery-content]:not([data-content-language]) {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+  }
+
+  [data-content-language="en"],
+  [data-content-language="en"] .max-w-none,
+  [data-content-language="en"][data-public-content],
+  [data-content-language="en"][data-gallery-content] {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: plaintext;
+  }
+
+  [data-content-language="ar"] .max-w-none blockquote,
+  .admin-arabic-content-mode [data-public-content]:not([data-content-language]) .max-w-none blockquote {
+    border-left-width: 0;
+    border-right-width: 4px;
+  }
+
+  [data-content-language="ar"] .max-w-none li,
+  .admin-arabic-content-mode [data-public-content]:not([data-content-language]) .max-w-none li {
+    margin-left: 0;
+    margin-right: 1.25rem;
+  }
+
+  .admin-arabic-content-mode [data-admin-live-preview] {
+    direction: rtl;
+    text-align: right;
+    unicode-bidi: plaintext;
+  }
+
+  [data-content-language="ar"] .text-left,
+  .admin-arabic-content-mode [data-public-content]:not([data-content-language]) .text-left,
+  .admin-arabic-content-mode [data-gallery-content]:not([data-content-language]) .text-left {
+    text-align: right;
+  }
+
+  [data-content-language="en"] .text-right {
+    text-align: left;
+  }
+
+  [data-content-language="ar"] .text-center,
+  [data-content-language="en"] .text-center,
+  .admin-arabic-content-mode [data-public-content] .text-center,
+  .admin-arabic-content-mode [data-gallery-content] .text-center {
+    text-align: center;
+  }
+
+  [data-public-content] svg,
+  [data-gallery-content] svg,
+  [data-public-content] img,
+  [data-gallery-content] img {
+    direction: ltr;
+  }
 }
 
 @layer utilities {

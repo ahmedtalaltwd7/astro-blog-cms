@@ -91,13 +91,34 @@ Hidden markdown-friendly details go here.
 ];
 
 const makeDefaultFilename = (value) =>
-  value
+  String(value)
+    .normalize("NFKC")
     .toLowerCase()
     .trim()
     .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
+    .slice(0, 80);
+
+const normalizeContentLanguage = (value) => (value === "ar" ? "ar" : "en");
+
+const hasArabicContent = (value) =>
+  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+
+const resolveContentLanguage = (value, fallbackText = "") => {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
+};
+
+const getInitialContentLanguage = () => {
+  if (typeof window === "undefined") return "en";
+
+  try {
+    return localStorage.getItem("adminArabicContentMode") === "true" ? "ar" : "en";
+  } catch {
+    return "en";
+  }
+};
 
 const escapeHtmlAttribute = (value) =>
   String(value)
@@ -329,6 +350,7 @@ const buildImageMarkup = (
 export default function BlogEditor() {
   const [filename, setFilename] = useState("new-post.md");
   const [title, setTitle] = useState("My Amazing Blog Post");
+  const [language, setLanguage] = useState(getInitialContentLanguage);
   const [tagsInput, setTagsInput] = useState("blog, astro");
   const [image, setImage] = useState("");
   const [thumbnail, setThumbnail] = useState("");
@@ -448,9 +470,11 @@ export default function BlogEditor() {
       setFilenameMessage("");
       return;
     }
-    const slug = filenameToCheck.replace(".md", "");
+    const slug = filenameToCheck.replace(/\.md$/i, "");
     try {
-      const response = await fetch(`/blog/${slug}`, { method: "HEAD" });
+      const response = await fetch(`/blog/${encodeURIComponent(slug)}`, {
+        method: "HEAD",
+      });
       if (response.ok) {
         setFilenameExists(true);
         setFilenameMessage(
@@ -520,6 +544,14 @@ export default function BlogEditor() {
       const data = await response.json();
       const { frontmatter, body } = data;
       setTitle(frontmatter.title || post.title);
+      setLanguage(
+        resolveContentLanguage(
+          frontmatter.language || post.language,
+          `${frontmatter.title || post.title || ""} ${frontmatter.description || ""} ${
+            body || ""
+          }`,
+        ),
+      );
       setTagsInput(formatTagsInput(frontmatter.tags || post.tags || []));
       setImage(frontmatter.image || "");
       setThumbnail(frontmatter.thumbnail || post.thumbnail || "");
@@ -594,6 +626,7 @@ export default function BlogEditor() {
       console.log("Saving post:", {
         filename,
         title,
+        language,
         tags: normalizeHashtags(tagsInput),
         content: contentToSave.substring(0, 50) + "...",
         imageFile: imageFile ? imageFile.name : "none",
@@ -620,6 +653,7 @@ export default function BlogEditor() {
           filename,
           originalFilename,
           title,
+          language,
           tags: normalizeHashtags(tagsInput),
           content: contentToSave,
           image,
@@ -645,6 +679,7 @@ export default function BlogEditor() {
         setMessage(`Post saved successfully as ${filename}`);
         setFilename("");
         setTitle("");
+        setLanguage(getInitialContentLanguage());
         setTagsInput("");
         setContent("");
         setImage("");
@@ -680,6 +715,7 @@ export default function BlogEditor() {
   const handleClear = () => {
     setFilename("");
     setTitle("");
+    setLanguage(getInitialContentLanguage());
     setTagsInput("");
     setContent("");
     setMessage("");
@@ -1074,6 +1110,8 @@ export default function BlogEditor() {
                       class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                       placeholder="My Amazing Blog Post"
                       value={title}
+                      dir={language === "ar" ? "rtl" : "ltr"}
+                      lang={language}
                       onInput={(e) => setTitle(e.target.value)}
                     />
                     <button
@@ -1084,6 +1122,30 @@ export default function BlogEditor() {
                       Slug
                     </button>
                   </div>
+                </div>
+
+                <div>
+                  <label
+                    for="post-language"
+                    class="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Content Language
+                  </label>
+                  <select
+                    id="post-language"
+                    name="language"
+                    value={language}
+                    onInput={(event) =>
+                      setLanguage(normalizeContentLanguage(event.currentTarget.value))
+                    }
+                    class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  >
+                    <option value="en">English</option>
+                    <option value="ar">Arabic / العربية</option>
+                  </select>
+                  <p class="mt-1 text-sm text-gray-500">
+                    The saved post page will use this direction and language.
+                  </p>
                 </div>
 
                 <div>
@@ -1404,6 +1466,8 @@ export default function BlogEditor() {
                           class="h-full min-h-[520px] w-full resize-y border-0 bg-white px-4 py-3 font-mono text-sm leading-6 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
                           placeholder="Write your blog post in markdown here..."
                           value={content}
+                          dir={language === "ar" ? "rtl" : "ltr"}
+                          lang={language}
                           onInput={(e) => {
                             setContent(e.target.value);
                             updateCursorInfo();
@@ -1419,6 +1483,9 @@ export default function BlogEditor() {
                       <div class="min-h-[520px] bg-white p-4">
                         <div
                           class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                          data-content-language={language}
+                          dir={language === "ar" ? "rtl" : "ltr"}
+                          lang={language}
                           dangerouslySetInnerHTML={{
                             __html: previewParts.beforeHtml,
                           }}
@@ -1432,6 +1499,9 @@ export default function BlogEditor() {
                         {previewParts.hasEditableImage && (
                           <div
                             class="max-w-none overflow-auto text-gray-800 [&_a]:text-blue-700 [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-blue-200 [&_blockquote]:bg-blue-50 [&_blockquote]:px-4 [&_blockquote]:py-2 [&_code]:rounded [&_code]:bg-gray-100 [&_code]:px-1 [&_h1]:mb-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:h-auto [&_img]:max-w-full [&_li]:ml-5 [&_ol]:list-decimal [&_p]:mb-4 [&_pre]:mb-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-gray-900 [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-gray-100 [&_table]:mb-4 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-gray-200 [&_td]:p-2 [&_th]:border [&_th]:border-gray-200 [&_th]:bg-gray-50 [&_th]:p-2 [&_ul]:list-disc"
+                            data-content-language={language}
+                            dir={language === "ar" ? "rtl" : "ltr"}
+                            lang={language}
                             dangerouslySetInnerHTML={{
                               __html: previewParts.afterHtml,
                             }}
@@ -1472,7 +1542,7 @@ export default function BlogEditor() {
                     type="button"
                     onClick={() =>
                       window.open(
-                        `/blog/${filename.replace(".md", "")}`,
+                        `/blog/${encodeURIComponent(filename.replace(/\.md$/i, ""))}`,
                         "_blank",
                       )
                     }

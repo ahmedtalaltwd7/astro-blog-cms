@@ -485,7 +485,7 @@ function getHowItWorksCardStyle(card: (typeof howItWorks.cards)[number]) {
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-3">
                       <a
-                        href={`/blog/${post.slug}`}
+                        href={`/blog/${encodeURIComponent(post.slug)}`}
                         class="hover:text-blue-600"
                       >
                         {post.frontmatter.title}
@@ -496,7 +496,7 @@ function getHowItWorksCardStyle(card: (typeof howItWorks.cards)[number]) {
                         "No description provided."}
                     </p>
                     <a
-                      href={`/blog/${post.slug}`}
+                      href={`/blog/${encodeURIComponent(post.slug)}`}
                       class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
                     >
                       Read more

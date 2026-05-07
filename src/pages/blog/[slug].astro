@@ -12,18 +12,43 @@ if (!slug) {
   return Astro.redirect("/404");
 }
 
+function decodeRouteSlug(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function hasArabicContent(value: unknown) {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+}
+
+function resolveContentLanguage(value: unknown, fallbackText = "") {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
+}
+
 // Normalize slug: allow requests like /blog/new-post.md and /blog/new-post
-const originalSlug = String(slug);
-const normalized = originalSlug.replace(/\.md$/i, "");
+const originalSlug = decodeRouteSlug(String(slug));
+const normalized = originalSlug.replace(/\.md$/i, "").normalize("NFC");
 
 // If the user requested the .md URL, redirect to the clean URL to avoid
 // exposing raw markdown and keep canonical URLs consistent.
 if (originalSlug.toLowerCase().endsWith(".md")) {
-  return Astro.redirect(`/blog/${normalized}`, 301);
+  return Astro.redirect(`/blog/${encodeURIComponent(normalized)}`, 301);
 }
 
-// Sanitize slug to prevent path traversal
-const safeSlug = normalized.replace(/[^a-zA-Z0-9\-_]/g, "");
+// Keep Unicode slugs intact while rejecting path traversal and invalid filename characters.
+const safeSlug = normalized.trim();
+if (
+  !safeSlug ||
+  safeSlug.includes("..") ||
+  /[\\/]/.test(safeSlug) ||
+  /[\0<>:"|?*]/.test(safeSlug)
+) {
+  return Astro.redirect("/404");
+}
 
 // Import markdown modules from the content folder so Astro compiles them
 const postModules = import.meta.glob<{
@@ -33,6 +58,7 @@ const postModules = import.meta.glob<{
 let frontmatter: Record<string, any> = {};
 let Content: any = null;
 let htmlContent = "";
+let markdownBody = "";
 const markdownContentClass = [
   "max-w-none text-gray-800",
   "[&_a]:text-blue-700 [&_a]:underline",
@@ -144,8 +170,9 @@ if (shouldUseRuntimeMarkdown || !Content) {
 
     const parsed = parseFrontmatter(raw);
     frontmatter = parsed.frontmatter || {};
+    markdownBody = parsed.body || "";
     marked.setOptions({ gfm: true, breaks: false });
-    htmlContent = await marked(parsed.body || parsed);
+    htmlContent = await marked(markdownBody);
   } catch (err) {
     return Astro.redirect("/404");
   }
@@ -158,12 +185,22 @@ const postHashtags = postTags
   .filter(Boolean)
   .map((tag: string) => `#${tag}`);
 const metaDescription = [pageTitle, ...postHashtags].join(" ");
+const contentLanguage = resolveContentLanguage(
+  frontmatter.language,
+  `${pageTitle} ${frontmatter.description || ""} ${markdownBody || htmlContent}`,
+);
 ---
 
 <Layout title={pageTitle} description={metaDescription}>
   <div class="min-h-screen bg-gray-50 py-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <article class="bg-white shadow-lg rounded-xl overflow-hidden">
+      <article
+        class="bg-white shadow-lg rounded-xl overflow-hidden"
+        data-public-content
+        data-content-language={contentLanguage}
+        dir={contentLanguage === "ar" ? "rtl" : "ltr"}
+        lang={contentLanguage}
+      >
         {/* Hero image */}
         {
           frontmatter.image ? (

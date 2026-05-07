@@ -5,6 +5,7 @@ const MAX_GALLERY_IMAGES = 200;
 const DEFAULT_CONFIG = {
   title: "Gallery",
   description: "A curated set of images from the site.",
+  language: "en",
   thumbnail: {
     webpUrl: "",
     avifUrl: "",
@@ -13,6 +14,8 @@ const DEFAULT_CONFIG = {
   },
   images: [],
 };
+
+const normalizeContentLanguage = (value) => (value === "ar" ? "ar" : "en");
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -457,7 +460,12 @@ export default function GalleryAdmin() {
         )}
 
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-          <section class="rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+          <section
+            class="rounded-md border border-slate-200 bg-white p-6 shadow-sm"
+            data-content-language={config.language || "en"}
+            dir={config.language === "ar" ? "rtl" : "ltr"}
+            lang={config.language || "en"}
+          >
             <h2 class="text-xl font-bold text-slate-950">Gallery Details</h2>
             <div class="mt-5 grid gap-5">
               <TextField
@@ -470,6 +478,24 @@ export default function GalleryAdmin() {
                 value={config.description}
                 onInput={(event) => updateConfig("description", event.currentTarget.value)}
               />
+              <label class="block">
+                <span class="block text-sm font-medium text-gray-700">
+                  Content Language
+                </span>
+                <select
+                  value={config.language || "en"}
+                  onInput={(event) =>
+                    updateConfig(
+                      "language",
+                      normalizeContentLanguage(event.currentTarget.value),
+                    )
+                  }
+                  class="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                >
+                  <option value="en">English</option>
+                  <option value="ar">Arabic / العربية</option>
+                </select>
+              </label>
             </div>
           </section>
 
@@ -519,7 +545,12 @@ export default function GalleryAdmin() {
           </aside>
         </div>
 
-        <section class="mt-6 rounded-md border border-slate-200 bg-white p-6 shadow-sm">
+        <section
+          class="mt-6 rounded-md border border-slate-200 bg-white p-6 shadow-sm"
+          data-content-language={config.language || "en"}
+          dir={config.language === "ar" ? "rtl" : "ltr"}
+          lang={config.language || "en"}
+        >
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 class="text-xl font-bold text-slate-950">Images</h2>

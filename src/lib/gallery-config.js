@@ -10,6 +10,7 @@ import {
 export const DEFAULT_GALLERY_CONFIG = {
   title: "Gallery",
   description: "A curated set of images from the site.",
+  language: "en",
   thumbnail: {
     webpUrl: "",
     avifUrl: "",
@@ -41,6 +42,15 @@ function normalizeUrl(value) {
 function normalizeDimension(value) {
   const dimension = Number(value);
   return Number.isFinite(dimension) && dimension > 0 ? Math.round(dimension) : null;
+}
+
+function hasArabicContent(value) {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+}
+
+function resolveContentLanguage(value, fallbackText = "") {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
 }
 
 function normalizeImage(value = {}, index = 0) {
@@ -78,10 +88,19 @@ function normalizeThumbnail(value = {}) {
 export function normalizeGalleryConfig(value = {}) {
   const config = { ...DEFAULT_GALLERY_CONFIG, ...value };
   const images = Array.isArray(config.images) ? config.images : [];
+  const explicitLanguage = Object.prototype.hasOwnProperty.call(value, "language")
+    ? value.language
+    : "";
+  const languageFallback = [
+    config.title,
+    config.description,
+    ...images.flatMap((image) => [image?.title, image?.alt, image?.caption]),
+  ].join(" ");
 
   return {
     title: normalizeText(config.title, DEFAULT_GALLERY_CONFIG.title),
     description: normalizeText(config.description),
+    language: resolveContentLanguage(explicitLanguage, languageFallback),
     thumbnail: normalizeThumbnail(config.thumbnail),
     images: images
       .map(normalizeImage)

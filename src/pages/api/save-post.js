@@ -78,9 +78,23 @@ function normalizeTags(value) {
     });
 }
 
+function normalizeContentLanguage(value) {
+  return value === "ar" ? "ar" : "en";
+}
+
 function parsePostOrder(value) {
   const number = Number.parseInt(String(value || "").trim(), 10);
   return Number.isFinite(number) && number > 0 ? number : null;
+}
+
+function isSafeMarkdownFilename(value) {
+  return (
+    typeof value === "string" &&
+    value.endsWith(".md") &&
+    !value.includes("..") &&
+    !/[\\/]/.test(value) &&
+    !/[\0<>:"|?*]/.test(value)
+  );
 }
 
 async function getHighestPostOrder(blogDir) {
@@ -315,6 +329,7 @@ export async function POST({ request }) {
       imageUrl = "",
       thumbnailUrl = "",
       originalFilename = "",
+      language = "",
       updatePostOrderNumber = false,
       imageOptimization = null;
 
@@ -324,6 +339,7 @@ export async function POST({ request }) {
       filename = formData.get("filename");
       originalFilename = formData.get("originalFilename") || filename;
       updatePostOrderNumber = formData.get("updatePostOrderNumber") === "true";
+      language = formData.get("language");
       title = formData.get("title");
       content = formData.get("content");
       if (formData.has("tags")) {
@@ -372,6 +388,7 @@ export async function POST({ request }) {
       filename = data.filename;
       originalFilename = data.originalFilename || filename;
       updatePostOrderNumber = Boolean(data.updatePostOrderNumber);
+      language = data.language;
       title = data.title;
       content = data.content;
       if (Object.prototype.hasOwnProperty.call(data, "tags")) {
@@ -417,9 +434,18 @@ export async function POST({ request }) {
     });
 
     // Validate inputs
-    if (!filename || !filename.endsWith(".md")) {
+    if (!isSafeMarkdownFilename(filename)) {
       return addCorsHeaders(
-        new Response(JSON.stringify({ error: "Filename must end with .md" }), {
+        new Response(JSON.stringify({ error: "Filename must be a safe .md filename" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }
+
+    if (originalFilename && !isSafeMarkdownFilename(originalFilename)) {
+      return addCorsHeaders(
+        new Response(JSON.stringify({ error: "Original filename is not safe" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         }),
@@ -463,6 +489,9 @@ export async function POST({ request }) {
         getFrontmatterValue(existingContent, "pubDate") ||
         createdAt;
       postOrder = parsePostOrder(getFrontmatterValue(existingContent, "postOrder"));
+      language = normalizeContentLanguage(
+        language || getFrontmatterValue(existingContent, "language"),
+      );
       imageUrl = imageUrl || getFrontmatterValue(existingContent, "image");
       thumbnailUrl =
         imageUrl && !thumbnailUrl
@@ -474,6 +503,7 @@ export async function POST({ request }) {
     if (!existingContentFound || updatePostOrderNumber) {
       postOrder = (await getHighestPostOrder(blogDir)) + 1;
     }
+    language = normalizeContentLanguage(language);
 
     // Create frontmatter
     let frontmatter = `---
@@ -482,6 +512,7 @@ pubDate: ${pubDate}
 createdAt: ${createdAt}
 description: "A blog post about ${title}"
 author: "Blog Author"
+language: "${normalizeContentLanguage(language)}"
 tags: [${tags.map((tag) => JSON.stringify(tag)).join(", ")}]`;
     if (postOrder !== null) {
       frontmatter += `\npostOrder: ${postOrder}`;

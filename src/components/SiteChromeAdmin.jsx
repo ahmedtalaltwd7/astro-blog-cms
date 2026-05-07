@@ -681,6 +681,7 @@ export default function SiteChromeAdmin() {
                   <span class="text-sm font-medium text-gray-600">Browser site icon</span>
                 </div>
                 <div
+                  data-admin-live-preview
                   class="border-b px-4 py-4"
                   style={headerPreviewStyle}
                 >
@@ -712,7 +713,11 @@ export default function SiteChromeAdmin() {
                 <div class="bg-gray-50 px-5 py-12 text-center text-gray-600">
                   Page content
                 </div>
-                <div class="border-t px-5 py-6 text-center" style={footerPreviewStyle}>
+                <div
+                  data-admin-live-preview
+                  class="border-t px-5 py-6 text-center"
+                  style={footerPreviewStyle}
+                >
                   {config.footerShowLogo && previewLogo && (
                     <img
                       src={previewLogo}

@@ -11,6 +11,19 @@ function normalizeTag(value) {
     .toLowerCase();
 }
 
+function normalizeContentLanguage(value) {
+  return value === "ar" ? "ar" : "en";
+}
+
+function hasArabicContent(value) {
+  return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(value || ""));
+}
+
+function resolveContentLanguage(value, fallbackText = "") {
+  if (value === "ar" || value === "en") return value;
+  return hasArabicContent(fallbackText) ? "ar" : "en";
+}
+
 function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updatedAtMs }) {
   const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
   let title = filename.replace(".md", "");
@@ -22,6 +35,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
   let tags = [];
   let image = "";
   let thumbnail = "";
+  let language = "";
 
   if (frontmatterMatch) {
     const frontmatter = frontmatterMatch[1];
@@ -52,9 +66,15 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
         image = line.replace("image:", "").trim().replace(/^["']|["']$/g, "");
       } else if (line.startsWith("thumbnail:")) {
         thumbnail = line.replace("thumbnail:", "").trim().replace(/^["']|["']$/g, "");
+      } else if (line.startsWith("language:")) {
+        language = normalizeContentLanguage(
+          line.replace("language:", "").trim().replace(/^["']|["']$/g, ""),
+        );
       }
     }
   }
+
+  language = resolveContentLanguage(language, `${title} ${description} ${content}`);
 
   return {
     filename,
@@ -65,6 +85,7 @@ function parsePost({ filename, content, createdAt, createdAtMs, updatedAt, updat
     tags,
     image,
     thumbnail,
+    language,
     postOrder,
     createdAt: frontmatterCreatedAt || createdAt,
     createdAtMs: parseDateMs(pubDate || frontmatterCreatedAt) ?? createdAtMs,

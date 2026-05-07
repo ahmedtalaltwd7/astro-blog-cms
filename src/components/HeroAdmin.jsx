@@ -485,6 +485,7 @@ export default function HeroAdmin() {
             <section class="rounded-lg bg-white p-5 shadow-sm">
               <h2 class="text-lg font-semibold text-gray-900">Live Preview</h2>
               <div
+                data-admin-live-preview
                 class="mt-4 flex min-h-[420px] items-center justify-center rounded-lg px-6 py-12 text-center shadow-inner"
                 style={previewStyle}
               >

@@ -120,13 +120,15 @@ if (!tag) {
           post.description || "No description provided.",
         );
         const safePubDate = escapeHtml(post.pubDate);
+        const language = post.language === "ar" ? "ar" : "en";
+        const dir = language === "ar" ? "rtl" : "ltr";
         const imageUrl = post.thumbnail || post.image;
         const imageHtml = imageUrl
           ? `<div class="thumb-loading-frame h-48"><img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" class="h-48 w-full object-cover" loading="lazy" decoding="async" /></div>`
           : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
 
         return `
-          <article class="overflow-hidden rounded-xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl">
+          <article class="overflow-hidden rounded-xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl" data-content-language="${language}" dir="${dir}" lang="${language}">
             ${imageHtml}
             <div class="p-6">
               <div class="mb-3 flex items-center text-sm text-gray-500">

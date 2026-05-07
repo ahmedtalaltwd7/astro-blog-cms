@@ -3,6 +3,7 @@ import { marked } from "marked";
 import Layout from "../../layouts/Layout.astro";
 import {
   parsePageMarkdown,
+  resolveContentLanguage,
   readPageContent,
   slugFromPageFilename,
 } from "../../lib/static-pages.js";
@@ -10,15 +11,30 @@ import {
 export const prerender = false;
 
 const { slug } = Astro.params;
-const requestedSlug = String(slug || "").replace(/\.md$/i, "");
-const safeSlug = requestedSlug.replace(/[^a-zA-Z0-9_-]/g, "");
+function decodeRouteSlug(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
-if (!safeSlug || safeSlug !== requestedSlug) {
+const originalSlug = decodeRouteSlug(String(slug || ""));
+const requestedSlug = originalSlug.replace(/\.md$/i, "").normalize("NFC").trim();
+const safeSlug =
+  requestedSlug &&
+  !requestedSlug.includes("..") &&
+  !/[\\/]/.test(requestedSlug) &&
+  !/[\0<>:"|?*]/.test(requestedSlug)
+    ? requestedSlug
+    : "";
+
+if (!safeSlug) {
   return Astro.redirect("/404");
 }
 
-if (String(slug || "").toLowerCase().endsWith(".md")) {
-  return Astro.redirect(`/pages/${safeSlug}`, 301);
+if (originalSlug.toLowerCase().endsWith(".md")) {
+  return Astro.redirect(`/pages/${encodeURIComponent(safeSlug)}`, 301);
 }
 
 const content = await readPageContent(`${safeSlug}.md`);
@@ -30,8 +46,12 @@ const parsed = parsePageMarkdown(content);
 const frontmatter = parsed.frontmatter;
 marked.setOptions({ gfm: true, breaks: false });
 const htmlContent = await marked(parsed.body || "");
-const pageUrl = `/pages/${slugFromPageFilename(`${safeSlug}.md`)}`;
+const pageUrl = `/pages/${encodeURIComponent(slugFromPageFilename(`${safeSlug}.md`))}`;
 const galleryImages = frontmatter.pageType === "gallery" ? frontmatter.galleryImages : [];
+const contentLanguage = resolveContentLanguage(
+  frontmatter.language,
+  `${frontmatter.title || ""} ${frontmatter.description || ""} ${parsed.body || ""}`,
+);
 const markdownContentClass = [
   "max-w-none text-gray-800",
   "[&_a]:text-blue-700 [&_a]:underline",
@@ -54,7 +74,13 @@ const markdownContentClass = [
 ---
 
 <Layout title={`${frontmatter.title} - Astro Blog`} description={frontmatter.description}>
-  <main class="min-h-screen bg-gray-50">
+  <main
+    class="min-h-screen bg-gray-50"
+    data-public-content
+    data-content-language={contentLanguage}
+    dir={contentLanguage === "ar" ? "rtl" : "ltr"}
+    lang={contentLanguage}
+  >
     <section class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">

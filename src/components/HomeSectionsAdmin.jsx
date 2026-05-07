@@ -338,6 +338,7 @@ function SectionPreview({ section }) {
 
     return (
       <div
+        data-admin-live-preview
         class="rounded-md border border-gray-200 p-4"
         style={{ backgroundColor: section.backgroundColor || "#ffffff" }}
       >
@@ -408,6 +409,7 @@ function SectionPreview({ section }) {
 
     return (
       <div
+        data-admin-live-preview
         class={`relative overflow-hidden rounded-md border border-gray-200 ${
           wavePosition === "bottom" ? "pb-10 pt-5" : "pb-6 pt-0"
         }`}
@@ -445,7 +447,7 @@ function SectionPreview({ section }) {
 
   if (section.style === "imageZoom") {
     return (
-      <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
+      <div data-admin-live-preview class="overflow-hidden rounded-md border border-gray-200 bg-white">
         <div class="overflow-hidden bg-gray-100">
           {hasImage ? (
             <img
@@ -471,6 +473,7 @@ function SectionPreview({ section }) {
 
   return (
     <div
+      data-admin-live-preview
       class="rounded-md border border-gray-200 p-4"
       style={{ backgroundColor: section.backgroundColor || "#ffffff" }}
     >
@@ -1625,7 +1628,7 @@ export default function HomeSectionsAdmin() {
               <h2 class="text-lg font-semibold text-gray-900">Live Preview</h2>
               <div class="mt-4 grid gap-4">
                 {activePanel === "how" ? (
-                  <div class="rounded-md border border-gray-200 bg-white p-4">
+                  <div data-admin-live-preview class="rounded-md border border-gray-200 bg-white p-4">
                     <h3 class="text-center text-xl font-bold text-gray-900">
                       {howItWorks.heading}
                     </h3>

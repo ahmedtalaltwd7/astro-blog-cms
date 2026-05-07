@@ -3,6 +3,7 @@ import path from "node:path";
 import sharp from "sharp";
 import {
   buildPageMarkdown,
+  normalizeContentLanguage,
   normalizePageFilename,
   normalizePageType,
   readPageContent,
@@ -121,6 +122,7 @@ export async function POST({ request }) {
       ? existingContent.match(/^---\s*\n[\s\S]*?createdAt:\s*["']?([^"'\n]+)["']?/m)?.[1]
       : "";
     const pageType = normalizePageType(data.pageType);
+    const language = normalizeContentLanguage(data.language);
     const incomingGalleryImages = Array.isArray(data.galleryImages)
       ? data.galleryImages
       : [];
@@ -164,6 +166,7 @@ export async function POST({ request }) {
       title,
       description: data.description,
       pageType,
+      language,
       createdAt: existingCreatedAt,
       galleryImages: pageType === "gallery" ? savedGalleryImages.slice(0, 200) : [],
       content: data.content || "",
