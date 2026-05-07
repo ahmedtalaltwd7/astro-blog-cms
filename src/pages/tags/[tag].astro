@@ -103,6 +103,24 @@ if (!tag) {
           .replace(/'/g, "&#039;");
       }
 
+      function hasArabicContent(value) {
+        return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(
+          String(value || ""),
+        );
+      }
+
+      function resolvePostLanguage(post) {
+        if (post.language === "ar" || post.language === "en") {
+          return post.language;
+        }
+
+        return hasArabicContent(
+          [post.title, post.description, ...(post.tags || [])].join(" "),
+        )
+          ? "ar"
+          : "en";
+      }
+
       function renderTagLink(value) {
         const cleanTag = String(value || "").replace(/^#+/, "").trim();
         if (!cleanTag) return "";
@@ -120,19 +138,20 @@ if (!tag) {
           post.description || "No description provided.",
         );
         const safePubDate = escapeHtml(post.pubDate);
-        const language = post.language === "ar" ? "ar" : "en";
+        const language = resolvePostLanguage(post);
         const dir = language === "ar" ? "rtl" : "ltr";
+        const readMoreLabel = language === "ar" ? "اقرأ المزيد" : "Read more";
         const imageUrl = post.thumbnail || post.image;
         const imageHtml = imageUrl
           ? `<div class="thumb-loading-frame h-48"><img src="${escapeHtml(imageUrl)}" alt="${safeTitle}" class="h-48 w-full object-cover" loading="lazy" decoding="async" /></div>`
           : `<div class="h-48 bg-gradient-to-r from-blue-400 to-purple-500"></div>`;
 
         return `
-          <article class="overflow-hidden rounded-xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl" data-content-language="${language}" dir="${dir}" lang="${language}">
+          <article class="post-card overflow-hidden rounded-xl bg-white shadow-md transition-shadow duration-300 hover:shadow-xl" data-public-content data-content-language="${language}" dir="${dir}" lang="${language}">
             ${imageHtml}
-            <div class="p-6">
-              <div class="mb-3 flex items-center text-sm text-gray-500">
-                <svg class="mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <div class="post-card-body p-6">
+              <div class="post-card-meta mb-3 flex items-center text-sm text-gray-500">
+                <svg class="post-card-date-icon mr-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                 </svg>
                 <time datetime="${safePubDate}">${safePubDate}</time>
@@ -144,9 +163,9 @@ if (!tag) {
               <div class="mb-4 flex flex-wrap gap-2">
                 ${(post.tags || []).map(renderTagLink).join("")}
               </div>
-              <a href="/blog/${encodeURIComponent(post.slug)}" class="inline-flex items-center font-medium text-blue-600 hover:text-blue-800">
-                Read more
-                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <a href="/blog/${encodeURIComponent(post.slug)}" class="post-card-read-more inline-flex items-center font-medium text-blue-600 hover:text-blue-800">
+                ${readMoreLabel}
+                <svg class="post-card-read-more-icon ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </a>

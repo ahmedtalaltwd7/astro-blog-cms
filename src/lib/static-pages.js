@@ -24,8 +24,11 @@ export function hasArabicContent(value) {
 }
 
 export function resolveContentLanguage(value, fallbackText = "") {
-  if (value === "ar" || value === "en") return value;
-  return hasArabicContent(fallbackText) ? "ar" : "en";
+  const hasArabicFallback = hasArabicContent(fallbackText);
+  if (value === "ar") return "ar";
+  if (value === "en" && !hasArabicFallback) return "en";
+  if (value === "en" && hasArabicFallback) return "ar";
+  return hasArabicFallback ? "ar" : "en";
 }
 
 export function normalizePageFilename(value) {

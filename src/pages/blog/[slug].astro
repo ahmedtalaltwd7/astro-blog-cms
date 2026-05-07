@@ -25,7 +25,10 @@ function hasArabicContent(value: unknown) {
 }
 
 function resolveContentLanguage(value: unknown, fallbackText = "") {
-  if (value === "ar" || value === "en") return value;
+  const hasArabicFallback = hasArabicContent(fallbackText);
+  if (value === "ar") return "ar";
+  if (value === "en" && !hasArabicFallback) return "en";
+  if (value === "en" && hasArabicFallback) return "ar";
   return hasArabicContent(fallbackText) ? "ar" : "en";
 }
 
@@ -187,8 +190,15 @@ const postHashtags = postTags
 const metaDescription = [pageTitle, ...postHashtags].join(" ");
 const contentLanguage = resolveContentLanguage(
   frontmatter.language,
-  `${pageTitle} ${frontmatter.description || ""} ${markdownBody || htmlContent}`,
+  `${safeSlug} ${pageTitle} ${frontmatter.description || ""} ${markdownBody || htmlContent}`,
 );
+const contentDirection = contentLanguage === "ar" ? "rtl" : "ltr";
+const contentAlign = contentLanguage === "ar" ? "right" : "left";
+const contentDirectionStyle = `direction: ${contentDirection}; text-align: ${contentAlign}; unicode-bidi: plaintext;`;
+const descriptionClass =
+  contentLanguage === "ar"
+    ? "text-xl text-gray-700 mb-8 italic border-r-4 border-blue-500 pr-4"
+    : "text-xl text-gray-700 mb-8 italic border-l-4 border-blue-500 pl-4";
 ---
 
 <Layout title={pageTitle} description={metaDescription}>
@@ -198,8 +208,9 @@ const contentLanguage = resolveContentLanguage(
         class="bg-white shadow-lg rounded-xl overflow-hidden"
         data-public-content
         data-content-language={contentLanguage}
-        dir={contentLanguage === "ar" ? "rtl" : "ltr"}
+        dir={contentDirection}
         lang={contentLanguage}
+        style={contentDirectionStyle}
       >
         {/* Hero image */}
         {
@@ -291,7 +302,7 @@ const contentLanguage = resolveContentLanguage(
           {/* Description */}
           {
             frontmatter.description && (
-              <p class="text-xl text-gray-700 mb-8 italic border-l-4 border-blue-500 pl-4">
+              <p class={descriptionClass} dir={contentDirection} lang={contentLanguage}>
                 {frontmatter.description}
               </p>
             )
@@ -300,11 +311,24 @@ const contentLanguage = resolveContentLanguage(
           {/* Rendered Markdown Content */}
           {
             Content ? (
-              <div class={markdownContentClass}>
+              <div
+                class={markdownContentClass}
+                data-content-language={contentLanguage}
+                dir={contentDirection}
+                lang={contentLanguage}
+                style={contentDirectionStyle}
+              >
                 <Content />
               </div>
             ) : (
-              <div class={markdownContentClass} set:html={htmlContent} />
+              <div
+                class={markdownContentClass}
+                data-content-language={contentLanguage}
+                dir={contentDirection}
+                lang={contentLanguage}
+                style={contentDirectionStyle}
+                set:html={htmlContent}
+              />
             )
           }
 

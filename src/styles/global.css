@@ -94,6 +94,34 @@
     text-align: left;
   }
 
+  [data-content-language="ar"].post-card,
+  [data-content-language="ar"] .post-card-body {
+    direction: rtl;
+    text-align: right;
+  }
+
+  [data-content-language="en"].post-card,
+  [data-content-language="en"] .post-card-body {
+    direction: ltr;
+    text-align: left;
+  }
+
+  [data-content-language="ar"] .post-card-meta,
+  [data-content-language="ar"] .post-card-read-more {
+    justify-content: flex-start;
+  }
+
+  [data-content-language="ar"] .post-card-date-icon {
+    margin-right: 0;
+    margin-left: 0.25rem;
+  }
+
+  [data-content-language="ar"] .post-card-read-more-icon {
+    margin-left: 0;
+    margin-right: 0.25rem;
+    transform: rotate(180deg);
+  }
+
   [data-content-language="ar"] .text-center,
   [data-content-language="en"] .text-center,
   .admin-arabic-content-mode [data-public-content] .text-center,
