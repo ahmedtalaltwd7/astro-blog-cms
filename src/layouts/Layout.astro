@@ -19,7 +19,10 @@ const footerStyle = [
 	`--site-footer-link: ${siteConfig.footerLinkColor};`,
 ].join(" ");
 const headerLinkClass = `site-nav-link link-style-${siteConfig.headerLinkStyle} rounded-md px-3 py-2 font-medium`;
-const footerLinks = siteConfig.footerLinks.length > 0 ? siteConfig.footerLinks : siteConfig.navLinks;
+const isPublicNavLink = (link) => !String(link?.href || "").startsWith("/admin");
+const publicNavLinks = siteConfig.navLinks.filter(isPublicNavLink);
+const footerSourceLinks = siteConfig.footerLinks.length > 0 ? siteConfig.footerLinks : publicNavLinks;
+const footerLinks = footerSourceLinks.filter(isPublicNavLink);
 const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 ---
 
@@ -75,7 +78,7 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 						</a>
 					</div>
 					<div class="hidden items-center justify-center gap-2 md:flex">
-						{siteConfig.navLinks.map((link) => (
+						{publicNavLinks.map((link) => (
 							<a href={link.href} class={headerLinkClass}>{link.label}</a>
 						))}
 					</div>
@@ -117,9 +120,6 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 							</svg>
 							<span data-theme-toggle-label>Dark</span>
 						</button>
-						<a href="/admin" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium">
-							Admin Editor
-						</a>
 					</div>
 					<button
 						type="button"
@@ -157,7 +157,7 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 				</div>
 				<div id="mobile-site-menu" data-mobile-menu class="hidden border-t py-3 text-center md:hidden" style={`border-color: ${siteConfig.headerBorderColor};`}>
 					<div class="flex flex-col items-center gap-2">
-						{siteConfig.navLinks.map((link) => (
+						{publicNavLinks.map((link) => (
 							<a href={link.href} class={`${headerLinkClass} block w-full max-w-xs px-3 py-2 text-center`}>{link.label}</a>
 						))}
 					</div>
@@ -199,9 +199,6 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 							</svg>
 							<span data-theme-toggle-label>Dark</span>
 						</button>
-						<a href="/admin" class="rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white hover:bg-blue-700">
-							Admin Editor
-						</a>
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 import {
+  isServerlessRuntime,
   isReadonlyRuntime,
   readJsonBlob,
   requireWritableStorage,
@@ -14,12 +15,12 @@ export const DEFAULT_SITE_CONFIG = {
   navLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Hero", href: "/admin/hero" },
+    { label: "Gallery", href: "/gallery" },
   ],
   footerLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Admin", href: "/admin" },
+    { label: "Gallery", href: "/gallery" },
   ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",
@@ -153,7 +154,12 @@ export async function writeSiteConfig(config) {
   const normalized = normalizeSiteConfig(config);
   if (isReadonlyRuntime()) {
     requireWritableStorage("save header and footer settings");
-    return writeJsonBlob("admin-data/site.json", normalized);
+    try {
+      return await writeJsonBlob("admin-data/site.json", normalized);
+    } catch (error) {
+      if (isServerlessRuntime()) throw error;
+      console.warn("Blob write failed for site settings; falling back to local file.", error);
+    }
   }
 
   const filePath = getSiteConfigPath();

@@ -2,7 +2,7 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import sharp from "sharp";
-import { put } from "@vercel/blob";
+import { hasBlobStorage, isReadonlyRuntime, saveWebpAsset } from "../../lib/runtime-storage.js";
 
 export const prerender = false;
 
@@ -17,9 +17,6 @@ const WEBP_OPTIONS = {
 };
 
 function addCorsHeaders(response) {
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
   return response;
 }
 
@@ -44,10 +41,6 @@ function getRandomSuffix() {
 
 function generateImageFilename() {
   return `${getFullTimeStamp()}-${getRandomSuffix()}.webp`;
-}
-
-function isVercelRuntime() {
-  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
 async function getImageDirs() {
@@ -107,35 +100,23 @@ async function optimizeImageBuffer(buffer) {
 }
 
 async function saveImageForCurrentRuntime(imageFilename, optimizedBuffer) {
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`${IMAGE_DIR_NAME}/${imageFilename}`, optimizedBuffer, {
-      access: "public",
-      contentType: "image/webp",
-    });
-
-    return {
-      imageUrl: blob.url,
-      storage: "vercel-blob",
-    };
-  }
-
-  if (isVercelRuntime()) {
+  if (isReadonlyRuntime() && !hasBlobStorage()) {
     return {
       imageUrl: `data:image/webp;base64,${optimizedBuffer.toString("base64")}`,
       storage: "inline",
     };
   }
 
-  const imageDirs = await getImageDirs();
-
-  for (const imageDir of imageDirs) {
-    await fs.mkdir(imageDir, { recursive: true });
-    await fs.writeFile(path.join(imageDir, imageFilename), optimizedBuffer);
-  }
+  const savedAsset = await saveWebpAsset({
+    directory: IMAGE_DIR_NAME,
+    filename: imageFilename,
+    buffer: optimizedBuffer,
+    localDirs: await getImageDirs(),
+  });
 
   return {
-    imageUrl: `/${IMAGE_DIR_NAME}/${imageFilename}`,
-    storage: "filesystem",
+    imageUrl: savedAsset.url,
+    storage: savedAsset.storage,
   };
 }
 
@@ -144,9 +125,7 @@ export async function OPTIONS() {
     new Response(null, {
       status: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Allow": "POST, OPTIONS",
       },
     }),
   );

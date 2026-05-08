@@ -62,7 +62,7 @@ export async function GET({ request, url }) {
       );
     }
     // Ensure filename ends with .md and doesn't contain path traversal
-    if (!filename.endsWith(".md") || filename.includes("..")) {
+    if (!filename.endsWith(".md") || filename.includes("..") || /[\\/]/.test(filename)) {
       return new Response(JSON.stringify({ error: "Invalid filename" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },

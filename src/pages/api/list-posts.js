@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { listBlobEntries } from "../../lib/runtime-storage.js";
+import { ACCESS_COOKIE, verifyAdminToken } from "../../lib/admin-auth.js";
 
 export const prerender = false;
 
@@ -160,8 +161,20 @@ async function readBlobPosts() {
 export async function GET({ request, url }) {
   try {
     const searchParams = new URL(url).searchParams;
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "5");
+    const parsedPage = Number.parseInt(searchParams.get("page") || "1", 10);
+    const parsedLimit = Number.parseInt(searchParams.get("limit") || "5", 10);
+    const cookieHeader = request.headers.get("cookie") || "";
+    const accessCookie = cookieHeader
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(`${ACCESS_COOKIE}=`))
+      ?.slice(ACCESS_COOKIE.length + 1);
+    const maxLimit = verifyAdminToken(accessCookie, "access") ? 1000 : 100;
+    const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+    const limit =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, maxLimit)
+        : 5;
     const search = (searchParams.get("search") || "").trim().toLowerCase();
     const tag = normalizeTag(searchParams.get("tag"));
     const offset = (page - 1) * limit;

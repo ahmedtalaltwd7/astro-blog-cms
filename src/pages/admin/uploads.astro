@@ -1,0 +1,10 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import AdminControlNav from "../../components/AdminControlNav.astro";
+import UploadStatsAdmin from "../../components/UploadStatsAdmin.jsx";
+---
+
+<Layout title="Upload Storage">
+  <AdminControlNav active="uploads" />
+  <UploadStatsAdmin client:load />
+</Layout>

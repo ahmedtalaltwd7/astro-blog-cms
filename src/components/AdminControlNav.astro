@@ -33,13 +33,27 @@ const adminLinks = [
     description: "Thumbnail and images",
   },
   {
+    key: "uploads",
+    label: "Uploads",
+    href: "/admin/uploads",
+    description: "Image counts and sizes",
+  },
+  {
     key: "site",
     label: "Header & Footer",
     href: "/admin/site",
     description: "Brand and navigation",
   },
+  {
+    key: "password",
+    label: "Password",
+    href: "/admin/password",
+    description: "Admin sign-in security",
+  },
 ];
 ---
+
+<script src="/admin-auth-fetch.js" is:inline></script>
 
 <section class="border-b border-slate-200 bg-white">
   <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
@@ -72,10 +86,17 @@ const adminLinks = [
         >
           View Site
         </a>
+        <button
+          type="button"
+          data-admin-logout
+          class="inline-flex w-fit items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          Logout
+        </button>
       </div>
     </div>
 
-    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-6" aria-label="Admin controls">
+    <nav class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Admin controls">
       {
         adminLinks.map((link, index) => {
           const isActive = active === link.key;
@@ -111,3 +132,13 @@ const adminLinks = [
     </nav>
   </div>
 </section>
+
+<script is:inline>
+  document.querySelector("[data-admin-logout]")?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } finally {
+      window.location.href = "/admin/login";
+    }
+  });
+</script>

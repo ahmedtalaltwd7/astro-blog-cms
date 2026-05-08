@@ -15,7 +15,7 @@ export const DEFAULT_HOW_IT_WORKS = {
   cards: [
     {
       title: "Edit Markdown",
-      body: "Use the admin control panel to write blog posts in markdown with frontmatter. The editor provides a live preview.",
+      body: "Read structured markdown stories with titles, tags, images, and a clean reading layout.",
       accentColor: "#2563eb",
       accentBackgroundColor: "#dbeafe",
       cardBackgroundColor: "#f9fafb",

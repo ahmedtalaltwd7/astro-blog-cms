@@ -1,6 +1,7 @@
 {
   "brandName": "Astro Blog CMS",
   "logoUrl": "/site-assets/20260501051416128-7ybcf.webp",
+  "iconUrl": "/site-assets/20260507232637424-ai9cf.webp",
   "navLinks": [
     {
       "label": "Home",
@@ -11,12 +12,30 @@
       "href": "/blog"
     },
     {
-      "label": "Hero",
-      "href": "/admin/hero"
+      "label": "Gallery",
+      "href": "/gallery"
     },
     {
-      "label": "footer",
-      "href": "/admin/site"
+      "label": "Pages",
+      "href": "/pages/new-page"
+    }
+  ],
+  "footerLinks": [
+    {
+      "label": "Home",
+      "href": "/"
+    },
+    {
+      "label": "Blog",
+      "href": "/blog"
+    },
+    {
+      "label": "Gallery",
+      "href": "/gallery"
+    },
+    {
+      "label": "vercel",
+      "href": "https://vercel.com/ahmedtalaltwd7s-projects/astro-blog-cms/settings/environment-variables?tab=project&q=BLOB_READ_WRITE_TOKEN"
     }
   ],
   "headerBackgroundColor": "#070a0e",

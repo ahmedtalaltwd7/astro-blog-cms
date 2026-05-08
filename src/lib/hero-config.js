@@ -10,12 +10,12 @@ import {
 export const DEFAULT_HERO_CONFIG = {
   pageTitle: "Home - Astro Blog",
   metaDescription:
-    "A fully-featured blog system with a control panel editor, Tailwind CSS styling, and dynamic markdown pages.",
+    "A modern blog with dynamic markdown pages, gallery sections, and a polished reading experience.",
   title: "Create Dynamic Blog Pages with Astro",
   subtitle:
-    "A fully-featured blog system with a control panel editor, Tailwind CSS styling, and dynamic markdown pages.",
-  primaryButtonText: "Go to Editor",
-  primaryButtonHref: "/admin",
+    "A modern blog with dynamic markdown pages, gallery sections, and a polished reading experience.",
+  primaryButtonText: "View Blog",
+  primaryButtonHref: "/blog",
   secondaryButtonText: "View Blog",
   secondaryButtonHref: "/blog",
   backgroundType: "gradient",

@@ -1,10 +1,10 @@
 {
   "pageTitle": "Home page for astro blog",
-  "metaDescription": "astro blog A fully-featured blog system with a control panel editor, Tailwind CSS styling, and dynamic markdown pages. pre2",
-  "title": "LAST TWD3",
-  "subtitle": "A fully-featured blog system with a control panel editor, Tailwind CSS styling, and dynamic markdown pages. TWD2",
-  "primaryButtonText": "Go to Editor",
-  "primaryButtonHref": "/admin",
+  "metaDescription": "astro blog with dynamic markdown pages, gallery sections, and a polished reading experience.",
+  "title": "LAST TWD7",
+  "subtitle": "A modern blog with dynamic markdown pages, gallery sections, and a polished reading experience.",
+  "primaryButtonText": "View Blog",
+  "primaryButtonHref": "/blog",
   "secondaryButtonText": "View Blog",
   "secondaryButtonHref": "/blog",
   "backgroundType": "image",
@@ -12,7 +12,7 @@
   "gradientFrom": "#2563eb",
   "gradientTo": "#7c3aed",
   "textColor": "#fff0f0",
-  "imageUrl": "/hero-images/20260502235222275-9bkcd.webp",
+  "imageUrl": "/hero-images/20260508001637564-dv1pl.webp",
   "overlayColor": "#000000",
-  "overlayOpacity": 39
+  "overlayOpacity": 35
 }

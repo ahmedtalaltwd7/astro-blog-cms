@@ -14,9 +14,6 @@ export const prerender = false;
 
 // Helper to add CORS headers to a response
 function addCorsHeaders(response) {
-  response.headers.set("Access-Control-Allow-Origin", "*");
-  response.headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type");
   return response;
 }
 
@@ -143,9 +140,7 @@ export async function OPTIONS({ request }) {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Allow": "POST, OPTIONS",
     },
   });
 }
@@ -364,12 +359,6 @@ export async function POST({ request }) {
       // Handle JSON (including base64-encoded image)
       const rawBody = await request.text();
       console.error(`[${timestamp}] Raw request body length:`, rawBody.length);
-      if (rawBody.length > 0) {
-        console.error(
-          `[${timestamp}] Raw request body (first 200 chars):`,
-          rawBody.substring(0, 200),
-        );
-      }
       let data;
       try {
         data = JSON.parse(rawBody);

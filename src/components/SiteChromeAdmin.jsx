@@ -7,12 +7,12 @@ const DEFAULT_CONFIG = {
   navLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Hero", href: "/admin/hero" },
+    { label: "Gallery", href: "/gallery" },
   ],
   footerLinks: [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Admin", href: "/admin" },
+    { label: "Gallery", href: "/gallery" },
   ],
   headerBackgroundColor: "#ffffff",
   headerTextColor: "#111827",

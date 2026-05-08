@@ -1,13 +1,61 @@
 import fs from "fs/promises";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { del, head, list, put } from "@vercel/blob";
 
-export function isReadonlyRuntime() {
+function normalizeStorageMode(value) {
+  return String(value || "")
+    .split("//")[0]
+    .split("#")[0]
+    .trim()
+    .replace(/^["']|["']$/g, "")
+    .toLowerCase();
+}
+
+function readLocalEnvStorageMode() {
+  const envPath = path.join(process.cwd(), ".env.local");
+  if (!existsSync(envPath)) return "";
+
+  try {
+    const envText = readFileSync(envPath, "utf-8");
+    const line = envText
+      .split(/\r?\n/)
+      .find((entry) => /^\s*dev_env_token\s*=/.test(entry));
+    if (!line) return "";
+
+    return normalizeStorageMode(line.replace(/^\s*dev_env_token\s*=/, ""));
+  } catch {
+    return "";
+  }
+}
+
+export function getStorageMode() {
+  return (
+    readLocalEnvStorageMode() ||
+    normalizeStorageMode(process.env.dev_env_token || process.env.DEV_ENV_TOKEN)
+  );
+}
+
+export function isServerlessRuntime() {
   return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 }
 
+export function isLocalStorageMode() {
+  return getStorageMode() === "local";
+}
+
+export function isProReadyStorageMode() {
+  return getStorageMode() === "pro-ready";
+}
+
+export function isReadonlyRuntime() {
+  if (isLocalStorageMode()) return false;
+  if (isProReadyStorageMode()) return true;
+  return isServerlessRuntime();
+}
+
 export function hasBlobStorage() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return isProReadyStorageMode() && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
 export function requireWritableStorage(action = "save changes") {
@@ -101,17 +149,25 @@ export async function saveAsset({
   inlineMime = contentType,
 }) {
   if (hasBlobStorage()) {
-    const blob = await put(`${directory}/${filename}`, buffer, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType,
-    });
+    try {
+      const blob = await put(`${directory}/${filename}`, buffer, {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType,
+      });
 
-    return {
-      url: blob.url,
-      storage: "vercel-blob",
-    };
+      return {
+        url: blob.url,
+        storage: "vercel-blob",
+      };
+    } catch (error) {
+      if (isReadonlyRuntime()) throw error;
+      console.warn(
+        `Blob upload failed for ${directory}/${filename}; falling back to local storage.`,
+        error,
+      );
+    }
   }
 
   if (isReadonlyRuntime()) {

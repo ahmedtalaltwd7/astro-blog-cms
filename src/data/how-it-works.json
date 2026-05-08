@@ -3,7 +3,7 @@
   "cards": [
     {
       "title": "Edit Markdown twd",
-      "body": "Use the admin control panel to write blog posts in markdown with frontmatter. The editor provides a live preview.",
+      "body": "Read structured markdown stories with titles, tags, images, and a clean reading layout.",
       "accentColor": "#7df86d",
       "accentBackgroundColor": "#467cc3",
       "cardBackgroundColor": "#f9fafb",

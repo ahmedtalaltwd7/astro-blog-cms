@@ -13,30 +13,8 @@ const limit = 6;
           Blog Posts
         </h1>
         <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-          A collection of blog posts created with the admin editor. Each post is
-          stored as a markdown file in <code
-            class="bg-gray-100 px-2 py-1 rounded">src/pages/blog/</code
-          >.
+          A collection of latest notes, stories, and updates.
         </p>
-        <a
-          href="/admin"
-          class="inline-flex items-center mt-6 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg
-            class="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-          Create New Post
-        </a>
       </div>
 
       <div class="mb-8 max-w-xl mx-auto">
@@ -106,16 +84,8 @@ const limit = 6;
           <span id="empty-title">No blog posts yet</span>
         </h3>
         <p id="empty-message" class="mt-2 text-gray-500 max-w-md mx-auto">
-          Get started by creating your first blog post using the admin editor.
+          New posts will appear here soon.
         </p>
-        <div class="mt-6">
-          <a
-            href="/admin"
-            class="inline-flex items-center px-5 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Create First Post
-          </a>
-        </div>
       </div>
 
       <!-- Load more control -->
@@ -382,7 +352,7 @@ const limit = 6;
               : "No blog posts yet";
             emptyMessage.textContent = searchTerm
               ? "Try searching for a different blog title."
-              : "Get started by creating your first blog post using the admin editor.";
+              : "New posts will appear here soon.";
             emptyState.classList.remove("hidden");
             saveListState();
             return;
