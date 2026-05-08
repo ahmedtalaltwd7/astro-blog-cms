@@ -29,6 +29,7 @@ export const DEFAULT_SITE_CONFIG = {
   headerLinkHoverColor: "#2563eb",
   headerBorderColor: "#e5e7eb",
   headerLinkStyle: "pills",
+  headerLanguage: "en",
   footerBackgroundColor: "#ffffff",
   footerTextColor: "#6b7280",
   footerBorderColor: "#e5e7eb",
@@ -57,6 +58,10 @@ function normalizeUrl(value, fallback = "") {
 function normalizeText(value, fallback) {
   const text = String(value || "").trim();
   return text || fallback;
+}
+
+function normalizeLanguage(value, fallback = "en") {
+  return value === "ar" ? "ar" : fallback;
 }
 
 function normalizeLinks(value, fallback = DEFAULT_SITE_CONFIG.navLinks, maxLinks = 6) {
@@ -113,6 +118,10 @@ export function normalizeSiteConfig(value = {}) {
     headerLinkStyle: linkStyles.has(config.headerLinkStyle)
       ? config.headerLinkStyle
       : DEFAULT_SITE_CONFIG.headerLinkStyle,
+    headerLanguage: normalizeLanguage(
+      config.headerLanguage,
+      DEFAULT_SITE_CONFIG.headerLanguage,
+    ),
     footerBackgroundColor: normalizeHexColor(
       config.footerBackgroundColor,
       DEFAULT_SITE_CONFIG.footerBackgroundColor,

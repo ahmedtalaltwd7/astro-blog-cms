@@ -24,6 +24,12 @@ const publicNavLinks = siteConfig.navLinks.filter(isPublicNavLink);
 const footerSourceLinks = siteConfig.footerLinks.length > 0 ? siteConfig.footerLinks : publicNavLinks;
 const footerLinks = footerSourceLinks.filter(isPublicNavLink);
 const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
+const headerLanguage = siteConfig.headerLanguage === "ar" ? "ar" : "en";
+const headerDirection = headerLanguage === "ar" ? "rtl" : "ltr";
+const isArabicHeader = headerLanguage === "ar";
+const brandSpacingClass = isArabicHeader ? "space-x-reverse space-x-2" : "space-x-2";
+const headerBrandAlignmentClass = isArabicHeader ? "justify-end text-right" : "justify-start text-left";
+const desktopActionAlignmentClass = isArabicHeader ? "justify-start" : "justify-end";
 ---
 
 <!doctype html>
@@ -68,11 +74,11 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 	</head>
 	<body class="bg-gray-50">
 		<!-- Navigation -->
-		<nav class="site-header sticky top-0 z-50 shadow-md" style={headerStyle}>
+		<nav class="site-header sticky top-0 z-50 shadow-md" style={headerStyle} dir={headerDirection} lang={headerLanguage}>
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="site-header-inner grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 py-3 transition-all duration-300 md:grid-cols-[auto_1fr_auto]">
-					<div class="flex items-center justify-start">
-						<a href="/" class="flex min-w-0 items-center space-x-2">
+					<div class={`flex items-center ${headerBrandAlignmentClass}`}>
+						<a href="/" class={`flex min-w-0 items-center ${brandSpacingClass}`}>
 							{siteConfig.logoUrl && <img src={siteConfig.logoUrl} alt="Logo" class="h-8 w-8 object-contain" />}
 							<span class="truncate text-xl font-bold" style="color: var(--site-brand-text);">{siteConfig.brandName}</span>
 						</a>
@@ -82,7 +88,7 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 							<a href={link.href} class={headerLinkClass}>{link.label}</a>
 						))}
 					</div>
-					<div class="hidden items-center justify-end space-x-3 md:flex">
+					<div class={`hidden items-center ${desktopActionAlignmentClass} space-x-3 md:flex`}>
 						<button
 							type="button"
 							data-theme-toggle
@@ -155,10 +161,10 @@ const siteIconUrl = siteConfig.iconUrl || "/favicon.svg";
 						</svg>
 					</button>
 				</div>
-				<div id="mobile-site-menu" data-mobile-menu class="hidden border-t py-3 text-center md:hidden" style={`border-color: ${siteConfig.headerBorderColor};`}>
+				<div id="mobile-site-menu" data-mobile-menu class={`hidden border-t py-3 md:hidden ${isArabicHeader ? "text-right" : "text-center"}`} style={`border-color: ${siteConfig.headerBorderColor};`}>
 					<div class="flex flex-col items-center gap-2">
 						{publicNavLinks.map((link) => (
-							<a href={link.href} class={`${headerLinkClass} block w-full max-w-xs px-3 py-2 text-center`}>{link.label}</a>
+							<a href={link.href} class={`${headerLinkClass} block w-full max-w-xs px-3 py-2 ${isArabicHeader ? "text-right" : "text-center"}`}>{link.label}</a>
 						))}
 					</div>
 					<div class="mx-auto mt-3 grid max-w-xs gap-2 border-t pt-3" style={`border-color: ${siteConfig.headerBorderColor};`}>

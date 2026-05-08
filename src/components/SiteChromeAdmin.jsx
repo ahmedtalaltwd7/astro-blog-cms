@@ -21,6 +21,7 @@ const DEFAULT_CONFIG = {
   headerLinkHoverColor: "#2563eb",
   headerBorderColor: "#e5e7eb",
   headerLinkStyle: "pills",
+  headerLanguage: "en",
   footerBackgroundColor: "#ffffff",
   footerTextColor: "#6b7280",
   footerBorderColor: "#e5e7eb",
@@ -79,6 +80,22 @@ function TextField({ label, name, value, onChange, placeholder = "" }) {
   );
 }
 
+function TextAreaField({ label, name, value, onChange, placeholder = "" }) {
+  return (
+    <label class="block">
+      <span class="block text-sm font-medium text-gray-700">{label}</span>
+      <textarea
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        rows={3}
+        onInput={onChange}
+        class="mt-2 w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm leading-6 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+      />
+    </label>
+  );
+}
+
 function PreviewLink({ link, config }) {
   const pillStyle =
     config.headerLinkStyle === "pills"
@@ -120,14 +137,18 @@ export default function SiteChromeAdmin() {
 
   const previewLogo = logoPreview || config.logoUrl;
   const previewIcon = iconPreview || config.iconUrl;
+  const headerLanguage = config.headerLanguage === "ar" ? "ar" : "en";
+  const isArabicHeader = headerLanguage === "ar";
 
   const headerPreviewStyle = useMemo(
     () => ({
       backgroundColor: config.headerBackgroundColor,
       borderColor: config.headerBorderColor,
       color: config.headerTextColor,
+      direction: isArabicHeader ? "rtl" : "ltr",
+      textAlign: isArabicHeader ? "right" : "left",
     }),
-    [config],
+    [config, isArabicHeader],
   );
 
   const footerPreviewStyle = useMemo(
@@ -474,6 +495,20 @@ export default function SiteChromeAdmin() {
                     <option value="underline">Underline</option>
                   </select>
                 </label>
+                <label class="block">
+                  <span class="block text-sm font-medium text-gray-700">
+                    Header Language and Alignment
+                  </span>
+                  <select
+                    name="headerLanguage"
+                    value={headerLanguage}
+                    onInput={updateField}
+                    class="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                  >
+                    <option value="en">English / Left to Right</option>
+                    <option value="ar">Arabic / Right to Left</option>
+                  </select>
+                </label>
               </div>
             </section>
 
@@ -538,16 +573,18 @@ export default function SiteChromeAdmin() {
             <section class="rounded-lg bg-white p-6 shadow-sm">
               <h2 class="text-lg font-semibold text-gray-900">Footer</h2>
               <div class="mt-5 grid gap-5">
-                <TextField
-                  label="Footer Main Text"
+                <TextAreaField
+                  label="Footer Main Words"
                   name="footerText"
                   value={config.footerText}
+                  placeholder="Write the main footer words..."
                   onChange={updateField}
                 />
-                <TextField
-                  label="Footer Subtext"
+                <TextAreaField
+                  label="Footer Secondary Words"
                   name="footerSubtext"
                   value={config.footerSubtext}
+                  placeholder="Write the smaller footer words..."
                   onChange={updateField}
                 />
                 <label class="flex items-center gap-3 text-sm font-medium text-gray-700">
@@ -685,8 +722,12 @@ export default function SiteChromeAdmin() {
                   class="border-b px-4 py-4"
                   style={headerPreviewStyle}
                 >
-                  <div class="grid grid-cols-[auto_1fr_auto] items-center gap-3">
-                    <div class="flex items-center gap-2">
+                  <div
+                    class={`grid grid-cols-[auto_1fr_auto] items-center gap-3 ${isArabicHeader ? "text-right" : "text-left"}`}
+                    dir={headerLanguage === "ar" ? "rtl" : "ltr"}
+                    lang={headerLanguage}
+                  >
+                    <div class={`flex items-center gap-2 ${isArabicHeader ? "justify-end" : ""}`}>
                       {previewLogo && (
                         <img
                           src={previewLogo}
@@ -696,7 +737,7 @@ export default function SiteChromeAdmin() {
                       )}
                       <span class="font-bold" style={brandPreviewStyle}>{config.brandName}</span>
                     </div>
-                    <div class="flex justify-center gap-2">
+                    <div class="flex flex-wrap justify-center gap-2">
                       {config.navLinks.map((link, index) => (
                         <PreviewLink
                           key={`${link.label}-${index}`}
