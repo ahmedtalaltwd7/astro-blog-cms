@@ -1,179 +1,231 @@
-# Astro Blog with Tailwind CSS & Admin Control Panel
+# Astro Blog CMS
 
-A modern content-driven blog built with Astro and Tailwind CSS, featuring a built-in admin panel for creating, editing, and managing Markdown posts.
+Astro Blog CMS is a full-stack Astro website for publishing blog posts, custom pages, galleries, and editable home page content from a protected admin control center. It combines Astro, Tailwind CSS, Preact, Markdown content, server-side routes, local filesystem storage, and optional Vercel Blob storage so the same project can run locally and deploy to Vercel.
 
-## Features
+## Project Overview
 
-- **Dynamic Blog Pages**: Each Markdown file in `src/pages/blog/` becomes a published blog post.
-- **Admin Control Panel**: A dedicated `/admin` page with a live Markdown editor to create, edit, and delete posts.
-- **Tailwind CSS**: Utility-first styling for a responsive, polished design.
-- **Astro Static Generation**: Fast, SEO-friendly static pages with dynamic routing.
-- **Interactive UI**: Built with Preact for a smooth editing experience.
-- **API Endpoints**:
-  - `POST /api/save-post` - Saves or updates a Markdown file.
-  - `GET /api/list-posts` - Lists all existing blog posts with metadata.
-  - `POST /api/delete-post` - Deletes a blog post by filename.
-- **Filename Existence Check**: Real-time warning when a filename already exists in the blog directory.
-- **Edit & Delete Functionality**: Manage existing posts directly from the admin panel.
+This project is more than a static blog. It includes a public website, a content-management dashboard, image upload tools, authentication, configurable site chrome, and runtime storage helpers.
+
+- **Public website**: Home page, blog index, blog detail pages, tag pages, gallery page, and custom Markdown pages.
+- **Admin control center**: Protected pages for editing posts, pages, hero settings, home sections, gallery content, header/footer settings, upload stats, and admin password.
+- **Markdown publishing**: Blog posts and pages are written as Markdown with frontmatter metadata.
+- **Image workflow**: Uploaded images are optimized and stored for blog content, thumbnails, gallery images, hero images, and page assets.
+- **Runtime storage**: Uses local files during development and can use Vercel Blob for deployed content and assets.
+- **Authentication**: Admin routes are protected with password login, signed access/refresh cookies, refresh-session rotation, CSRF protection, and basic rate limiting.
+- **Responsive design**: Tailwind CSS powers the public site and admin UI, with light/dark theme support and optional Arabic content mode in the admin area.
+
+## Tech Stack
+
+- **Astro 5** for pages, routing, layouts, API endpoints, and server rendering.
+- **Vercel adapter** for deployment with `output: "server"`.
+- **Tailwind CSS** for styling.
+- **Preact** for interactive admin components.
+- **Marked** for Markdown preview/rendering in the editor.
+- **Sharp** for image processing.
+- **Fabric** for image canvas/editor features.
+- **bcryptjs** for admin password verification.
+- **Vercel Blob** for production-ready remote content and asset storage.
+
+## Main Routes
+
+- `/` - Home page with editable hero content, managed home sections, feature cards, and latest blog posts.
+- `/blog` - Blog post listing.
+- `/blog/[slug]` - Individual blog post pages.
+- `/tags/[tag]` - Posts filtered by tag.
+- `/gallery` - Public gallery page.
+- `/pages/[slug]` - Custom Markdown pages.
+- `/admin/login` - Admin sign-in page.
+- `/admin` - Blog editor.
+- `/admin/hero` - Home page hero editor.
+- `/admin/pages` - Custom page editor.
+- `/admin/home-sections` - Home section, card, and slider editor.
+- `/admin/gallery` - Gallery settings and image editor.
+- `/admin/uploads` - Upload statistics.
+- `/admin/site` - Header, footer, brand, navigation, and site chrome settings.
+- `/admin/password` - Admin password setup/change screen.
+
+## Project Structure
+
+```text
+astro-blog/
+|-- astro.config.mjs            # Astro integrations, Vercel adapter, image config
+|-- package.json                # Scripts and dependencies
+|-- tailwind.config.js          # Tailwind configuration
+|-- tsconfig.json               # TypeScript/Astro config
+|-- data/
+|   `-- auth/                   # Local admin password/session data
+|-- public/
+|   |-- blog-images/            # Uploaded blog images
+|   |-- blog-thumbs/            # Blog thumbnails
+|   |-- gallery-images/         # Gallery images and generated variants
+|   |-- hero-images/            # Hero assets
+|   |-- markdown-images/        # Images inserted into Markdown content
+|   |-- page-images/            # Custom page images
+|   `-- site-assets/            # Logo, icon, and shared site assets
+|-- src/
+|   |-- components/             # Admin editors and reusable UI components
+|   |-- content/
+|   |   |-- blog/               # Markdown blog posts
+|   |   `-- pages/              # Markdown custom pages
+|   |-- data/                   # Default JSON settings for site, hero, gallery, sections
+|   |-- layouts/
+|   |   `-- Layout.astro        # Shared public/admin layout and navigation
+|   |-- lib/                    # Config readers, runtime storage, auth helpers
+|   |-- middleware.js           # Admin route protection and CSRF checks
+|   |-- pages/
+|   |   |-- admin/              # Admin feature pages
+|   |   |-- api/                # Server endpoints for admin/content actions
+|   |   |-- blog/               # Blog index and dynamic post routes
+|   |   |-- pages/              # Dynamic custom page route
+|   |   |-- tags/               # Dynamic tag route
+|   |   |-- gallery.astro       # Public gallery
+|   |   `-- index.astro         # Home page
+|   `-- styles/
+|       `-- global.css          # Global site/admin styles
+`-- README.md
+```
 
 ## Getting Started
 
-### Prerequisites
+### Requirements
 
-- Node.js 18 or later
-- npm (or yarn/pnpm)
+- Node.js 22.x
+- npm
 
-### Installation
-
-1. Clone the repository or navigate to the project folder.
-2. Install dependencies:
+### Install Dependencies
 
 ```bash
-cd "astro-blog codex"
 npm install
 ```
-twd
-### Development
 
-Start the development server:
+### Run Locally
 
 ```bash
 npm run dev
 ```
 
-The server will start on `http://localhost:4321` or a different port if 4321 is busy. Check the terminal output for the active URL.
-Open your browser to `http://localhost:<port>`.
+Astro starts on `http://localhost:4321` by default. If that port is busy, check the terminal output for the active URL.
 
-## Using the Admin Panel
-
-1. Navigate to **`/admin`** such as `http://localhost:4321/admin`.
-2. Fill in the form:
-   - **Filename**: Must end with `.md`, for example `my-post.md`.
-     *A warning will appear if a post with the same filename already exists.*
-   - **Post Title**: The title that will appear in the blog listing.
-   - **Markdown Content**: The full post content, including frontmatter. A template is pre-filled.
-3. Click **"Save Post"**.
-4. The post will be saved to `src/pages/blog/<filename>` and immediately available at `/blog/<slug>`.  
-
-### Managing Existing Posts 
-
-The right column of the admin panel shows all existing blog posts. For each post you can:
-gg
-- **Edit**: Click the **Edit** button to load the post's title and filename into the form. Full content is not loaded, so you can edit it manually.
-- **Delete**: Click the **Delete** button to permanently remove the post. Confirmation is required.
-- **Refresh**: Use the **Refresh** button at the top of the list to reload the post list after saving or deleting.
-
-### Preview and Clear
-
-- **Preview**: Opens the new post in a new tab. The post must be saved first.
-- **Clear**: Resets the form.
-
-## Viewing Blog Posts
-
-- **Homepage** (`/`): Shows a hero section, feature highlights, and a preview of the latest posts.
-- **Blog Index** (`/blog`): Lists all blog posts in a responsive card grid.
-- **Individual Post** (`/blog/<slug>`): Displays the full Markdown-rendered post with its frontmatter.
-
-## Project Structure
-
-```text
-project-root/
-|-- src/
-|   |-- pages/
-|   |   |-- blog/               # Blog posts (.md files)
-|   |   |   |-- first-post.md
-|   |   |   |-- second-post.md
-|   |   |   `-- ...
-|   |   |-- api/
-|   |   |   |-- save-post.js    # API endpoint for saving posts
-|   |   |   |-- list-posts.js   # API endpoint for listing posts
-|   |   |   `-- delete-post.js  # API endpoint for deleting posts
-|   |   |-- admin.astro         # Admin control panel
-|   |   |-- index.astro         # Homepage
-|   |   `-- blog/
-|   |       |-- index.astro     # Blog listing
-|   |       `-- [slug].astro    # Dynamic post page
-|   |-- layouts/
-|   |   `-- Layout.astro        # Global layout with navigation
-|   |-- components/
-|   |   |-- Welcome.astro
-|   |   `-- BlogEditor.jsx      # Interactive editor (Preact)
-|   `-- assets/
-|-- public/                     # Static assets
-|-- astro.config.mjs            # Astro configuration
-|-- tailwind.config.js          # Tailwind CSS configuration
-`-- package.json
-```
-
-## Configuration
-
-### Tailwind CSS
-
-The project uses `@astrojs/tailwind`. Configuration is in `tailwind.config.js`. You can customize colors, fonts, and more there.
-
-### Astro Integrations
-
-- `@astrojs/tailwind` - Tailwind CSS support.
-- `@astrojs/preact` - Preact for interactive components.
-
-### Markdown and Frontmatter
-
-Each blog post must have a YAML frontmatter block at the top:
-
-```yaml
----
-title: "My Post Title"
-pubDate: 2026-03-20
-description: "A short description"
-author: "Author Name"
-tags: ["astro", "blog"]
----
-```
-
-The `pubDate`, `description`, `author`, and `tags` fields are optional but recommended.
-
-## Building for Production
-
-To create a production-ready static site:
+### Build
 
 ```bash
 npm run build
 ```
 
-The output will be in the `dist/` directory. You can preview it with:
+### Run the Built Server
+
+```bash
+npm run start
+```
+
+### Vercel Development Preview
 
 ```bash
 npm run preview
 ```
 
-## Troubleshooting
+This project maps `preview` to `vercel dev`, which is useful for testing Vercel-style server behavior locally.
 
-### "Port already in use"
+## Environment Variables
 
-If port 4321 is busy, Astro will automatically choose another port such as 4322. Check the terminal output for the actual URL.
+Create `.env.local` for local development. Do not commit secrets.
 
-### "Cannot save post" or API errors
+```env
+ADMIN_AUTH_SECRET=use-a-long-random-secret-at-least-32-characters
+admin_password=$2a$12$replace-with-a-bcrypt-password-hash
+dev_env_token=local
+BLOB_READ_WRITE_TOKEN=optional-vercel-blob-token
+```
 
-- Ensure the dev server is running.
-- Check the browser's developer console for network errors.
-- Verify that the `src/pages/blog/` directory exists and is writable.
+- `ADMIN_AUTH_SECRET` signs admin access and refresh tokens.
+- `admin_password` stores the initial admin bcrypt password hash. After setup, the project can store the admin record in `data/auth/admin.json`.
+- `dev_env_token=local` allows local filesystem writes.
+- `dev_env_token=pro-ready` enables production-style Blob behavior.
+- `BLOB_READ_WRITE_TOKEN` enables Vercel Blob reads/writes when running in pro-ready or deployed mode.
 
-### "Blog post not appearing"
+## Content Model
 
-- The post file must be saved with a `.md` extension inside `src/pages/blog/`.
-- The frontmatter must be valid YAML.
-- Restart the dev server if you edited files while it was running. Astro will hot-reload most changes.
+Blog posts live in `src/content/blog` and custom pages live in `src/content/pages`. Each Markdown file can include frontmatter like this:
+
+```yaml
+---
+title: "My Blog Post"
+slug: "my-blog-post"
+description: "A short summary for listings and metadata."
+pubDate: 2026-05-08
+author: "Ahmed Talal"
+tags: ["astro", "blog"]
+image: "/blog-images/example.webp"
+thumbnail: "/blog-thumbs/example-thumb.webp"
+postOrder: 10
+---
+```
+
+The admin editor can create, edit, preview, list, and delete posts and pages. The public routes read both local Markdown files and Vercel Blob entries when Blob storage is configured.
+
+## Admin Features
+
+The admin control center is available at `/admin` after login.
+
+- **Blog Editor**: Write Markdown, manage frontmatter, upload/insert images, preview content, and manage existing posts.
+- **Hero Editor**: Change home page title, subtitle, buttons, backgrounds, colors, images, and metadata.
+- **Pages Editor**: Create and manage standalone Markdown pages.
+- **Home Sections**: Configure editable home sections, cards, waves, image zoom sections, and image sliders.
+- **Gallery Editor**: Manage gallery settings, thumbnails, and gallery images.
+- **Uploads**: Review upload counts and asset usage.
+- **Header & Footer**: Update brand name, logo, icon, navigation links, footer links, colors, and language direction.
+- **Password**: Set or change the admin password.
+
+## API Endpoints
+
+Admin and content APIs live under `src/pages/api`.
+
+- `/api/save-post`, `/api/get-post`, `/api/list-posts`, `/api/delete-post`
+- `/api/save-page`, `/api/get-page`, `/api/list-pages`, `/api/delete-page`
+- `/api/upload-editor-image`, `/api/delete-upload-image`, `/api/upload-stats`
+- `/api/hero-settings`, `/api/home-sections`, `/api/how-it-works`
+- `/api/gallery-settings`, `/api/site-settings`
+- `/api/admin/login`, `/api/admin/logout`, `/api/admin/refresh`, `/api/admin/change-password`
+
+Protected admin APIs require a valid admin session. Mutating requests also require the CSRF token handled by the admin fetch helper.
+
+## Storage Behavior
+
+The storage helper in `src/lib/runtime-storage.js` decides where content and assets are saved.
+
+- **Local development**: Saves JSON, Markdown, and uploaded assets to the repository filesystem.
+- **Read-only serverless mode**: Prevents writes unless Blob storage is available.
+- **Vercel Blob mode**: Saves deploy-time editable content and uploaded assets to Vercel Blob.
+- **Inline fallback**: In read-only mode without Blob, some image operations can return inline data URLs instead of writing files.
+
+## Useful Scripts
+
+```bash
+npm run dev          # Start Astro dev server
+npm run build        # Build for production
+npm run start        # Run built server from dist/server/entry.mjs
+npm run preview      # Start Vercel dev preview
+npm run serve:watch  # Rebuild and restart on source/content changes
+npm run astro        # Run Astro CLI
+```
+
+## Deployment Notes
+
+The project is configured for Vercel through `@astrojs/vercel`.
+
+Before deploying:
+
+1. Set `ADMIN_AUTH_SECRET` to a strong random value.
+2. Set an admin password hash or use the password setup flow.
+3. Add `BLOB_READ_WRITE_TOKEN` if deployed content should be editable.
+4. Use `dev_env_token=pro-ready` when testing Blob-backed production behavior.
+
+## Security Notes
+
+- Keep `.env.local`, auth session files, and generated secrets out of version control.
+- Admin access uses signed cookies, refresh token rotation, CSRF checks, and middleware route protection.
+- The first password setup flow is allowed only when no stored admin password hash exists.
 
 ## License
 
 MIT
-
-## Acknowledgements
-
-- [Astro](https://astro.build) - The web framework for content-driven websites.
-- [Tailwind CSS](https://tailwindcss.com) - A utility-first CSS framework.
-- [Preact](https://preactjs.com) - Fast 3kB React alternative.
-
----
-
-Happy blogging!
