@@ -221,7 +221,7 @@ docker compose down
 
 ### What the Volumes Do
 
-- `src/content/blog`: persists blog Markdown posts.
+- `src/content/blog`: persists blog Markdown posts..
 - `src/content/pages`: persists custom Markdown pages.
 - `src/data`: persists editable JSON settings.
 - `public`: persists uploaded images and public assets.
