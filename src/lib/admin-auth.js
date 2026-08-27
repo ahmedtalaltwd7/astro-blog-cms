@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import { existsSync, readFileSync } from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
+import { isServerlessRuntime } from "./runtime-storage.js";
 
 export const ACCESS_COOKIE = "admin_access_token";
 export const REFRESH_COOKIE = "admin_refresh_token";
@@ -282,11 +283,15 @@ export async function readRefreshSession() {
 
 export async function saveRefreshSession({ currentRefreshJti, createdAt, expiresAt }) {
   const session = { currentRefreshJti, createdAt, expiresAt };
+  if (isServerlessRuntime()) return session;
+
   await writeJsonAtomic(SESSION_FILE_PATH, session);
   return session;
 }
 
 export async function clearRefreshSession() {
+  if (isServerlessRuntime()) return;
+
   try {
     await fs.unlink(SESSION_FILE_PATH);
   } catch {
@@ -329,6 +334,10 @@ export async function createAndStoreAdminTokens(cookies, url) {
 
 export async function rotateRefreshSession(cookies, url, refreshPayload) {
   const session = await readRefreshSession();
+  if (!session && isServerlessRuntime()) {
+    return createAndStoreAdminTokens(cookies, url);
+  }
+
   if (!session || !safeEqual(session.currentRefreshJti, refreshPayload?.jti)) {
     return null;
   }
